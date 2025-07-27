@@ -1,0 +1,72 @@
+package school.hei.vola.repository;
+
+import static java.util.UUID.randomUUID;
+import static school.hei.vola.model.Time.millisNow;
+
+import java.util.Optional;
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Repository;
+import school.hei.vola.model.Payment;
+import school.hei.vola.model.psp.PspType;
+import school.hei.vola.repository.jpa.JPaymentRepository;
+import school.hei.vola.repository.jpa.JUserRepository;
+import school.hei.vola.repository.jpa.mapper.JPaymentMapper;
+import school.hei.vola.repository.jpa.model.JPayment;
+import school.hei.vola.repository.jpa.model.JUser;
+
+@Repository
+@AllArgsConstructor
+public class PaymentRepository {
+  private final JPaymentRepository jPaymentRepository;
+  private final JPaymentMapper jPaymentMapper;
+
+  private final JUserRepository jUserRepository;
+
+  public Payment createPayment(String payerEmail, PspType pspType, String pspPaymentId) {
+    var jUserSaved = jUserRepository.findByEmail(payerEmail);
+    if (jUserSaved == null) {
+      var jUserToSave = new JUser();
+      jUserToSave.setEmail(payerEmail);
+      jUserToSave.setId(randomUUID().toString());
+      jUserSaved = jUserRepository.save(jUserToSave);
+    }
+
+    var toSaveJPayment =
+        new JPayment(
+            randomUUID().toString(),
+            pspType,
+            null,
+            pspPaymentId,
+            null,
+            millisNow(),
+            null,
+            jUserSaved);
+    var savedJPayment = jPaymentRepository.save(toSaveJPayment);
+
+    return jPaymentMapper.toDomain(savedJPayment);
+  }
+
+  public Payment findPaymentById(String id) {
+    var jPayment = jPaymentRepository.findById(id).get();
+    return jPaymentMapper.toDomain(jPayment);
+  }
+
+  public Payment save(Payment payment) {
+    var jPayment = jPaymentMapper.toEntity(payment);
+    return jPaymentMapper.toDomain(jPaymentRepository.save(jPayment));
+  }
+
+  public Optional<Payment> findPaymentByPspTypeAndPspPaymentId(
+      PspType pspType, String pspPaymentId) {
+    return jPaymentRepository
+        .findByPspTypeAndPspPaymentId(pspType, pspPaymentId)
+        .map(jPaymentMapper::toDomain);
+  }
+
+  public Optional<Payment> findPaymentByPayerEmailAndPspTypeAndPspPaymentId(
+      String payerEmail, PspType pspType, String pspPaymentId) {
+    return jPaymentRepository
+        .findPaymentByPayerEmailAndPspTypeAndPspPaymentId(payerEmail, pspType, pspPaymentId)
+        .map(jPaymentMapper::toDomain);
+  }
+}
