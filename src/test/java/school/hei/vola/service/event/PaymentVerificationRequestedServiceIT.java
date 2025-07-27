@@ -1,0 +1,62 @@
+package school.hei.vola.service.event;
+
+import static java.util.UUID.randomUUID;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static school.hei.vola.model.Time.millisNow;
+import static school.hei.vola.model.psp.PspType.ORANGE_MONEY;
+
+import java.util.Optional;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import school.hei.vola.conf.FacadeIT;
+import school.hei.vola.endpoint.event.model.PaymentVerificationRequested;
+import school.hei.vola.model.Payment;
+import school.hei.vola.model.User;
+import school.hei.vola.model.psp.PspPayment;
+import school.hei.vola.model.psp.impl.OrangePsp;
+import school.hei.vola.repository.PaymentRepository;
+import school.hei.vola.repository.UserRepository;
+
+class PaymentVerificationRequestedServiceIT extends FacadeIT {
+  @Autowired PaymentVerificationRequestedService subject;
+  @MockBean OrangePsp orangePspMocked;
+
+  @Autowired PaymentRepository paymentRepository;
+  @Autowired UserRepository userRepository;
+
+  @Test
+  void unverified_pspPayment_updates_lastPspVerificationInstant() {
+    var randomLou = userRepository.save(randomLou());
+    when(orangePspMocked.verify(any())).thenReturn(Optional.empty());
+    var paymentId = randomId();
+    var payment =
+        new Payment(
+            paymentId,
+            new PspPayment(ORANGE_MONEY, randomId(), null, null),
+            millisNow(),
+            null,
+            randomLou);
+    var savedPayment = paymentRepository.save(payment);
+
+    assertNull(savedPayment.lastPspVerificationInstant());
+    assertThrows(
+        NotYetVerifiedByPspException.class,
+        () -> subject.accept(new PaymentVerificationRequested(payment)));
+
+    var savedPaymentAfterVerification = paymentRepository.findPaymentById(paymentId);
+    assertNotNull(savedPaymentAfterVerification.lastPspVerificationInstant());
+  }
+
+  private static String randomId() {
+    return randomUUID().toString();
+  }
+
+  private static User randomLou() {
+    return new User("lou+ " + randomUUID() + "@cute.dev");
+  }
+}
