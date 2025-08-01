@@ -11,17 +11,24 @@ import school.hei.vola.model.psp.PspType;
 import school.hei.vola.repository.jpa.JPaymentRepository;
 import school.hei.vola.repository.jpa.JUserRepository;
 import school.hei.vola.repository.jpa.mapper.JPaymentMapper;
+import school.hei.vola.repository.jpa.mapper.JUserMapper;
 import school.hei.vola.repository.jpa.model.JPayment;
 
 @Repository
 @AllArgsConstructor
 public class PaymentRepository {
   private final JPaymentRepository jPaymentRepository;
-  private final JUserRepository jUserRepository;
   private final JPaymentMapper jPaymentMapper;
+
+  private final JUserRepository jUserRepository;
+  private final JUserMapper jUserMapper;
 
   public Payment createPayment(User payer, PspType pspType, String pspPaymentId) {
     var jUser = jUserRepository.findByEmail(payer.email());
+    if (jUser == null) {
+      jUser = jUserRepository.save(jUserMapper.toEntity(payer, randomUUID().toString()));
+    }
+
     var toSaveJPayment =
         new JPayment(
             randomUUID().toString(), pspType, null, pspPaymentId, null, millisNow(), null, jUser);
