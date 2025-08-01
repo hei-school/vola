@@ -5,6 +5,7 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 public class EnvConf {
   void configureProperties(DynamicPropertyRegistry registry) {
     registry.add("env", () -> "test");
+    registry.add("vola.api.key", () -> "dummyApiKey");
     registry.add(
         "spring.datasource.url", () -> "jdbc:h2:mem:testdb;CASE_INSENSITIVE_IDENTIFIERS=TRUE");
     registry.add("spring.datasource.driverClassName", () -> "org.h2.Driver");
