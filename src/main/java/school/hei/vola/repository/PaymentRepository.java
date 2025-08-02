@@ -3,6 +3,7 @@ package school.hei.vola.repository;
 import static java.util.UUID.randomUUID;
 import static school.hei.vola.model.Time.millisNow;
 
+import java.util.Optional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Repository;
 import school.hei.vola.model.Payment;
@@ -45,5 +46,12 @@ public class PaymentRepository {
   public Payment save(Payment payment) {
     var jPayment = jPaymentMapper.toEntity(payment);
     return jPaymentMapper.toDomain(jPaymentRepository.save(jPayment));
+  }
+
+  public Optional<Payment> findPaymentByPspTypeAndPspPaymentId(
+      PspType pspType, String pspPaymentId) {
+    return jPaymentRepository
+        .findByPspTypeAndPspPaymentId(pspType, pspPaymentId)
+        .map(jPaymentMapper::toDomain);
   }
 }

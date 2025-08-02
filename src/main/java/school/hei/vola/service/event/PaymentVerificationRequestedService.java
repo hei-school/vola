@@ -24,7 +24,7 @@ public class PaymentVerificationRequestedService implements Consumer<PaymentVeri
 
     var pspType = payment.pspPayment().pspType();
     var psp = pspProvider.pspOfType(pspType);
-    var verifiedPspPaymentOpt = psp.verify(payment.id());
+    var verifiedPspPaymentOpt = psp.verify(payment.pspPayment().id());
     if (verifiedPspPaymentOpt.isEmpty()) {
       paymentRepository.save(payment);
       throw new NotYetVerifiedByPspException(payment, verificationInstant);

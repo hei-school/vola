@@ -9,27 +9,29 @@ import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.LocalDate;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@AllArgsConstructor
 public class OrangeApiClient {
   private final String baseUrl;
-  private final ObjectMapper om;
+  public static final ObjectMapper om = new ObjectMapper();
 
-  public OrangeApiClient(String baseUrl) {
-    this.baseUrl = baseUrl;
-    this.om = new ObjectMapper();
+  static {
     om.configure(FAIL_ON_UNKNOWN_PROPERTIES, false);
   }
 
   public OrangeDailyTransactions transactionsOf(LocalDate date) {
     var path =
         String.format(
-            "/transactions?date=%s-%s-%s", date.getYear(), date.getMonth(), date.getDayOfMonth());
+            "/transactions?date=%s-%s-%s",
+            date.getYear(), date.getMonthValue(), date.getDayOfMonth());
+    var uri = baseUrl + path;
     var httpRequest = HttpRequest.newBuilder().uri(URI.create(baseUrl + path)).GET().build();
 
     try (var httpClient = newHttpClient()) {
-      log.info("Fetching Orange transactions of {}", date);
+      log.info("Fetching Orange transactions: {}", uri);
       var response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
       var httpStatus = response.statusCode();
       log.info("Https status from Orange was: {}", httpStatus);
