@@ -9,16 +9,16 @@ import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.LocalDate;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@AllArgsConstructor
 public class OrangeApiClient {
   private final String baseUrl;
-  private final ObjectMapper om;
+  public static final ObjectMapper om = new ObjectMapper();
 
-  public OrangeApiClient(String baseUrl) {
-    this.baseUrl = baseUrl;
-    this.om = new ObjectMapper();
+  static {
     om.configure(FAIL_ON_UNKNOWN_PROPERTIES, false);
   }
 
