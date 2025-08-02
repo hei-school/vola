@@ -2,6 +2,7 @@ package school.hei.vola.endpoint.rest.controller;
 
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,8 +25,8 @@ public class PaymentController {
     return paymentService.createPayment(user, pspType, pspId);
   }
 
-  @GetMapping("/payment/:id")
-  public Payment getPayment(String apiKey, @RequestParam String id) {
+  @GetMapping("/payment/{id}")
+  public Payment getPayment(@RequestParam String apiKey, @PathVariable String id) {
     authorizer.accept(apiKey);
     return paymentService.findPaymentById(id);
   }
