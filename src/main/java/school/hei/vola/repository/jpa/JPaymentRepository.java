@@ -8,5 +8,8 @@ import school.hei.vola.repository.jpa.model.JPayment;
 
 @Repository
 public interface JPaymentRepository extends JpaRepository<JPayment, String> {
-  Optional<JPayment> findByPspTypeAndPspPaymentId(PspType pspType, String pspId);
+  Optional<JPayment> findByPspTypeAndPspPaymentId(PspType pspType, String pspPaymentId);
+
+  Optional<JPayment> findPaymentByPayerEmailAndPspTypeAndPspPaymentId(
+      String payerEmail, PspType pspType, String pspPaymentId);
 }

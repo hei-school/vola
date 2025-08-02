@@ -5,5 +5,5 @@ import java.util.Optional;
 public interface Psp {
   PspType type();
 
-  Optional<PspPayment> verify(String pspId);
+  Optional<PspPayment> verify(String pspPaymentId);
 }

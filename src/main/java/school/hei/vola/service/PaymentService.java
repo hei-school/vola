@@ -2,13 +2,13 @@ package school.hei.vola.service;
 
 import jakarta.transaction.Transactional;
 import java.util.List;
+import java.util.Optional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import school.hei.vola.endpoint.event.EventProducer;
 import school.hei.vola.endpoint.event.model.PaymentVerificationRequested;
 import school.hei.vola.model.Payment;
-import school.hei.vola.model.User;
 import school.hei.vola.model.psp.PspType;
 import school.hei.vola.repository.PaymentRepository;
 
@@ -21,8 +21,8 @@ public class PaymentService {
   private final EventProducer eventProducer;
 
   @Transactional
-  public Payment createPayment(User payer, PspType pspType, String pspPaymentId) {
-    var payment = paymentRepository.createPayment(payer, pspType, pspPaymentId);
+  public Payment createPayment(String payerEmail, PspType pspType, String pspPaymentId) {
+    var payment = paymentRepository.createPayment(payerEmail, pspType, pspPaymentId);
 
     eventProducer.accept(List.of(new PaymentVerificationRequested(payment)));
     log.info("PaymentVerificationRequested event sent for payment={}", payment);
@@ -30,7 +30,9 @@ public class PaymentService {
     return payment;
   }
 
-  public Payment findPaymentById(String id) {
-    return paymentRepository.findPaymentById(id);
+  public Optional<Payment> findPaymentByPayerEmailAndPspTypeAndPspPaymentId(
+      String payerEmail, PspType pspType, String pspPaymentId) {
+    return paymentRepository.findPaymentByPayerEmailAndPspTypeAndPspPaymentId(
+        payerEmail, pspType, pspPaymentId);
   }
 }

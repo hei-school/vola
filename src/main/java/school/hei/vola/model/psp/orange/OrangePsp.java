@@ -22,7 +22,7 @@ public class OrangePsp implements Psp {
   }
 
   @Override
-  public Optional<PspPayment> verify(String pspId) {
-    return pspPaymentRepository.findById(ORANGE_MONEY, pspId);
+  public Optional<PspPayment> verify(String pspPaymentId) {
+    return pspPaymentRepository.findById(ORANGE_MONEY, pspPaymentId);
   }
 }

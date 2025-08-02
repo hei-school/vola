@@ -20,14 +20,14 @@ class OrangePspIT extends FacadeIT {
       orangeDailyTransactionsRetrievalRequestedService;
 
   @Test
-  void unknown_pspId_leadsTo_emptyPspPayment() {
+  void unknown_pspPaymentId_leadsTo_emptyPspPayment() {
     assertTrue(subject.verify("dummy").isEmpty());
     assertTrue(subject.verify("MP250729.1116.D77954").isEmpty());
   }
 
   @Disabled("Flaky")
   @Test
-  void known_pspId_leadsTo_PspPayment() {
+  void known_pspPaymentId_leadsTo_PspPayment() {
     orangeDailyTransactionsRetrievalRequestedService.accept(
         new OrangeDailyTransactionsRetrievalRequested(LocalDate.of(2025, 7, 29)));
 

@@ -17,38 +17,37 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import school.hei.vola.conf.FacadeIT;
 import school.hei.vola.endpoint.event.EventProducer;
 import school.hei.vola.endpoint.event.model.PaymentVerificationRequested;
-import school.hei.vola.model.User;
 import school.hei.vola.model.psp.PspPayment;
-import school.hei.vola.repository.UserRepository;
 
 class PaymentServiceIT extends FacadeIT {
 
   @Autowired PaymentService subject;
   @MockBean EventProducer eventProducerMocked;
 
-  @Autowired UserRepository userRepository;
-
   @Test
   void createdPayment_canBe_retrieved() {
-    var randomLou = userRepository.save(randomLou());
-    var randomPspPaymentId = randomUUID().toString();
-    var createdPayment = subject.createPayment(randomLou, ORANGE_MONEY, randomPspPaymentId);
+    var email = randomEmail();
+    var pspType = ORANGE_MONEY;
+    var pspPaymentId = randomUUID().toString();
+    var createdPayment = subject.createPayment(email, pspType, pspPaymentId);
 
-    var retrievedPayment = subject.findPaymentById(createdPayment.id());
+    var retrievedPayment =
+        subject
+            .findPaymentByPayerEmailAndPspTypeAndPspPaymentId(email, pspType, pspPaymentId)
+            .get();
     assertEquals(createdPayment, retrievedPayment);
     assertNotNull(retrievedPayment.id());
-    assertEquals(randomLou, retrievedPayment.payer());
+    assertEquals(email, retrievedPayment.payer().email());
     assertEquals(
-        new PspPayment(ORANGE_MONEY, randomPspPaymentId, null, null),
-        retrievedPayment.pspPayment());
+        new PspPayment(ORANGE_MONEY, pspPaymentId, null, null), retrievedPayment.pspPayment());
     assertNotNull(retrievedPayment.creationInstant());
     assertNull(retrievedPayment.lastPspVerificationInstant());
   }
 
   @Test
   void createdPayment_triggers_verificationEvent() {
-    var randomLou = userRepository.save(randomLou());
-    var createdPayment = subject.createPayment(randomLou, ORANGE_MONEY, randomUUID().toString());
+    var email = randomEmail();
+    var createdPayment = subject.createPayment(email, ORANGE_MONEY, randomUUID().toString());
 
     ArgumentCaptor<List<PaymentVerificationRequested>> captor = ArgumentCaptor.forClass(List.class);
     verify(eventProducerMocked, times(1)).accept(captor.capture());
@@ -59,15 +58,15 @@ class PaymentServiceIT extends FacadeIT {
 
   @Test
   void createdPayment_cannotBe_recreated() {
-    var randomLou = userRepository.save(randomLou());
-    var pspId = randomUUID().toString();
-    subject.createPayment(randomLou, ORANGE_MONEY, pspId);
+    var email = randomEmail();
+    var pspPaymentId = randomUUID().toString();
+    subject.createPayment(email, ORANGE_MONEY, pspPaymentId);
 
     assertThrows(
-        RuntimeException.class, () -> subject.createPayment(randomLou, ORANGE_MONEY, pspId));
+        RuntimeException.class, () -> subject.createPayment(email, ORANGE_MONEY, pspPaymentId));
   }
 
-  private static User randomLou() {
-    return new User("lou+ " + randomUUID() + "@cute.dev");
+  private static String randomEmail() {
+    return "lou+ " + randomUUID() + "@cute.dev";
   }
 }

@@ -12,9 +12,9 @@ public class PspPaymentRepository {
 
   private final OrangePaymentRepository orangePaymentRepository;
 
-  public Optional<PspPayment> findById(PspType pspType, String pspId) {
+  public Optional<PspPayment> findById(PspType pspType, String pspPaymentId) {
     return switch (pspType) {
-      case ORANGE_MONEY -> orangePaymentRepository.findById(pspId);
+      case ORANGE_MONEY -> orangePaymentRepository.findById(pspPaymentId);
     };
   }
 }
