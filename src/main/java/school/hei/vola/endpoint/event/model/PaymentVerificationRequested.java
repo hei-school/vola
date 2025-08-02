@@ -25,6 +25,6 @@ public class PaymentVerificationRequested extends PojaEvent {
 
   @Override
   public Duration maxConsumerBackoffBetweenRetries() {
-    return Duration.ofDays(1);
+    return Duration.ofHours(12);
   }
 }
