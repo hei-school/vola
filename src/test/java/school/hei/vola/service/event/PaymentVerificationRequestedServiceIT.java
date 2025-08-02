@@ -16,12 +16,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import school.hei.vola.conf.FacadeIT;
 import school.hei.vola.endpoint.event.model.PaymentVerificationRequested;
+import school.hei.vola.model.Application;
 import school.hei.vola.model.Payment;
 import school.hei.vola.model.User;
 import school.hei.vola.model.psp.PspPayment;
 import school.hei.vola.model.psp.orange.OrangePsp;
 import school.hei.vola.repository.PaymentRepository;
 import school.hei.vola.repository.UserRepository;
+import school.hei.vola.repository.jpa.JApplicationRepository;
+import school.hei.vola.repository.jpa.mapper.JApplicationMapper;
+import school.hei.vola.repository.jpa.model.JApplication;
 
 class PaymentVerificationRequestedServiceIT extends FacadeIT {
   @Autowired PaymentVerificationRequestedService subject;
@@ -29,6 +33,17 @@ class PaymentVerificationRequestedServiceIT extends FacadeIT {
 
   @Autowired PaymentRepository paymentRepository;
   @Autowired UserRepository userRepository;
+
+  @Autowired JApplicationRepository jApplicationRepository;
+  @Autowired JApplicationMapper jApplicationMapper;
+
+  Application randomApplication() {
+    var jApplication = new JApplication();
+    jApplication.setName(randomUUID().toString());
+    jApplication.setId(randomUUID().toString());
+    jApplication.setApiKey(randomUUID().toString());
+    return jApplicationMapper.toDomain(jApplicationRepository.save(jApplication));
+  }
 
   @Test
   void unverified_pspPayment_updates_lastPspVerificationInstant() {
@@ -41,7 +56,8 @@ class PaymentVerificationRequestedServiceIT extends FacadeIT {
             new PspPayment(ORANGE_MONEY, randomId(), null, null),
             millisNow(),
             null,
-            randomLou);
+            randomLou,
+            randomApplication());
     var savedPayment = paymentRepository.save(payment);
 
     assertNull(savedPayment.pspPayment().amount());
@@ -68,7 +84,8 @@ class PaymentVerificationRequestedServiceIT extends FacadeIT {
             new PspPayment(ORANGE_MONEY, pspPaymentId, null, null),
             millisNow(),
             null,
-            randomLou);
+            randomLou,
+            randomApplication());
     var savedPayment = paymentRepository.save(payment);
 
     assertNull(savedPayment.pspPayment().amount());

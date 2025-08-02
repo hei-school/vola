@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Repository;
 import school.hei.vola.model.Payment;
 import school.hei.vola.model.psp.PspType;
+import school.hei.vola.repository.jpa.JApplicationRepository;
 import school.hei.vola.repository.jpa.JPaymentRepository;
 import school.hei.vola.repository.jpa.JUserRepository;
 import school.hei.vola.repository.jpa.mapper.JPaymentMapper;
@@ -21,8 +22,10 @@ public class PaymentRepository {
   private final JPaymentMapper jPaymentMapper;
 
   private final JUserRepository jUserRepository;
+  private final JApplicationRepository jApplicationRepository;
 
-  public Payment createPayment(String payerEmail, PspType pspType, String pspPaymentId) {
+  public Payment createPayment(
+      String apiKey, String payerEmail, PspType pspType, String pspPaymentId) {
     var jUserSaved = jUserRepository.findByEmail(payerEmail);
     if (jUserSaved == null) {
       var jUserToSave = new JUser();
@@ -31,6 +34,7 @@ public class PaymentRepository {
       jUserSaved = jUserRepository.save(jUserToSave);
     }
 
+    var jApplication = jApplicationRepository.findByApiKey(apiKey).get();
     var toSaveJPayment =
         new JPayment(
             randomUUID().toString(),
@@ -40,7 +44,8 @@ public class PaymentRepository {
             null,
             millisNow(),
             null,
-            jUserSaved);
+            jUserSaved,
+            jApplication);
     var savedJPayment = jPaymentRepository.save(toSaveJPayment);
 
     return jPaymentMapper.toDomain(savedJPayment);

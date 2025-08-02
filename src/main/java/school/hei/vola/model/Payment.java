@@ -10,4 +10,5 @@ public record Payment(
     PspPayment pspPayment,
     Instant creationInstant,
     Instant lastPspVerificationInstant,
-    User payer) {}
+    User payer,
+    Application application) {}

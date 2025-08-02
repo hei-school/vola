@@ -18,18 +18,31 @@ import school.hei.vola.conf.FacadeIT;
 import school.hei.vola.endpoint.event.EventProducer;
 import school.hei.vola.endpoint.event.model.PaymentVerificationRequested;
 import school.hei.vola.model.psp.PspPayment;
+import school.hei.vola.repository.jpa.JApplicationRepository;
+import school.hei.vola.repository.jpa.model.JApplication;
 
 class PaymentServiceIT extends FacadeIT {
 
   @Autowired PaymentService subject;
   @MockBean EventProducer eventProducerMocked;
 
+  @Autowired JApplicationRepository jApplicationRepository;
+
+  JApplication randomJApplication() {
+    var jApplication = new JApplication();
+    jApplication.setName(randomUUID().toString());
+    jApplication.setId(randomUUID().toString());
+    jApplication.setApiKey(randomUUID().toString());
+    return jApplicationRepository.save(jApplication);
+  }
+
   @Test
   void createdPayment_canBe_retrieved() {
+    var apiKey = randomJApplication().getApiKey();
     var email = randomEmail();
     var pspType = ORANGE_MONEY;
     var pspPaymentId = randomUUID().toString();
-    var createdPayment = subject.createPayment(email, pspType, pspPaymentId);
+    var createdPayment = subject.createPayment(apiKey, email, pspType, pspPaymentId);
 
     var retrievedPayment =
         subject
@@ -46,8 +59,10 @@ class PaymentServiceIT extends FacadeIT {
 
   @Test
   void createdPayment_triggers_verificationEvent() {
+    var apiKey = randomJApplication().getApiKey();
     var email = randomEmail();
-    var createdPayment = subject.createPayment(email, ORANGE_MONEY, randomUUID().toString());
+    var createdPayment =
+        subject.createPayment(apiKey, email, ORANGE_MONEY, randomUUID().toString());
 
     ArgumentCaptor<List<PaymentVerificationRequested>> captor = ArgumentCaptor.forClass(List.class);
     verify(eventProducerMocked, times(1)).accept(captor.capture());
@@ -58,12 +73,14 @@ class PaymentServiceIT extends FacadeIT {
 
   @Test
   void createdPayment_cannotBe_recreated() {
+    var apiKey = randomJApplication().getApiKey();
     var email = randomEmail();
     var pspPaymentId = randomUUID().toString();
-    subject.createPayment(email, ORANGE_MONEY, pspPaymentId);
+    subject.createPayment(apiKey, email, ORANGE_MONEY, pspPaymentId);
 
     assertThrows(
-        RuntimeException.class, () -> subject.createPayment(email, ORANGE_MONEY, pspPaymentId));
+        RuntimeException.class,
+        () -> subject.createPayment(apiKey, email, ORANGE_MONEY, pspPaymentId));
   }
 
   private static String randomEmail() {

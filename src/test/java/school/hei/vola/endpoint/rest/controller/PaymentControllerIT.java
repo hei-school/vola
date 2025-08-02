@@ -14,6 +14,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import school.hei.vola.conf.FacadeIT;
 import school.hei.vola.endpoint.event.EventProducer;
 import school.hei.vola.endpoint.event.model.OrangeDailyTransactionsRetrievalRequested;
+import school.hei.vola.repository.jpa.JApplicationRepository;
+import school.hei.vola.repository.jpa.model.JApplication;
 import school.hei.vola.service.event.OrangeDailyTransactionsRetrievalRequestedService;
 
 class PaymentControllerIT extends FacadeIT {
@@ -25,9 +27,20 @@ class PaymentControllerIT extends FacadeIT {
   private OrangeDailyTransactionsRetrievalRequestedService
       orangeDailyTransactionsRetrievalRequestedService;
 
+  @Autowired JApplicationRepository jApplicationRepository;
+
+  JApplication randomJApplication() {
+    var jApplication = new JApplication();
+    jApplication.setName(randomUUID().toString());
+    jApplication.setId(randomUUID().toString());
+    jApplication.setApiKey(randomUUID().toString());
+    jApplicationRepository.save(jApplication);
+    return jApplication;
+  }
+
   @Test
   void can_create_payment_then_retrieve_it() {
-    var apiKey = "dummyApiKey";
+    var apiKey = randomJApplication().getApiKey();
     var email = randomEmail();
     var pspType = ORANGE_MONEY;
     var pspPaymentId = "MP250729.1216.D77954";
@@ -43,7 +56,7 @@ class PaymentControllerIT extends FacadeIT {
 
   @Test
   void can_create_payment_then_verify_it() {
-    var apiKey = "dummyApiKey";
+    var apiKey = randomJApplication().getApiKey();
     var email = randomEmail();
     var pspType = ORANGE_MONEY;
     var pspPaymentId = "MP250729.1216.D77954";

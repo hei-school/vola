@@ -6,12 +6,12 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
-@Table(name = "orange_transaction")
+@Table(name = "application")
 @Entity
 @Getter
 @Setter
-public class JOrangeTransaction {
-  @Id private String ref;
-
-  private String orangeApiRawResponse;
+public class JApplication {
+  @Id private String id;
+  private String name;
+  private String apiKey;
 }

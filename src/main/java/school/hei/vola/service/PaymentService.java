@@ -21,8 +21,9 @@ public class PaymentService {
   private final EventProducer eventProducer;
 
   @Transactional
-  public Payment createPayment(String payerEmail, PspType pspType, String pspPaymentId) {
-    var payment = paymentRepository.createPayment(payerEmail, pspType, pspPaymentId);
+  public Payment createPayment(
+      String apiKey, String payerEmail, PspType pspType, String pspPaymentId) {
+    var payment = paymentRepository.createPayment(apiKey, payerEmail, pspType, pspPaymentId);
 
     eventProducer.accept(List.of(new PaymentVerificationRequested(payment)));
     log.info("PaymentVerificationRequested event sent for payment={}", payment);

@@ -17,7 +17,7 @@ import lombok.Setter;
 import school.hei.vola.model.psp.PspType;
 
 @Entity
-@Table(name = "\"payment\"")
+@Table(name = "payment")
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -25,7 +25,7 @@ import school.hei.vola.model.psp.PspType;
 public class JPayment {
   @Id private String id;
 
-  @Column(name = "\"psp_type\"")
+  @Column(name = "psp_type")
   @Enumerated(STRING)
   private PspType pspType;
 
@@ -39,4 +39,8 @@ public class JPayment {
   @ManyToOne
   @JoinColumn(name = "user_id")
   private JUser payer;
+
+  @ManyToOne
+  @JoinColumn(name = "application_id")
+  private JApplication application;
 }
