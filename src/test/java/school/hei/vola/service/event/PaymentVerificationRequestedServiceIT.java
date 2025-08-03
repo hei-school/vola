@@ -56,6 +56,7 @@ class PaymentVerificationRequestedServiceIT extends FacadeIT {
             new PspPayment(ORANGE_MONEY, randomId(), null, null),
             millisNow(),
             null,
+            0,
             randomLou,
             randomApplication());
     var savedPayment = paymentRepository.save(payment);
@@ -84,6 +85,7 @@ class PaymentVerificationRequestedServiceIT extends FacadeIT {
             new PspPayment(ORANGE_MONEY, pspPaymentId, null, null),
             millisNow(),
             null,
+            0,
             randomLou,
             randomApplication());
     var savedPayment = paymentRepository.save(payment);

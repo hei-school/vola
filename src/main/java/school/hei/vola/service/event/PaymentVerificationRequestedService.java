@@ -18,19 +18,24 @@ public class PaymentVerificationRequestedService implements Consumer<PaymentVeri
 
   @Override
   public void accept(PaymentVerificationRequested paymentVerificationRequested) {
-    var payment = paymentVerificationRequested.getPayment();
-    var verificationInstant = millisNow();
-    payment = payment.toBuilder().lastPspVerificationInstant(verificationInstant).build();
+    var paymentToSave =
+        paymentVerificationRequested.getPayment().toBuilder()
+            .lastPspVerificationInstant(millisNow())
+            .verificationAttemptNb(paymentVerificationRequested.getAttemptNb())
+            .build();
 
-    var pspType = payment.pspPayment().pspType();
+    var pspType = paymentToSave.pspPayment().pspType();
     var psp = pspProvider.pspOfType(pspType);
-    var verifiedPspPaymentOpt = psp.verify(payment.pspPayment().id());
+    var verifiedPspPaymentOpt = psp.verify(paymentToSave.pspPayment().id());
     if (verifiedPspPaymentOpt.isEmpty()) {
-      paymentRepository.save(payment);
-      throw new NotYetVerifiedByPspException(payment, verificationInstant);
+      var savedPayment = paymentRepository.save(paymentToSave);
+      if (paymentToSave.hasNoMoreVerificationAttempt()) {
+        return;
+      }
+      throw new NotYetVerifiedByPspException(savedPayment);
     }
 
     var verifiedPspPayment = verifiedPspPaymentOpt.get();
-    paymentRepository.save(payment.toBuilder().pspPayment(verifiedPspPayment).build());
+    paymentRepository.save(paymentToSave.toBuilder().pspPayment(verifiedPspPayment).build());
   }
 }

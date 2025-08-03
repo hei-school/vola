@@ -44,6 +44,7 @@ public class PaymentRepository {
             null,
             millisNow(),
             null,
+            0,
             jUserSaved,
             jApplication);
     var savedJPayment = jPaymentRepository.save(toSaveJPayment);

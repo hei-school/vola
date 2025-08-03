@@ -31,6 +31,7 @@ public class JPaymentMapper {
         pspPayment,
         jPayment.getCreationInstant(),
         jPayment.getLastPspVerificationInstant(),
+        jPayment.getVerificationAttemptNb(),
         payer,
         application);
   }
@@ -47,6 +48,7 @@ public class JPaymentMapper {
         pspPayment.creationInstant(),
         payment.creationInstant(),
         payment.lastPspVerificationInstant(),
+        payment.verificationAttemptNb(),
         jPayer,
         jApplication);
   }
