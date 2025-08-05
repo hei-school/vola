@@ -77,10 +77,12 @@ class PaymentServiceIT extends FacadeIT {
     var email = randomEmail();
     var pspPaymentId = randomUUID().toString();
     subject.createPayment(apiKey, email, ORANGE_MONEY, pspPaymentId);
-
     assertThrows(
         RuntimeException.class,
         () -> subject.createPayment(apiKey, email, ORANGE_MONEY, pspPaymentId));
+    assertThrows(
+        RuntimeException.class,
+        () -> subject.createPayment(apiKey, randomEmail(), ORANGE_MONEY, pspPaymentId));
   }
 
   private static String randomEmail() {
