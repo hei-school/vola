@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.springframework.test.annotation.DirtiesContext.MethodMode.BEFORE_METHOD;
+import static school.hei.vola.conf.TestData.ORANGE_REF_SUCCEEDED;
 import static school.hei.vola.model.VerificationStatus.FAILED;
 import static school.hei.vola.model.VerificationStatus.SUCCEEDED;
 import static school.hei.vola.model.VerificationStatus.VERIFYING;
@@ -18,6 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.annotation.DirtiesContext;
 import school.hei.vola.conf.FacadeIT;
 import school.hei.vola.endpoint.event.EventProducer;
 import school.hei.vola.endpoint.event.model.OrangeDailyTransactionsRetrievalRequested;
@@ -49,12 +52,13 @@ class PaymentControllerIT extends FacadeIT {
     return jApplication;
   }
 
+  @DirtiesContext(methodMode = BEFORE_METHOD) // note(unique_pspPayment)
   @Test
   void can_create_payment_then_retrieve_it() {
     var apiKey = randomJApplication().getApiKey();
     var email = randomEmail();
     var pspType = ORANGE_MONEY;
-    var pspPaymentId = "MP250729.1216.D77954";
+    var pspPaymentId = ORANGE_REF_SUCCEEDED;
 
     var createdPayment = subject.createPayment(apiKey, email, pspType, pspPaymentId);
     assertNotNull(createdPayment.id());
@@ -66,12 +70,13 @@ class PaymentControllerIT extends FacadeIT {
     assertEquals(createdPayment, retrievedPayment);
   }
 
+  @DirtiesContext(methodMode = BEFORE_METHOD) // note(unique_pspPayment)
   @Test
-  void can_create_payment_then_verify_it() {
+  void can_create_payment_beforeOrangeDailyRetrieval_then_verify_it() {
     var apiKey = randomJApplication().getApiKey();
     var email = randomEmail();
     var pspType = ORANGE_MONEY;
-    var pspPaymentId = "MP250729.1216.D77954";
+    var pspPaymentId = ORANGE_REF_SUCCEEDED;
 
     var createdPayment = subject.createPayment(apiKey, email, pspType, pspPaymentId);
     assertNotNull(createdPayment.id());
@@ -83,6 +88,43 @@ class PaymentControllerIT extends FacadeIT {
         new OrangeDailyTransactionsRetrievalRequested(LocalDate.of(2025, 7, 29)));
 
     var retrievedPayment = subject.getPayment(apiKey, email, pspType, pspPaymentId);
+    assertEquals(
+        createdPayment.pspPayment().toBuilder()
+            .amount(324_000)
+            .creationInstant(Instant.parse("2025-07-29T12:16:58Z"))
+            .build(),
+        retrievedPayment.pspPayment());
+    assertNotNull(retrievedPayment.lastPspVerificationInstant());
+    assertEquals(SUCCEEDED, retrievedPayment.getVerificationStatus());
+  }
+
+  @DirtiesContext(methodMode = BEFORE_METHOD) // note(unique_pspPayment)
+  @Test
+  void can_create_payment_afterOrangeDailyRetrieval_then_verify_it() {
+    var apiKey = randomJApplication().getApiKey();
+    var email = randomEmail();
+    var pspType = ORANGE_MONEY;
+    var pspPaymentId = ORANGE_REF_SUCCEEDED;
+
+    orangeDailyTransactionsRetrievalRequestedService.accept(
+        new OrangeDailyTransactionsRetrievalRequested(LocalDate.of(2025, 7, 29)));
+
+    var createdPayment = subject.createPayment(apiKey, email, pspType, pspPaymentId);
+    assertNotNull(createdPayment.id());
+    assertNull(createdPayment.pspPayment().amount());
+    assertNull(createdPayment.lastPspVerificationInstant());
+    assertEquals(VERIFYING, createdPayment.getVerificationStatus());
+
+    var retrievedPayment = subject.getPayment(apiKey, email, pspType, pspPaymentId);
+    assertEquals(createdPayment, retrievedPayment);
+
+    ArgumentCaptor<List<PaymentVerificationRequested>> captor = ArgumentCaptor.forClass(List.class);
+    verify(eventProducerMocked, times(1)).accept(captor.capture());
+    List<PaymentVerificationRequested> captured = captor.getValue();
+    assertEquals(1, captured.size());
+    paymentVerificationRequestedService.accept(captured.get(0));
+
+    retrievedPayment = subject.getPayment(apiKey, email, pspType, pspPaymentId);
     assertEquals(
         createdPayment.pspPayment().toBuilder()
             .amount(324_000)
