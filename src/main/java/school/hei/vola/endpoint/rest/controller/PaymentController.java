@@ -7,8 +7,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import school.hei.vola.endpoint.rest.security.ApplicationAuthorizer;
 import school.hei.vola.model.Payment;
+import school.hei.vola.model.PaymentInfo;
 import school.hei.vola.model.psp.PspType;
 import school.hei.vola.service.PaymentService;
+
+import java.util.List;
 
 @RestController
 @AllArgsConstructor
@@ -34,5 +37,13 @@ public class PaymentController {
     return paymentService
         .findPaymentByPayerEmailAndPspTypeAndPspPaymentId(payerEmail, pspType, pspPaymentId)
         .orElseThrow(NotFoundException::new);
+  }
+
+  @GetMapping ("/payments")
+  public List<Payment> getPayments(
+      @RequestParam String apiKey,
+      @RequestParam List<PaymentInfo> paymentInfos) {
+    applicationAuthorizer.accept(apiKey);
+    return paymentService.findPaymentsByPaymentInfos(paymentInfos);
   }
 }
