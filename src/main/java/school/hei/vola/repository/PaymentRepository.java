@@ -80,14 +80,14 @@ public class PaymentRepository {
 
   public List<Payment> findPaymentsByPaymentInfos(List<PaymentInfo> paymentInfos) {
     return paymentInfos.stream()
-            .flatMap(info ->
-                    jPaymentRepository.findPaymentsByPaymentInfosCustom(
-                            info.payerEmail(),
-                            info.pspType(),
-                            info.pspPaymentId()
-                    ).stream()
-            )
-            .map(jPaymentMapper::toDomain)
-            .distinct() // Au cas où il y aurait des doublons
-            .toList();
-  }}
+        .flatMap(
+            info ->
+                jPaymentRepository
+                    .findPaymentsByPaymentInfosCustom(
+                        info.payerEmail(), info.pspType(), info.pspPaymentId())
+                    .stream())
+        .map(jPaymentMapper::toDomain)
+        .distinct() // Au cas où il y aurait des doublons
+        .toList();
+  }
+}

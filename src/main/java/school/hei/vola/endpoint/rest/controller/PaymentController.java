@@ -1,5 +1,6 @@
 package school.hei.vola.endpoint.rest.controller;
 
+import java.util.List;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -10,8 +11,6 @@ import school.hei.vola.model.Payment;
 import school.hei.vola.model.PaymentInfo;
 import school.hei.vola.model.psp.PspType;
 import school.hei.vola.service.PaymentService;
-
-import java.util.List;
 
 @RestController
 @AllArgsConstructor
@@ -39,10 +38,9 @@ public class PaymentController {
         .orElseThrow(NotFoundException::new);
   }
 
-  @GetMapping ("/payments")
+  @GetMapping("/payments")
   public List<Payment> getPayments(
-      @RequestParam String apiKey,
-      @RequestParam List<PaymentInfo> paymentInfos) {
+      @RequestParam String apiKey, @RequestParam List<PaymentInfo> paymentInfos) {
     applicationAuthorizer.accept(apiKey);
     return paymentService.findPaymentsByPaymentInfos(paymentInfos);
   }
