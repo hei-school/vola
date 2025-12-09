@@ -27,7 +27,6 @@ class OrangeRecoveryControllerTest {
   void postRecover_callsService_andReturnsJson() throws Exception {
     LocalDate date = LocalDate.of(2025, 9, 17);
 
-    // build results using the nested RecoveryResult type from the service
     OrangeTransactionRecoveryService.RecoveryResult r1 =
         new OrangeTransactionRecoveryService.RecoveryResult(
             "MP250917.1604.D33118", true, true, "payment-1", 324000);
@@ -50,7 +49,6 @@ class OrangeRecoveryControllerTest {
         .andExpect(jsonPath("$[1].ref").value("MP250917.1605.XYZ"))
         .andExpect(jsonPath("$[1].inserted").value(false));
 
-    // ensure the service was called with the right parameter
     ArgumentCaptor<LocalDate> captor = ArgumentCaptor.forClass(LocalDate.class);
     verify(recoveryService).recover(captor.capture());
     assert captor.getValue().equals(date);
