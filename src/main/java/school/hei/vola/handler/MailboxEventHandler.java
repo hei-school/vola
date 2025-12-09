@@ -42,7 +42,6 @@ public class MailboxEventHandler implements RequestHandler<SQSEvent, String> {
     log.info("SQS messages: {}", messages);
 
     var applicationContext = applicationContext();
-
     var eventConsumer = applicationContext.getBean(EventConsumer.class);
     var messageConverter = applicationContext.getBean(ConsumableEventTyper.class);
 
