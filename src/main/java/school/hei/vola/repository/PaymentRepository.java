@@ -87,7 +87,7 @@ public class PaymentRepository {
                         info.payerEmail(), info.pspType(), info.pspPaymentId())
                     .stream())
         .map(jPaymentMapper::toDomain)
-        .distinct() // Au cas où il y aurait des doublons
+        .distinct()
         .toList();
   }
 }
