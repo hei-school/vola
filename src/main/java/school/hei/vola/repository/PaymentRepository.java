@@ -2,6 +2,7 @@ package school.hei.vola.repository;
 
 import static java.util.UUID.randomUUID;
 import static school.hei.vola.model.Time.millisNow;
+
 import java.util.List;
 import java.util.Optional;
 import lombok.AllArgsConstructor;
@@ -85,37 +86,49 @@ public class PaymentRepository {
     log.info("Searching for {} payment(s)", paymentInfos.size());
 
     return paymentInfos.stream()
-            .map(info -> {
-              log.debug("Searching payment: email={}, pspType={}, pspPaymentId={}",
-                      info.payerEmail(), info.pspType(), info.pspPaymentId());
+        .map(
+            info -> {
+              log.debug(
+                  "Searching payment: email={}, pspType={}, pspPaymentId={}",
+                  info.payerEmail(),
+                  info.pspType(),
+                  info.pspPaymentId());
 
-              var jPaymentOpt = jPaymentRepository
-                      .findPaymentByPayerEmailAndPspTypeAndPspPaymentId(
-                              info.payerEmail(), info.pspType(), info.pspPaymentId());
+              var jPaymentOpt =
+                  jPaymentRepository.findPaymentByPayerEmailAndPspTypeAndPspPaymentId(
+                      info.payerEmail(), info.pspType(), info.pspPaymentId());
 
               if (jPaymentOpt.isPresent()) {
                 var payment = jPaymentMapper.toDomain(jPaymentOpt.get());
-                log.info("✓ Payment FOUND: id={}, email={}, pspType={}, pspPaymentId={}, status={}",
-                        payment.id(), info.payerEmail(), info.pspType(), info.pspPaymentId(),
-                        payment.getVerificationStatus());
+                log.info(
+                    "✓ Payment FOUND: id={}, email={}, pspType={}, pspPaymentId={}, status={}",
+                    payment.id(),
+                    info.payerEmail(),
+                    info.pspType(),
+                    info.pspPaymentId(),
+                    payment.getVerificationStatus());
                 return payment;
               } else {
-                log.warn("✗ Payment NOT FOUND: email={}, pspType={}, pspPaymentId={} - Returning FAILED payment",
-                        info.payerEmail(), info.pspType(), info.pspPaymentId());
+                log.warn(
+                    "✗ Payment NOT FOUND: email={}, pspType={}, pspPaymentId={} - Returning FAILED"
+                        + " payment",
+                    info.payerEmail(),
+                    info.pspType(),
+                    info.pspPaymentId());
 
                 // Create a FAILED payment for not found payments
                 return Payment.builder()
-                        .id(null)
-                        .pspPayment(new PspPayment(info.pspType(), info.pspPaymentId(), null, null))
-                        .creationInstant(null)
-                        .lastPspVerificationInstant(null)
-                        .verificationAttemptNb(6) // Force FAILED status
-                        .payer(new User(info.payerEmail()))
-                        .application(null)
-                        .build();
+                    .id(null)
+                    .pspPayment(new PspPayment(info.pspType(), info.pspPaymentId(), null, null))
+                    .creationInstant(null)
+                    .lastPspVerificationInstant(null)
+                    .verificationAttemptNb(6) // Force FAILED status
+                    .payer(new User(info.payerEmail()))
+                    .application(null)
+                    .build();
               }
             })
-            .distinct()
-            .toList();
+        .distinct()
+        .toList();
   }
 }

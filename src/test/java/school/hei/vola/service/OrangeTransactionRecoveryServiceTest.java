@@ -17,7 +17,6 @@ import school.hei.vola.repository.PaymentRepository;
 import school.hei.vola.repository.jpa.JOrangeTransactionRepository;
 import school.hei.vola.service.event.PaymentVerificationRequestedService;
 
-
 class OrangeTransactionRecoveryServiceTest {
 
   private final OrangeApiClient orangeApiClient = mock(OrangeApiClient.class);

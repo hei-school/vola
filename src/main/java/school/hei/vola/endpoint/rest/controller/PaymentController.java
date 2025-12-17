@@ -41,7 +41,7 @@ public class PaymentController {
 
   @GetMapping("/payments")
   public List<Payment> getPayments(
-          @RequestParam String apiKey, @RequestBody List<PaymentInfo> paymentInfos) {
+      @RequestParam String apiKey, @RequestBody List<PaymentInfo> paymentInfos) {
     applicationAuthorizer.accept(apiKey);
     return paymentService.findPaymentsByPaymentInfos(paymentInfos);
   }
