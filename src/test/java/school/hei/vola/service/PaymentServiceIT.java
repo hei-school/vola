@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static school.hei.vola.model.VerificationStatus.FAILED;
 import static school.hei.vola.model.psp.PspType.ORANGE_MONEY;
 
 import java.util.List;
@@ -123,6 +124,7 @@ class PaymentServiceIT extends FacadeIT {
     var pspPaymentId1 = randomUUID().toString();
     var pspPaymentId2 = randomUUID().toString();
     var nonExistingPspPaymentId = randomUUID().toString();
+    var nonExistingEmail = randomEmail();
 
     var payment1 = subject.createPayment(apiKey, email1, ORANGE_MONEY, pspPaymentId1);
     var payment2 = subject.createPayment(apiKey, email2, ORANGE_MONEY, pspPaymentId2);
@@ -131,25 +133,58 @@ class PaymentServiceIT extends FacadeIT {
         List.of(
             new PaymentInfo(email1, ORANGE_MONEY, pspPaymentId1),
             new PaymentInfo(email2, ORANGE_MONEY, pspPaymentId2),
-            new PaymentInfo(randomEmail(), ORANGE_MONEY, nonExistingPspPaymentId));
+            new PaymentInfo(nonExistingEmail, ORANGE_MONEY, nonExistingPspPaymentId));
+
+    var retrievedPayments = subject.findPaymentsByPaymentInfos(paymentInfos);
+
+    assertEquals(3, retrievedPayments.size());
+    assertTrue(retrievedPayments.contains(payment1));
+    assertTrue(retrievedPayments.contains(payment2));
+
+    // Vérifier que le payment non trouvé est retourné avec le statut FAILED
+    var notFoundPayment =
+        retrievedPayments.stream()
+            .filter(p -> p.payer().email().equals(nonExistingEmail))
+            .findFirst()
+            .orElseThrow();
+
+    assertNull(notFoundPayment.id());
+    assertEquals(ORANGE_MONEY, notFoundPayment.pspPayment().pspType());
+    assertEquals(nonExistingPspPaymentId, notFoundPayment.pspPayment().id());
+    assertEquals(nonExistingEmail, notFoundPayment.payer().email());
+    assertEquals(FAILED, notFoundPayment.getVerificationStatus());
+  }
+
+  @Test
+  void findPaymentsByPaymentInfos_returns_failed_payments_when_no_match() {
+    var email1 = randomEmail();
+    var email2 = randomEmail();
+    var pspPaymentId1 = randomUUID().toString();
+    var pspPaymentId2 = randomUUID().toString();
+
+    var paymentInfos =
+        List.of(
+            new PaymentInfo(email1, ORANGE_MONEY, pspPaymentId1),
+            new PaymentInfo(email2, ORANGE_MONEY, pspPaymentId2));
 
     var retrievedPayments = subject.findPaymentsByPaymentInfos(paymentInfos);
 
     assertEquals(2, retrievedPayments.size());
-    assertTrue(retrievedPayments.contains(payment1));
-    assertTrue(retrievedPayments.contains(payment2));
-  }
 
-  @Test
-  void findPaymentsByPaymentInfos_returns_empty_when_no_match() {
-    var paymentInfos =
-        List.of(
-            new PaymentInfo(randomEmail(), ORANGE_MONEY, randomUUID().toString()),
-            new PaymentInfo(randomEmail(), ORANGE_MONEY, randomUUID().toString()));
+    retrievedPayments.forEach(
+        payment -> {
+          assertNull(payment.id());
+          assertEquals(ORANGE_MONEY, payment.pspPayment().pspType());
+          assertEquals(FAILED, payment.getVerificationStatus());
+        });
 
-    var retrievedPayments = subject.findPaymentsByPaymentInfos(paymentInfos);
+    var emails = retrievedPayments.stream().map(p -> p.payer().email()).toList();
+    assertTrue(emails.contains(email1));
+    assertTrue(emails.contains(email2));
 
-    assertTrue(retrievedPayments.isEmpty());
+    var pspPaymentIds = retrievedPayments.stream().map(p -> p.pspPayment().id()).toList();
+    assertTrue(pspPaymentIds.contains(pspPaymentId1));
+    assertTrue(pspPaymentIds.contains(pspPaymentId2));
   }
 
   private static String randomEmail() {
