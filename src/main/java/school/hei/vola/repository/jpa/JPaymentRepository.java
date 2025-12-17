@@ -15,12 +15,4 @@ public interface JPaymentRepository extends JpaRepository<JPayment, String> {
 
   Optional<JPayment> findPaymentByPayerEmailAndPspTypeAndPspPaymentId(
       String payerEmail, PspType pspType, String pspPaymentId);
-
-  @Query(
-      "SELECT p FROM JPayment p WHERE "
-          + "(p.payer.email = :email AND p.pspType = :pspType AND p.pspPaymentId = :pspPaymentId)")
-  List<JPayment> findPaymentsByPaymentInfosCustom(
-      @Param("email") String email,
-      @Param("pspType") PspType pspType,
-      @Param("pspPaymentId") String pspPaymentId);
 }
