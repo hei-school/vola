@@ -2,11 +2,12 @@ package school.hei.vola.endpoint.rest.controller;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.LocalDate;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import school.hei.vola.service.OrangeTransactionRecoveryService;
+import school.hei.vola.service.sync.model.RecoveryResult;
 
 @WebMvcTest(controllers = OrangeRecoveryController.class)
 class OrangeRecoveryControllerTest {
@@ -24,33 +26,85 @@ class OrangeRecoveryControllerTest {
   @MockBean private OrangeTransactionRecoveryService recoveryService;
 
   @Test
-  void postRecover_callsService_andReturnsJson() throws Exception {
+  void putSync_callsService_andReturnsJson() throws Exception {
     LocalDate date = LocalDate.of(2025, 9, 17);
 
-    OrangeTransactionRecoveryService.RecoveryResult r1 =
-        new OrangeTransactionRecoveryService.RecoveryResult(
-            "MP250917.1604.D33118", true, true, "payment-1", 324000);
-    OrangeTransactionRecoveryService.RecoveryResult r2 =
-        new OrangeTransactionRecoveryService.RecoveryResult(
-            "MP250917.1605.XYZ", false, false, null, 12000);
+    RecoveryResult successResult = RecoveryResult.builder()
+            .date(date)
+            .isSuccessful(true)
+            .inserted(2)
+            .errorMessage(null)
+            .build();
 
-    when(recoveryService.recover(date)).thenReturn(List.of(r1, r2));
+    when(recoveryService.sync(date)).thenReturn(successResult);
 
     mockMvc
-        .perform(
-            post("/api/orange/recover")
-                .param("date", date.toString())
-                .contentType(MediaType.APPLICATION_JSON))
-        .andExpect(status().isOk())
-        .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-        .andExpect(jsonPath("$[0].ref").value("MP250917.1604.D33118"))
-        .andExpect(jsonPath("$[0].inserted").value(true))
-        .andExpect(jsonPath("$[0].paymentFound").value(true))
-        .andExpect(jsonPath("$[1].ref").value("MP250917.1605.XYZ"))
-        .andExpect(jsonPath("$[1].inserted").value(false));
+            .perform(
+                    put("/orange/sync")
+                            .param("date", date.toString())
+                            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$.date").value("2025-09-17"))
+            .andExpect(jsonPath("$.successful").value(true))
+            .andExpect(jsonPath("$.inserted").value(2))
+            .andExpect(jsonPath("$.errorMessage").isEmpty());
 
     ArgumentCaptor<LocalDate> captor = ArgumentCaptor.forClass(LocalDate.class);
-    verify(recoveryService).recover(captor.capture());
+    verify(recoveryService).sync(captor.capture());
     assert captor.getValue().equals(date);
+  }
+
+  @Test
+  void putSync_whenServiceFails_returnsFailureResult() throws Exception {
+    LocalDate date = LocalDate.of(2025, 9, 18);
+
+    RecoveryResult failureResult = RecoveryResult.builder()
+            .date(date)
+            .isSuccessful(false)
+            .inserted(0)
+            .errorMessage("Orange API connection failed")
+            .build();
+
+    when(recoveryService.sync(date)).thenReturn(failureResult);
+
+    mockMvc
+            .perform(
+                    put("/orange/sync")
+                            .param("date", date.toString())
+                            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$.date").value("2025-09-18"))
+            .andExpect(jsonPath("$.successful").value(false))
+            .andExpect(jsonPath("$.inserted").value(0))
+            .andExpect(jsonPath("$.errorMessage").value("Orange API connection failed"));
+
+    verify(recoveryService).sync(date);
+  }
+
+  @Test
+  void putSync_withPartialSuccess_returnsCorrectMetrics() throws Exception {
+    LocalDate date = LocalDate.of(2025, 9, 19);
+
+    RecoveryResult partialResult = RecoveryResult.builder()
+            .date(date)
+            .isSuccessful(true)
+            .inserted(5)
+            .errorMessage(null)
+            .build();
+
+    when(recoveryService.sync(date)).thenReturn(partialResult);
+
+    mockMvc
+            .perform(
+                    put("/orange/sync")
+                            .param("date", date.toString())
+                            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.successful").value(true))
+            .andExpect(jsonPath("$.inserted").value(5));
+
+    verify(recoveryService).sync(date);
   }
 }
