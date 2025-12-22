@@ -24,9 +24,10 @@ import school.hei.vola.repository.jpa.model.JUser;
 @Repository
 @AllArgsConstructor
 public class PaymentRepository {
+  private static final int FAILED_PAYMENT_ATTEMPT_COUNT = 6;
+
   private final JPaymentRepository jPaymentRepository;
   private final JPaymentMapper jPaymentMapper;
-
   private final JUserRepository jUserRepository;
   private final JApplicationRepository jApplicationRepository;
 
@@ -83,52 +84,53 @@ public class PaymentRepository {
   }
 
   public List<Payment> findPaymentsByPaymentInfos(List<PaymentInfo> paymentInfos) {
-    log.info("Searching for {} payment(s)", paymentInfos.size());
+    log.info("[PAYMENT_SEARCH] Searching for {} payment(s)", paymentInfos.size());
 
-    return paymentInfos.stream()
-        .map(
-            info -> {
-              log.debug(
-                  "Searching payment: email={}, pspType={}, pspPaymentId={}",
-                  info.payerEmail(),
-                  info.pspType(),
-                  info.pspPaymentId());
+    return paymentInfos.stream().map(this::findOrCreateFailedPayment).distinct().toList();
+  }
 
-              var jPaymentOpt =
-                  jPaymentRepository.findPaymentByPayerEmailAndPspTypeAndPspPaymentId(
-                      info.payerEmail(), info.pspType(), info.pspPaymentId());
+  private Payment findOrCreateFailedPayment(PaymentInfo info) {
+    log.debug(
+        "[PAYMENT_SEARCH] Searching payment: email={}, pspType={}, pspPaymentId={}",
+        info.payerEmail(),
+        info.pspType(),
+        info.pspPaymentId());
 
-              if (jPaymentOpt.isPresent()) {
-                var payment = jPaymentMapper.toDomain(jPaymentOpt.get());
-                log.info(
-                    "✓ Payment FOUND: id={}, email={}, pspType={}, pspPaymentId={}, status={}",
-                    payment.id(),
-                    info.payerEmail(),
-                    info.pspType(),
-                    info.pspPaymentId(),
-                    payment.getVerificationStatus());
-                return payment;
-              } else {
-                log.warn(
-                    "✗ Payment NOT FOUND: email={}, pspType={}, pspPaymentId={} - Returning FAILED"
-                        + " payment",
-                    info.payerEmail(),
-                    info.pspType(),
-                    info.pspPaymentId());
+    var jPaymentOptional =
+        jPaymentRepository.findPaymentByPayerEmailAndPspTypeAndPspPaymentId(
+            info.payerEmail(), info.pspType(), info.pspPaymentId());
 
-                // Create a FAILED payment for not found payments
-                return Payment.builder()
-                    .id(null)
-                    .pspPayment(new PspPayment(info.pspType(), info.pspPaymentId(), null, null))
-                    .creationInstant(null)
-                    .lastPspVerificationInstant(null)
-                    .verificationAttemptNb(6) // Force FAILED status
-                    .payer(new User(info.payerEmail()))
-                    .application(null)
-                    .build();
-              }
-            })
-        .distinct()
-        .toList();
+    return jPaymentOptional
+        .map(jPayment -> mapToFoundPayment(jPayment, info))
+        .orElseGet(() -> createFailedPlaceholderPayment(info));
+  }
+
+  private Payment mapToFoundPayment(JPayment jPayment, PaymentInfo info) {
+    var payment = jPaymentMapper.toDomain(jPayment);
+
+    log.info(
+        "[PAYMENT_SEARCH] ✓ Payment FOUND: id={}, email={}, pspType={}, pspPaymentId={}, status={}",
+        payment.id(),
+        info.payerEmail(),
+        info.pspType(),
+        info.pspPaymentId(),
+        payment.getVerificationStatus());
+
+    return payment;
+  }
+
+  private Payment createFailedPlaceholderPayment(PaymentInfo info) {
+    log.warn(
+        "[PAYMENT_SEARCH] ✗ Payment NOT FOUND: email={}, pspType={}, pspPaymentId={} - Creating"
+            + " FAILED placeholder",
+        info.payerEmail(),
+        info.pspType(),
+        info.pspPaymentId());
+
+    return Payment.builder()
+        .pspPayment(new PspPayment(info.pspType(), info.pspPaymentId(), null, null))
+        .verificationAttemptNb(FAILED_PAYMENT_ATTEMPT_COUNT)
+        .payer(new User(info.payerEmail()))
+        .build();
   }
 }

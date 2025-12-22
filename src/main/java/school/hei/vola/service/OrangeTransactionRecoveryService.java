@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import school.hei.vola.endpoint.event.model.PaymentVerificationRequested;
 import school.hei.vola.model.psp.orange.OrangeApiClient;
 import school.hei.vola.model.psp.orange.OrangeTransaction;
-import school.hei.vola.repository.OrangePaymentRepository;
 import school.hei.vola.repository.PaymentRepository;
 import school.hei.vola.repository.jpa.JOrangeTransactionRepository;
 import school.hei.vola.repository.jpa.model.JOrangeTransaction;
@@ -31,7 +30,6 @@ public class OrangeTransactionRecoveryService {
   private final JOrangeTransactionRepository jOrangeTransactionRepository;
   private final PaymentRepository paymentRepository;
   private final PaymentVerificationRequestedService paymentVerificationRequestedService;
-  private final OrangePaymentRepository orangePaymentRepository;
 
   /**
    * Synchronizes Orange transactions for a specific date.
