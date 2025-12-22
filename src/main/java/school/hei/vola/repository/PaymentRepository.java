@@ -25,7 +25,6 @@ import school.hei.vola.repository.jpa.model.JUser;
 @AllArgsConstructor
 public class PaymentRepository {
   private static final int FAILED_PAYMENT_ATTEMPT_COUNT = 6;
-
   private final JPaymentRepository jPaymentRepository;
   private final JPaymentMapper jPaymentMapper;
   private final JUserRepository jUserRepository;

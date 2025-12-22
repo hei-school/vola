@@ -14,7 +14,7 @@ import school.hei.vola.endpoint.rest.security.ApplicationAuthorizer;
 import school.hei.vola.model.Payment;
 import school.hei.vola.model.PaymentInfo;
 import school.hei.vola.model.psp.PspType;
-import school.hei.vola.service.OrangeTransactionRecoveryService;
+import school.hei.vola.service.OrangeSyncService;
 import school.hei.vola.service.PaymentService;
 import school.hei.vola.service.sync.model.RecoveryResult;
 
@@ -24,7 +24,7 @@ public class PaymentController {
 
   private final PaymentService paymentService;
   private final ApplicationAuthorizer applicationAuthorizer;
-  private final OrangeTransactionRecoveryService recoveryService;
+  private final OrangeSyncService recoveryService;
 
   @PostMapping("/payment")
   public Payment createPayment(
