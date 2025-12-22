@@ -29,7 +29,8 @@ class OrangeRecoveryControllerTest {
   void putSync_callsService_andReturnsJson() throws Exception {
     LocalDate date = LocalDate.of(2025, 9, 17);
 
-    RecoveryResult successResult = RecoveryResult.builder()
+    RecoveryResult successResult =
+        RecoveryResult.builder()
             .date(date)
             .isSuccessful(true)
             .inserted(2)
@@ -39,16 +40,16 @@ class OrangeRecoveryControllerTest {
     when(recoveryService.sync(date)).thenReturn(successResult);
 
     mockMvc
-            .perform(
-                    put("/orange/sync")
-                            .param("date", date.toString())
-                            .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath("$.date").value("2025-09-17"))
-            .andExpect(jsonPath("$.successful").value(true))
-            .andExpect(jsonPath("$.inserted").value(2))
-            .andExpect(jsonPath("$.errorMessage").isEmpty());
+        .perform(
+            put("/orange/sync")
+                .param("date", date.toString())
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.date").value("2025-09-17"))
+        .andExpect(jsonPath("$.successful").value(true))
+        .andExpect(jsonPath("$.inserted").value(2))
+        .andExpect(jsonPath("$.errorMessage").isEmpty());
 
     ArgumentCaptor<LocalDate> captor = ArgumentCaptor.forClass(LocalDate.class);
     verify(recoveryService).sync(captor.capture());
@@ -59,7 +60,8 @@ class OrangeRecoveryControllerTest {
   void putSync_whenServiceFails_returnsFailureResult() throws Exception {
     LocalDate date = LocalDate.of(2025, 9, 18);
 
-    RecoveryResult failureResult = RecoveryResult.builder()
+    RecoveryResult failureResult =
+        RecoveryResult.builder()
             .date(date)
             .isSuccessful(false)
             .inserted(0)
@@ -69,16 +71,16 @@ class OrangeRecoveryControllerTest {
     when(recoveryService.sync(date)).thenReturn(failureResult);
 
     mockMvc
-            .perform(
-                    put("/orange/sync")
-                            .param("date", date.toString())
-                            .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath("$.date").value("2025-09-18"))
-            .andExpect(jsonPath("$.successful").value(false))
-            .andExpect(jsonPath("$.inserted").value(0))
-            .andExpect(jsonPath("$.errorMessage").value("Orange API connection failed"));
+        .perform(
+            put("/orange/sync")
+                .param("date", date.toString())
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.date").value("2025-09-18"))
+        .andExpect(jsonPath("$.successful").value(false))
+        .andExpect(jsonPath("$.inserted").value(0))
+        .andExpect(jsonPath("$.errorMessage").value("Orange API connection failed"));
 
     verify(recoveryService).sync(date);
   }
@@ -87,7 +89,8 @@ class OrangeRecoveryControllerTest {
   void putSync_withPartialSuccess_returnsCorrectMetrics() throws Exception {
     LocalDate date = LocalDate.of(2025, 9, 19);
 
-    RecoveryResult partialResult = RecoveryResult.builder()
+    RecoveryResult partialResult =
+        RecoveryResult.builder()
             .date(date)
             .isSuccessful(true)
             .inserted(5)
@@ -97,13 +100,13 @@ class OrangeRecoveryControllerTest {
     when(recoveryService.sync(date)).thenReturn(partialResult);
 
     mockMvc
-            .perform(
-                    put("/orange/sync")
-                            .param("date", date.toString())
-                            .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.successful").value(true))
-            .andExpect(jsonPath("$.inserted").value(5));
+        .perform(
+            put("/orange/sync")
+                .param("date", date.toString())
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.successful").value(true))
+        .andExpect(jsonPath("$.inserted").value(5));
 
     verify(recoveryService).sync(date);
   }
