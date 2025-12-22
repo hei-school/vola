@@ -11,8 +11,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class RecoveryResult {
-  LocalDate date;
-  boolean isSuccessful;
-  int inserted;
-  String errorMessage;
+  private LocalDate date;
+  private boolean isSuccessful;
+  private int inserted;
+  private String errorMessage;
 }

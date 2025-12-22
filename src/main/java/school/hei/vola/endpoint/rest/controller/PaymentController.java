@@ -1,9 +1,12 @@
 package school.hei.vola.endpoint.rest.controller;
 
+import java.time.LocalDate;
 import java.util.List;
 import lombok.AllArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -11,7 +14,9 @@ import school.hei.vola.endpoint.rest.security.ApplicationAuthorizer;
 import school.hei.vola.model.Payment;
 import school.hei.vola.model.PaymentInfo;
 import school.hei.vola.model.psp.PspType;
+import school.hei.vola.service.OrangeTransactionRecoveryService;
 import school.hei.vola.service.PaymentService;
+import school.hei.vola.service.sync.model.RecoveryResult;
 
 @RestController
 @AllArgsConstructor
@@ -19,6 +24,7 @@ public class PaymentController {
 
   private final PaymentService paymentService;
   private final ApplicationAuthorizer applicationAuthorizer;
+  private final OrangeTransactionRecoveryService recoveryService;
 
   @PostMapping("/payment")
   public Payment createPayment(
@@ -44,5 +50,12 @@ public class PaymentController {
       @RequestParam String apiKey, @RequestBody List<PaymentInfo> paymentInfos) {
     applicationAuthorizer.accept(apiKey);
     return paymentService.findPaymentsByPaymentInfos(paymentInfos);
+  }
+
+  @PutMapping("/orange/sync")
+  public RecoveryResult sync(
+      @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+
+    return recoveryService.sync(date);
   }
 }

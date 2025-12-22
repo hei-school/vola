@@ -18,8 +18,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import school.hei.vola.service.OrangeTransactionRecoveryService;
 import school.hei.vola.service.sync.model.RecoveryResult;
 
-@WebMvcTest(controllers = OrangeRecoveryController.class)
-class OrangeRecoveryControllerTest {
+@WebMvcTest(controllers = PaymentController.class)
+class OrangeRecoveryTest {
 
   @Autowired private MockMvc mockMvc;
 

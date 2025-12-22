@@ -84,49 +84,20 @@ public class PaymentRepository {
   }
 
   public List<Payment> findPaymentsByPaymentInfos(List<PaymentInfo> paymentInfos) {
-    log.info("[PAYMENT_SEARCH] Searching for {} payment(s)", paymentInfos.size());
-
     return paymentInfos.stream().map(this::findOrCreateFailedPayment).distinct().toList();
   }
 
   private Payment findOrCreateFailedPayment(PaymentInfo info) {
-    log.debug(
-        "[PAYMENT_SEARCH] Searching payment: email={}, pspType={}, pspPaymentId={}",
-        info.payerEmail(),
-        info.pspType(),
-        info.pspPaymentId());
-
     var jPaymentOptional =
         jPaymentRepository.findPaymentByPayerEmailAndPspTypeAndPspPaymentId(
             info.payerEmail(), info.pspType(), info.pspPaymentId());
 
     return jPaymentOptional
-        .map(jPayment -> mapToFoundPayment(jPayment, info))
+        .map(jPaymentMapper::toDomain)
         .orElseGet(() -> createFailedPlaceholderPayment(info));
   }
 
-  private Payment mapToFoundPayment(JPayment jPayment, PaymentInfo info) {
-    var payment = jPaymentMapper.toDomain(jPayment);
-
-    log.info(
-        "[PAYMENT_SEARCH] ✓ Payment FOUND: id={}, email={}, pspType={}, pspPaymentId={}, status={}",
-        payment.id(),
-        info.payerEmail(),
-        info.pspType(),
-        info.pspPaymentId(),
-        payment.getVerificationStatus());
-
-    return payment;
-  }
-
   private Payment createFailedPlaceholderPayment(PaymentInfo info) {
-    log.warn(
-        "[PAYMENT_SEARCH] ✗ Payment NOT FOUND: email={}, pspType={}, pspPaymentId={} - Creating"
-            + " FAILED placeholder",
-        info.payerEmail(),
-        info.pspType(),
-        info.pspPaymentId());
-
     return Payment.builder()
         .pspPayment(new PspPayment(info.pspType(), info.pspPaymentId(), null, null))
         .verificationAttemptNb(FAILED_PAYMENT_ATTEMPT_COUNT)
