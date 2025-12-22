@@ -61,6 +61,6 @@ class PaymentServiceIT extends FacadeIT {
   }
 
   private static String randomEmail() {
-    return "test+" + randomUUID() + "@example.com";
+    return "lou+ " + randomUUID() + "@cute.dev";
   }
 }
