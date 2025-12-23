@@ -55,7 +55,6 @@ public class PaymentController {
   @PutMapping("/orange/sync")
   public RecoveryResult sync(
       @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-
     return recoveryService.sync(date);
   }
 }

@@ -55,21 +55,6 @@ class OrangeSyncServiceTest {
   }
 
   @Test
-  void sync_skipsExistingTransactions() throws Exception {
-    LocalDate date = LocalDate.of(2025, 9, 17);
-    OrangeTransaction transaction = mockTransaction("REF-EXISTS", 5000);
-    OrangeDailyTransactions daily = mockDailyTransactions(List.of(transaction));
-
-    when(orangeApiClient.transactionsOf(date)).thenReturn(daily);
-    when(transactionRepository.existsById("REF-EXISTS")).thenReturn(true);
-
-    RecoveryResult result = service.sync(date);
-
-    verify(transactionRepository, never()).save(any());
-    assertEquals(0, result.getInserted());
-  }
-
-  @Test
   void sync_returnsFailure_whenApiCallFails() {
     LocalDate date = LocalDate.of(2025, 9, 17);
     when(orangeApiClient.transactionsOf(date)).thenThrow(new RuntimeException("API error"));

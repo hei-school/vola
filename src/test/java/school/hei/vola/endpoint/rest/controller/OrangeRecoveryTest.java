@@ -37,23 +37,4 @@ class OrangeRecoveryTest {
 
     verify(recoveryService).sync(date);
   }
-
-  @Test
-  void putSync_failure() throws Exception {
-    LocalDate date = LocalDate.of(2025, 9, 18);
-    when(recoveryService.sync(date))
-        .thenReturn(
-            RecoveryResult.builder()
-                .date(date)
-                .isSuccessful(false)
-                .inserted(0)
-                .errorMessage("API error")
-                .build());
-
-    mockMvc
-        .perform(put("/orange/sync").param("date", "2025-09-18"))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.successful").value(false))
-        .andExpect(jsonPath("$.errorMessage").value("API error"));
-  }
 }

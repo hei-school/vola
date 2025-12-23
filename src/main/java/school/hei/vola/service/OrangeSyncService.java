@@ -36,11 +36,7 @@ public class OrangeSyncService {
 
     } catch (Exception e) {
       log.error("[SYNC] Failed for date {}", date, e);
-      return RecoveryResult.builder()
-          .date(date)
-          .isSuccessful(false)
-          .errorMessage(e.getMessage())
-          .build();
+      return RecoveryResult.builder().date(date).isSuccessful(false).errorMessage(e.getMessage()).build();
     }
   }
 
