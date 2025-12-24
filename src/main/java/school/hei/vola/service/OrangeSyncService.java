@@ -20,7 +20,6 @@ import school.hei.vola.service.sync.model.RecoveryResult;
 @AllArgsConstructor
 @Slf4j
 public class OrangeSyncService {
-
   private final OrangeApiClient orangeApiClient;
   private final JOrangeTransactionRepository transactionRepository;
   private final PaymentRepository paymentRepository;
