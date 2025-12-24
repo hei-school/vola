@@ -20,6 +20,7 @@ import school.hei.vola.repository.jpa.model.JUser;
 public class PaymentRepository {
   private final JPaymentRepository jPaymentRepository;
   private final JPaymentMapper jPaymentMapper;
+
   private final JUserRepository jUserRepository;
   private final JApplicationRepository jApplicationRepository;
 
