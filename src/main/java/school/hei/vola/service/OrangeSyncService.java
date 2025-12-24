@@ -4,7 +4,6 @@ import static school.hei.vola.model.psp.PspType.ORANGE_MONEY;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.time.LocalDate;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -30,52 +29,47 @@ public class OrangeSyncService {
   public RecoveryResult sync(LocalDate date) {
     try {
       var transactions = orangeApiClient.transactionsOf(date).getTransactions();
-      int inserted = processTransactions(transactions);
-
+      var inserted = (int) transactions.stream().filter(this::processTransaction).count();
       return RecoveryResult.builder().date(date).isSuccessful(true).inserted(inserted).build();
-
     } catch (Exception e) {
-      log.error("[SYNC] Failed for date {}", date, e);
-      return RecoveryResult.builder().date(date).isSuccessful(false).errorMessage(e.getMessage()).build();
+      log.error("[SYNC] Failed date={}", date, e);
+      return RecoveryResult.builder()
+          .date(date)
+          .isSuccessful(false)
+          .errorMessage(e.getMessage())
+          .build();
     }
   }
 
-  private int processTransactions(List<OrangeTransaction> transactions) {
-    int inserted = 0;
-    for (OrangeTransaction transaction : transactions) {
-      try {
-        if (persistIfNew(transaction)) inserted++;
-        triggerVerificationIfExists(transaction);
-      } catch (Exception e) {
-        log.error("[SYNC] Failed transaction ref={}", transaction.getRef(), e);
-      }
-    }
-    return inserted;
-  }
-
-  private boolean persistIfNew(OrangeTransaction transaction) throws JsonProcessingException {
-    String ref = transaction.getRef();
-
-    if (transactionRepository.existsById(ref)) {
+  private boolean processTransaction(OrangeTransaction tx) {
+    try {
+      boolean inserted = persistIfNew(tx);
+      triggerVerificationIfExists(tx);
+      return inserted;
+    } catch (Exception e) {
+      log.error("[SYNC] Failed ref={}", tx.getRef(), e);
       return false;
     }
+  }
+
+  private boolean persistIfNew(OrangeTransaction tx) throws JsonProcessingException {
+    if (transactionRepository.existsById(tx.getRef())) return false;
 
     var entity = new JOrangeTransaction();
-    entity.setRef(ref);
-    entity.setOrangeApiRawResponse(OrangeApiClient.om.writeValueAsString(transaction));
+    entity.setRef(tx.getRef());
+    entity.setOrangeApiRawResponse(OrangeApiClient.om.writeValueAsString(tx));
     transactionRepository.save(entity);
 
-    log.info("[SYNC] Inserted ref={}", ref);
+    log.info("[SYNC] Inserted ref={}", tx.getRef());
     return true;
   }
 
-  private void triggerVerificationIfExists(OrangeTransaction transaction) {
+  private void triggerVerificationIfExists(OrangeTransaction tx) {
     paymentRepository
-        .findPaymentByPspTypeAndPspPaymentId(ORANGE_MONEY, transaction.getRef())
+        .findPaymentByPspTypeAndPspPaymentId(ORANGE_MONEY, tx.getRef())
         .ifPresent(
-            payment -> {
-              var request = PaymentVerificationRequested.builder().payment(payment).build();
-              verificationService.accept(request);
-            });
+            p ->
+                verificationService.accept(
+                    PaymentVerificationRequested.builder().payment(p).build()));
   }
 }
