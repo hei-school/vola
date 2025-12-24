@@ -33,7 +33,11 @@ public class OrangeSyncService {
       return RecoveryResult.builder().date(date).isSuccessful(true).inserted(inserted).build();
     } catch (Exception e) {
       log.error("[SYNC] Failed date={}", date, e);
-      return RecoveryResult.builder().date(date).isSuccessful(false).errorMessage(e.getMessage()).build();
+      return RecoveryResult.builder()
+          .date(date)
+          .isSuccessful(false)
+          .errorMessage(e.getMessage())
+          .build();
     }
   }
 
@@ -59,7 +63,11 @@ public class OrangeSyncService {
   }
 
   private void triggerVerificationIfExists(OrangeTransaction tx) {
-    paymentRepository.findPaymentByPspTypeAndPspPaymentId(ORANGE_MONEY, tx.getRef())
-            .ifPresent(p -> verificationService.accept(PaymentVerificationRequested.builder().payment(p).build()));
+    paymentRepository
+        .findPaymentByPspTypeAndPspPaymentId(ORANGE_MONEY, tx.getRef())
+        .ifPresent(
+            p ->
+                verificationService.accept(
+                    PaymentVerificationRequested.builder().payment(p).build()));
   }
 }

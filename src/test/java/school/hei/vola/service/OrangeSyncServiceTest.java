@@ -21,8 +21,10 @@ class OrangeSyncServiceTest {
   private final OrangeApiClient api = mock(OrangeApiClient.class);
   private final JOrangeTransactionRepository txRepo = mock(JOrangeTransactionRepository.class);
   private final PaymentRepository paymentRepo = mock(PaymentRepository.class);
-  private final PaymentVerificationRequestedService verifier = mock(PaymentVerificationRequestedService.class);
-  private final OrangeSyncService service = new OrangeSyncService(api, txRepo, paymentRepo, verifier);
+  private final PaymentVerificationRequestedService verifier =
+      mock(PaymentVerificationRequestedService.class);
+  private final OrangeSyncService service =
+      new OrangeSyncService(api, txRepo, paymentRepo, verifier);
 
   @Test
   void sync_success() throws Exception {
@@ -35,7 +37,8 @@ class OrangeSyncServiceTest {
     when(api.transactionsOf(date)).thenReturn(daily);
     when(txRepo.existsById("REF-1")).thenReturn(false);
     var payment = mock(Payment.class);
-    when(paymentRepo.findPaymentByPspTypeAndPspPaymentId(PspType.ORANGE_MONEY, "REF-1")).thenReturn(Optional.of(payment));
+    when(paymentRepo.findPaymentByPspTypeAndPspPaymentId(PspType.ORANGE_MONEY, "REF-1"))
+        .thenReturn(Optional.of(payment));
 
     var result = service.sync(date);
 
