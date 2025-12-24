@@ -33,11 +33,7 @@ public class OrangeSyncService {
       return RecoveryResult.builder().date(date).isSuccessful(true).inserted(inserted).build();
     } catch (Exception e) {
       log.error("[SYNC] Failed date={}", date, e);
-      return RecoveryResult.builder()
-          .date(date)
-          .isSuccessful(false)
-          .errorMessage(e.getMessage())
-          .build();
+      return RecoveryResult.builder().date(date).isSuccessful(false).errorMessage(e.getMessage()).build();
     }
   }
 
@@ -54,22 +50,16 @@ public class OrangeSyncService {
 
   private boolean persistIfNew(OrangeTransaction tx) throws JsonProcessingException {
     if (transactionRepository.existsById(tx.getRef())) return false;
-
     var entity = new JOrangeTransaction();
     entity.setRef(tx.getRef());
     entity.setOrangeApiRawResponse(OrangeApiClient.om.writeValueAsString(tx));
     transactionRepository.save(entity);
-
     log.info("[SYNC] Inserted ref={}", tx.getRef());
     return true;
   }
 
   private void triggerVerificationIfExists(OrangeTransaction tx) {
-    paymentRepository
-        .findPaymentByPspTypeAndPspPaymentId(ORANGE_MONEY, tx.getRef())
-        .ifPresent(
-            p ->
-                verificationService.accept(
-                    PaymentVerificationRequested.builder().payment(p).build()));
+    paymentRepository.findPaymentByPspTypeAndPspPaymentId(ORANGE_MONEY, tx.getRef())
+            .ifPresent(p -> verificationService.accept(PaymentVerificationRequested.builder().payment(p).build()));
   }
 }
