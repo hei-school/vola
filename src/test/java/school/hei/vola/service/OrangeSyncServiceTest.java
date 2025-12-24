@@ -37,7 +37,8 @@ class OrangeSyncServiceTest {
     when(api.transactionsOf(date)).thenReturn(daily);
     when(txRepo.existsById("REF-1")).thenReturn(false);
     var payment = mock(Payment.class);
-    when(paymentRepo.findPaymentByPspTypeAndPspPaymentId(PspType.ORANGE_MONEY, "REF-1")).thenReturn(Optional.of(payment));
+    when(paymentRepo.findPaymentByPspTypeAndPspPaymentId(PspType.ORANGE_MONEY, "REF-1"))
+        .thenReturn(Optional.of(payment));
 
     var result = service.sync(date);
 
