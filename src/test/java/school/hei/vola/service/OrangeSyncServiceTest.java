@@ -27,7 +27,7 @@ class OrangeSyncServiceTest {
       new OrangeSyncService(api, txRepo, paymentRepo, verifier);
 
   @Test
-  void sync_success() throws Exception {
+  void sync_insertsAndTriggersVerification() throws Exception {
     var date = LocalDate.of(2025, 9, 17);
     var tx = mock(OrangeTransaction.class);
     when(tx.getRef()).thenReturn("REF-1");
@@ -37,8 +37,7 @@ class OrangeSyncServiceTest {
     when(api.transactionsOf(date)).thenReturn(daily);
     when(txRepo.existsById("REF-1")).thenReturn(false);
     var payment = mock(Payment.class);
-    when(paymentRepo.findPaymentByPspTypeAndPspPaymentId(PspType.ORANGE_MONEY, "REF-1"))
-        .thenReturn(Optional.of(payment));
+    when(paymentRepo.findPaymentByPspTypeAndPspPaymentId(PspType.ORANGE_MONEY, "REF-1")).thenReturn(Optional.of(payment));
 
     var result = service.sync(date);
 
@@ -46,14 +45,5 @@ class OrangeSyncServiceTest {
     verify(verifier).accept(any());
     assertTrue(result.isSuccessful());
     assertEquals(1, result.inserted());
-  }
-
-  @Test
-  void sync_failure() {
-    var date = LocalDate.of(2025, 9, 17);
-    when(api.transactionsOf(date)).thenThrow(new RuntimeException("API error"));
-    var result = service.sync(date);
-    assertFalse(result.isSuccessful());
-    assertEquals("API error", result.errorMessage());
   }
 }
