@@ -31,7 +31,7 @@ public class OrangeSyncService {
       int totalTransactions = transactions.size();
       int syncedTransactions =
           transactions.stream()
-              // If the transaction is persisted and verified, count as synced
+              // 1 if persisted & verified, else 0
               .mapToInt(tx -> persistAndVerifyTransaction(tx) ? 1 : 0)
               .sum();
 
