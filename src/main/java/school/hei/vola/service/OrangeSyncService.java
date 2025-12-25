@@ -28,10 +28,14 @@ public class OrangeSyncService {
   public RecoveryResult sync(LocalDate date) {
     try {
       var transactions = orangeApiClient.transactionsOf(date).getTransactions();
-      var inserted = (int) transactions.stream().filter(this::processTransaction).count();
-      return RecoveryResult.builder().date(date).isSuccessful(true).inserted(inserted).build();
+      var inserted = (int) transactions.stream().filter(this::persistAndVerifyTransaction).count();
+      return RecoveryResult.builder()
+          .date(date)
+          .isSuccessful(true)
+          .transactionsInserted(inserted)
+          .build();
     } catch (Exception e) {
-      log.error("[SYNC] Failed date={}", date, e);
+      log.info("[SYNC] Failed date={}", date, e);
       return RecoveryResult.builder()
           .date(date)
           .isSuccessful(false)
@@ -40,19 +44,21 @@ public class OrangeSyncService {
     }
   }
 
-  private boolean processTransaction(OrangeTransaction tx) {
+  private boolean persistAndVerifyTransaction(OrangeTransaction tx) {
     try {
       boolean inserted = persistIfNew(tx);
       triggerVerificationIfExists(tx);
       return inserted;
     } catch (Exception e) {
-      log.error("[SYNC] Failed ref={}", tx.getRef(), e);
+      log.info("[SYNC] Failed ref={}", tx.getRef(), e);
       return false;
     }
   }
 
   private boolean persistIfNew(OrangeTransaction tx) throws JsonProcessingException {
-    if (transactionRepository.existsById(tx.getRef())) return false;
+    if (transactionRepository.existsById(tx.getRef())) {
+      return false;
+    }
     var entity = new JOrangeTransaction();
     entity.setRef(tx.getRef());
     entity.setOrangeApiRawResponse(OrangeApiClient.om.writeValueAsString(tx));

@@ -1,5 +1,7 @@
 package school.hei.vola.endpoint.rest.controller;
 
+import static org.springframework.format.annotation.DateTimeFormat.ISO;
+
 import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -43,8 +45,7 @@ public class PaymentController {
   }
 
   @PutMapping("/orange/sync")
-  public RecoveryResult sync(
-      @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+  public RecoveryResult sync(@RequestParam("date") @DateTimeFormat(iso = ISO.DATE) LocalDate date) {
     return recoveryService.sync(date);
   }
 }
