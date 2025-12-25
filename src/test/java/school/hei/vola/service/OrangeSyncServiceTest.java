@@ -45,6 +45,6 @@ class OrangeSyncServiceTest {
     verify(txRepo).save(any());
     verify(verifier).accept(any());
     assertTrue(result.isSuccessful());
-    assertEquals(1, result.inserted());
+    assertEquals(1, result.nbTransactionsInserted());
   }
 }

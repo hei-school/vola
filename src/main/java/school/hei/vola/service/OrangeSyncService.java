@@ -28,17 +28,26 @@ public class OrangeSyncService {
   public RecoveryResult sync(LocalDate date) {
     try {
       var transactions = orangeApiClient.transactionsOf(date).getTransactions();
-      var inserted = (int) transactions.stream().filter(this::persistAndVerifyTransaction).count();
+      int totalTransactions = transactions.size();
+      int syncedTransactions =
+          transactions.stream()
+              // If the transaction is persisted and verified, count as synced
+              .mapToInt(tx -> persistAndVerifyTransaction(tx) ? 1 : 0)
+              .sum();
+
       return RecoveryResult.builder()
           .date(date)
           .isSuccessful(true)
-          .transactionsInserted(inserted)
+          .nbSyncedTransactions(syncedTransactions)
+          .nbTotalTransactions(totalTransactions)
           .build();
     } catch (Exception e) {
-      log.info("[SYNC] Failed date={}", date, e);
+      log.error("[SYNC] Failed to sync transactions for date={}", date, e);
       return RecoveryResult.builder()
           .date(date)
           .isSuccessful(false)
+          .nbSyncedTransactions(0)
+          .nbTotalTransactions(0)
           .errorMessage(e.getMessage())
           .build();
     }
@@ -50,7 +59,12 @@ public class OrangeSyncService {
       triggerVerificationIfExists(tx);
       return inserted;
     } catch (Exception e) {
-      log.info("[SYNC] Failed ref={}", tx.getRef(), e);
+      log.error(
+          "[SYNC] Failed to sync transaction ref={}, amount={}, details={}",
+          tx.getRef(),
+          tx.getAmount(),
+          tx,
+          e);
       return false;
     }
   }

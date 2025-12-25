@@ -5,4 +5,8 @@ import lombok.Builder;
 
 @Builder
 public record RecoveryResult(
-    LocalDate date, boolean isSuccessful, int transactionsInserted, String errorMessage) {}
+    LocalDate date,
+    boolean isSuccessful,
+    int nbSyncedTransactions,
+    int nbTotalTransactions,
+    String errorMessage) {}
