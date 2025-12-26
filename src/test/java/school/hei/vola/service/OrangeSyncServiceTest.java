@@ -6,6 +6,7 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -26,9 +27,9 @@ class OrangeSyncServiceTest {
   private final OrangePaymentRepository orangeRepo = mock(OrangePaymentRepository.class);
   private final PaymentRepository paymentRepo = mock(PaymentRepository.class);
   private final PaymentVerificationRequestedService verifier =
-          mock(PaymentVerificationRequestedService.class);
+      mock(PaymentVerificationRequestedService.class);
   private final OrangeSyncService service =
-          new OrangeSyncService(api, orangeRepo, paymentRepo, verifier);
+      new OrangeSyncService(api, orangeRepo, paymentRepo, verifier);
 
   @Test
   void sync_insertsAndTriggersVerification() {
@@ -44,7 +45,7 @@ class OrangeSyncServiceTest {
 
     var payment = mock(Payment.class);
     when(paymentRepo.findPaymentByPspTypeAndPspPaymentId(PspType.ORANGE_MONEY, "REF-1"))
-            .thenReturn(Optional.of(payment));
+        .thenReturn(Optional.of(payment));
 
     var result = service.sync(date);
 
