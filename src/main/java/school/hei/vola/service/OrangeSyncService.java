@@ -2,7 +2,6 @@ package school.hei.vola.service;
 
 import static school.hei.vola.model.psp.PspType.ORANGE_MONEY;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,9 +9,8 @@ import org.springframework.stereotype.Service;
 import school.hei.vola.endpoint.event.model.PaymentVerificationRequested;
 import school.hei.vola.model.psp.orange.OrangeApiClient;
 import school.hei.vola.model.psp.orange.OrangeTransaction;
+import school.hei.vola.repository.OrangePaymentRepository;
 import school.hei.vola.repository.PaymentRepository;
-import school.hei.vola.repository.jpa.JOrangeTransactionRepository;
-import school.hei.vola.repository.jpa.model.JOrangeTransaction;
 import school.hei.vola.service.event.PaymentVerificationRequestedService;
 import school.hei.vola.service.sync.model.RecoveryResult;
 
@@ -21,7 +19,7 @@ import school.hei.vola.service.sync.model.RecoveryResult;
 @Slf4j
 public class OrangeSyncService {
   private final OrangeApiClient orangeApiClient;
-  private final JOrangeTransactionRepository transactionRepository;
+  private final OrangePaymentRepository orangePaymentRepository;
   private final PaymentRepository paymentRepository;
   private final PaymentVerificationRequestedService verificationService;
 
@@ -37,7 +35,7 @@ public class OrangeSyncService {
 
       return RecoveryResult.builder()
           .date(date)
-          .isSuccessful(true)
+          .isSuccessful(syncedTransactions == totalTransactions)
           .nbSyncedTransactions(syncedTransactions)
           .nbTotalTransactions(totalTransactions)
           .build();
@@ -53,37 +51,29 @@ public class OrangeSyncService {
     }
   }
 
-  private boolean persistAndVerifyTransaction(OrangeTransaction tx) {
+  private boolean persistAndVerifyTransaction(OrangeTransaction ot) {
     try {
-      boolean inserted = persistIfNew(tx);
-      triggerVerificationIfExists(tx);
+      boolean inserted = persistIfNew(ot);
+      triggerVerificationIfExists(ot);
       return inserted;
     } catch (Exception e) {
-      log.error(
-          "[SYNC] Failed to sync transaction ref={}, amount={}, details={}",
-          tx.getRef(),
-          tx.getAmount(),
-          tx,
-          e);
+      log.error("[SYNC] Failed to sync orange transaction ot={}", ot.toString(), e);
       return false;
     }
   }
 
-  private boolean persistIfNew(OrangeTransaction tx) throws JsonProcessingException {
-    if (transactionRepository.existsById(tx.getRef())) {
+  private boolean persistIfNew(OrangeTransaction ot) {
+    if (orangePaymentRepository.findById(ot.getRef()).isPresent()) {
       return false;
     }
-    var entity = new JOrangeTransaction();
-    entity.setRef(tx.getRef());
-    entity.setOrangeApiRawResponse(OrangeApiClient.om.writeValueAsString(tx));
-    transactionRepository.save(entity);
-    log.info("[SYNC] Inserted ref={}", tx.getRef());
+    orangePaymentRepository.save(ot);
+    log.info("[SYNC] Inserted ref={}", ot.getRef());
     return true;
   }
 
-  private void triggerVerificationIfExists(OrangeTransaction tx) {
+  private void triggerVerificationIfExists(OrangeTransaction ot) {
     paymentRepository
-        .findPaymentByPspTypeAndPspPaymentId(ORANGE_MONEY, tx.getRef())
+        .findPaymentByPspTypeAndPspPaymentId(ORANGE_MONEY, ot.getRef())
         .ifPresent(
             p ->
                 verificationService.accept(
