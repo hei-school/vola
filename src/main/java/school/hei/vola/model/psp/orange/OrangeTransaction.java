@@ -2,7 +2,6 @@ package school.hei.vola.model.psp.orange;
 
 import static school.hei.vola.model.psp.orange.OrangeTransaction.TransactionStatus.FAILED;
 import static school.hei.vola.model.psp.orange.OrangeTransaction.TransactionStatus.SUCCEEDED;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.Instant;
 import lombok.AllArgsConstructor;
@@ -11,10 +10,12 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
 @Builder
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode
