@@ -29,6 +29,18 @@ public class OrangePaymentRepository {
         .map(this::toPspPayment);
   }
 
+  public OrangeTransaction save(OrangeTransaction ot) {
+    try {
+      var jOrangeTransaction = new JOrangeTransaction();
+      jOrangeTransaction.setRef(ot.getRef());
+      jOrangeTransaction.setOrangeApiRawResponse(OrangeApiClient.om.writeValueAsString(ot));
+      return typeRawOrangeApiResponse(
+          jOrangeTransactionRepository.save(jOrangeTransaction).getOrangeApiRawResponse());
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   private OrangeTransaction typeRawOrangeApiResponse(String raw) {
     try {
       return OrangeApiClient.om.readValue(raw, OrangeTransaction.class);
