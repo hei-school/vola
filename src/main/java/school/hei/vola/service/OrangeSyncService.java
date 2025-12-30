@@ -28,10 +28,7 @@ public class OrangeSyncService {
       var transactions = orangeApiClient.transactionsOf(date).getTransactions();
       int totalTransactions = transactions.size();
       int syncedTransactions =
-          transactions.stream()
-              // 1 if persisted & verified, else 0
-              .mapToInt(tx -> persistAndVerifyTransaction(tx) ? 1 : 0)
-              .sum();
+          transactions.stream().mapToInt(ot -> persistAndVerifyTransaction(ot) ? 1 : 0).sum();
 
       return RecoveryResult.builder()
           .date(date)
@@ -53,22 +50,22 @@ public class OrangeSyncService {
 
   private boolean persistAndVerifyTransaction(OrangeTransaction ot) {
     try {
-      boolean inserted = persistIfNew(ot);
+      persistIfNew(ot);
       triggerVerificationIfExists(ot);
-      return inserted;
+      return true;
     } catch (Exception e) {
-      log.error("[SYNC] Failed to sync orange transaction ot={}", ot.toString(), e);
+      log.error("[SYNC] Failed to sync orange transaction ot={}", ot, e);
       return false;
     }
   }
 
-  private boolean persistIfNew(OrangeTransaction ot) {
+  private void persistIfNew(OrangeTransaction ot) {
     if (orangePaymentRepository.findById(ot.getRef()).isPresent()) {
-      return false;
+      log.debug("[SYNC] Transaction ref={} already exists, skipping", ot.getRef());
+      return;
     }
     orangePaymentRepository.save(ot);
     log.info("[SYNC] Inserted ref={}", ot.getRef());
-    return true;
   }
 
   private void triggerVerificationIfExists(OrangeTransaction ot) {
