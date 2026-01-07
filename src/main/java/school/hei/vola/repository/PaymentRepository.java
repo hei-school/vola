@@ -10,8 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 import school.hei.vola.model.Payment;
 import school.hei.vola.model.PaymentInfo;
-import school.hei.vola.model.User;
-import school.hei.vola.model.psp.PspPayment;
 import school.hei.vola.model.psp.PspType;
 import school.hei.vola.repository.jpa.JApplicationRepository;
 import school.hei.vola.repository.jpa.JPaymentRepository;
@@ -83,24 +81,17 @@ public class PaymentRepository {
   }
 
   public List<Payment> findPaymentsByPaymentInfos(List<PaymentInfo> paymentInfos) {
-    return paymentInfos.stream().map(this::findOrCreateFailedPayment).distinct().toList();
+    return paymentInfos.stream()
+        .map(this::findPaymentByInfo)
+        .flatMap(Optional::stream)
+        .distinct()
+        .toList();
   }
 
-  private Payment findOrCreateFailedPayment(PaymentInfo info) {
-    var jPaymentOptional =
-        jPaymentRepository.findPaymentByPayerEmailAndPspTypeAndPspPaymentId(
-            info.payerEmail(), info.pspType(), info.pspPaymentId());
-
-    return jPaymentOptional
-        .map(jPaymentMapper::toDomain)
-        .orElseGet(() -> createFailedPlaceholderPayment(info));
-  }
-
-  private Payment createFailedPlaceholderPayment(PaymentInfo info) {
-    return Payment.builder()
-        .pspPayment(new PspPayment(info.pspType(), info.pspPaymentId(), null, null))
-        .verificationAttemptNb(FAILED_PAYMENT_ATTEMPT_COUNT)
-        .payer(new User(info.payerEmail()))
-        .build();
+  private Optional<Payment> findPaymentByInfo(PaymentInfo info) {
+    return jPaymentRepository
+        .findPaymentByPayerEmailAndPspTypeAndPspPaymentId(
+            info.payerEmail(), info.pspType(), info.pspPaymentId())
+        .map(jPaymentMapper::toDomain);
   }
 }
