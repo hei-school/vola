@@ -88,19 +88,19 @@ public class PaymentRepository {
 
   private Payment findOrCreateFailedPayment(PaymentInfo info) {
     var jPaymentOptional =
-            jPaymentRepository.findPaymentByPayerEmailAndPspTypeAndPspPaymentId(
-                    info.payerEmail(), info.pspType(), info.pspPaymentId());
+        jPaymentRepository.findPaymentByPayerEmailAndPspTypeAndPspPaymentId(
+            info.payerEmail(), info.pspType(), info.pspPaymentId());
 
     return jPaymentOptional
-            .map(jPaymentMapper::toDomain)
-            .orElseGet(() -> createFailedPlaceholderPayment(info));
+        .map(jPaymentMapper::toDomain)
+        .orElseGet(() -> createFailedPlaceholderPayment(info));
   }
 
   private Payment createFailedPlaceholderPayment(PaymentInfo info) {
     return Payment.builder()
-            .pspPayment(new PspPayment(info.pspType(), info.pspPaymentId(), null, null))
-            .verificationAttemptNb(FAILED_PAYMENT_ATTEMPT_COUNT)
-            .payer(new User(info.payerEmail()))
-            .build();
+        .pspPayment(new PspPayment(info.pspType(), info.pspPaymentId(), null, null))
+        .verificationAttemptNb(FAILED_PAYMENT_ATTEMPT_COUNT)
+        .payer(new User(info.payerEmail()))
+        .build();
   }
 }
