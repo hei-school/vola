@@ -21,14 +21,6 @@ class PaymentServiceIT extends FacadeIT {
   @MockBean EventProducer eventProducerMocked;
   @Autowired JApplicationRepository jApplicationRepository;
 
-  private JApplication randomJApplication() {
-    var app = new JApplication();
-    app.setName(randomUUID().toString());
-    app.setId(randomUUID().toString());
-    app.setApiKey(randomUUID().toString());
-    return jApplicationRepository.save(app);
-  }
-
   @Test
   void createdPayment_canBe_retrieved() {
     var apiKey = randomJApplication().getApiKey();
@@ -63,17 +55,12 @@ class PaymentServiceIT extends FacadeIT {
     var retrieved = subject.findPaymentsByPaymentInfos(paymentInfos);
 
     assertEquals(1, retrieved.size());
-    assertNotNull(retrieved.get(0).id());
+    assertNotNull(retrieved.getFirst().id());
   }
 
   @Test
   void skip_nonexistent_payments() {
-    var nonExistentPaymentInfo =
-        PaymentInfo.builder()
-            .payerEmail(randomEmail())
-            .pspPaymentId(randomUUID().toString())
-            .pspType(ORANGE_MONEY)
-            .build();
+    var nonExistentPaymentInfo = randomPaymentInfo();
 
     var paymentInfos = List.of(nonExistentPaymentInfo);
     var retrieved = subject.findPaymentsByPaymentInfos(paymentInfos);
@@ -81,7 +68,58 @@ class PaymentServiceIT extends FacadeIT {
     assertTrue(retrieved.isEmpty());
   }
 
+  @Test
+  void find_only_existing_payments_when_mixed_with_nonexistent() {
+    var apiKey = randomJApplication().getApiKey();
+    var existingPayments =
+        List.of(randomPaymentInfo(), randomPaymentInfo(), randomPaymentInfo(), randomPaymentInfo());
+    var nonExistentPayments =
+        List.of(randomPaymentInfo(), randomPaymentInfo(), randomPaymentInfo());
+
+    createPayments(apiKey, existingPayments);
+
+    var allPaymentInfos = mergePaymentInfos(existingPayments, nonExistentPayments);
+    var retrieved = subject.findPaymentsByPaymentInfos(allPaymentInfos);
+
+    assertEquals(existingPayments.size(), retrieved.size());
+    assertNotNull(retrieved.getFirst().id());
+  }
+
+  private void createPayments(String apiKey, List<PaymentInfo> paymentInfos) {
+    paymentInfos.forEach(
+        info ->
+            subject.createPayment(apiKey, info.payerEmail(), info.pspType(), info.pspPaymentId()));
+  }
+
+  private List<PaymentInfo> mergePaymentInfos(
+      List<PaymentInfo> existing, List<PaymentInfo> nonExistent) {
+    return List.of(
+        existing.get(1),
+        existing.getFirst(),
+        existing.get(2),
+        existing.get(3),
+        nonExistent.getFirst(),
+        nonExistent.get(1),
+        nonExistent.get(2));
+  }
+
+  private JApplication randomJApplication() {
+    var app = new JApplication();
+    app.setName(randomUUID().toString());
+    app.setId(randomUUID().toString());
+    app.setApiKey(randomUUID().toString());
+    return jApplicationRepository.save(app);
+  }
+
+  private static PaymentInfo randomPaymentInfo() {
+    return PaymentInfo.builder()
+        .payerEmail(randomEmail())
+        .pspType(ORANGE_MONEY)
+        .pspPaymentId(randomUUID().toString())
+        .build();
+  }
+
   private static String randomEmail() {
-    return "lou+ " + randomUUID() + "@cute.dev";
+    return "lou+" + randomUUID() + "@cute.dev";
   }
 }

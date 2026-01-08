@@ -81,17 +81,8 @@ public class PaymentRepository {
   }
 
   public List<Payment> findPaymentsByPaymentInfos(List<PaymentInfo> paymentInfos) {
-    return paymentInfos.stream()
-        .map(this::findPaymentByInfo)
-        .flatMap(Optional::stream)
-        .distinct()
+    return jPaymentRepository.findByPaymentInfos(paymentInfos).stream()
+        .map(jPaymentMapper::toDomain)
         .toList();
-  }
-
-  private Optional<Payment> findPaymentByInfo(PaymentInfo info) {
-    return jPaymentRepository
-        .findPaymentByPayerEmailAndPspTypeAndPspPaymentId(
-            info.payerEmail(), info.pspType(), info.pspPaymentId())
-        .map(jPaymentMapper::toDomain);
   }
 }
