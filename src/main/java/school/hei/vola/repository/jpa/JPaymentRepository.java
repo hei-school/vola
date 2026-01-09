@@ -22,28 +22,40 @@ public interface JPaymentRepository extends JpaRepository<JPayment, String> {
       return List.of();
     }
 
-    List<String> compositeKeys = buildCompositeKeys(paymentInfos);
-    return findByPaymentInfosBatch(compositeKeys);
+    String[] emails = extractEmails(paymentInfos);
+    String[] pspTypes = extractPspTypes(paymentInfos);
+    String[] pspPaymentIds = extractPspPaymentIds(paymentInfos);
+
+    return findByPaymentInfosBatch(emails, pspTypes, pspPaymentIds);
   }
 
   @Query(
       value =
           """
-SELECT p.id, p.user_id, p.psp_type, p.psp_payment_id, p.psp_creation_instant, p.amount, p.creation_instant, p.last_psp_verification_instant, p.application_id, p.verification_attempt_nb
-FROM payment p
-INNER JOIN "user" u ON p.user_id = u.id
-WHERE CONCAT(u.email, '|', p.psp_type, '|', p.psp_payment_id) IN (:compositeKeys)
-""",
+          SELECT p.id, p.user_id, p.psp_type, p.psp_payment_id, p.psp_creation_instant,
+                 p.amount, p.creation_instant, p.last_psp_verification_instant,
+                 p.application_id, p.verification_attempt_nb
+          FROM payment p
+          INNER JOIN "user" u ON p.user_id = u.id
+          WHERE u.email = ANY(:emails)
+            AND p.psp_type = ANY(:pspTypes)
+            AND p.psp_payment_id = ANY(:pspPaymentIds)
+          """,
       nativeQuery = true)
-  List<JPayment> findByPaymentInfosBatch(@Param("compositeKeys") List<String> compositeKeys);
+  List<JPayment> findByPaymentInfosBatch(
+      @Param("emails") String[] emails,
+      @Param("pspTypes") String[] pspTypes,
+      @Param("pspPaymentIds") String[] pspPaymentIds);
 
-  private List<String> buildCompositeKeys(List<PaymentInfo> paymentInfos) {
-    return paymentInfos.stream()
-        .map(info -> buildCompositeKey(info.payerEmail(), info.pspType(), info.pspPaymentId()))
-        .toList();
+  private String[] extractEmails(List<PaymentInfo> paymentInfos) {
+    return paymentInfos.stream().map(PaymentInfo::payerEmail).toArray(String[]::new);
   }
 
-  private String buildCompositeKey(String email, PspType pspType, String pspPaymentId) {
-    return String.format("%s|%s|%s", email, pspType.name(), pspPaymentId);
+  private String[] extractPspTypes(List<PaymentInfo> paymentInfos) {
+    return paymentInfos.stream().map(info -> info.pspType().name()).toArray(String[]::new);
+  }
+
+  private String[] extractPspPaymentIds(List<PaymentInfo> paymentInfos) {
+    return paymentInfos.stream().map(PaymentInfo::pspPaymentId).toArray(String[]::new);
   }
 }

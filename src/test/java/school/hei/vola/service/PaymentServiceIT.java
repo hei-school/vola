@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static school.hei.vola.model.psp.PspType.ORANGE_MONEY;
 
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -23,8 +24,8 @@ class PaymentServiceIT extends FacadeIT {
 
   @Test
   void createdPayment_canBe_retrieved() {
-    var apiKey = randomJApplication().getApiKey();
     var email = randomEmail();
+    var apiKey = randomJApplication().getApiKey();
     var pspPaymentId = randomUUID().toString();
 
     var created = subject.createPayment(apiKey, email, ORANGE_MONEY, pspPaymentId);
@@ -39,8 +40,8 @@ class PaymentServiceIT extends FacadeIT {
 
   @Test
   void find_existing_payment_by_info() {
-    var apiKey = randomJApplication().getApiKey();
     var email = "lou@hei.school";
+    var apiKey = randomJApplication().getApiKey();
     var pspPaymentId = "MP250729.1216.D77954";
     subject.createPayment(apiKey, email, ORANGE_MONEY, pspPaymentId);
 
@@ -83,6 +84,22 @@ class PaymentServiceIT extends FacadeIT {
 
     assertEquals(existingPayments.size(), retrieved.size());
     assertNotNull(retrieved.getFirst().id());
+  }
+
+  @Test
+  void findPaymentsByInfo_retireve_the_exact_payment_in_base() {
+    var apiKey = randomJApplication().getApiKey();
+    var paymentInfo = randomPaymentInfo();
+    createPayments(apiKey, List.of(paymentInfo));
+
+    var expected =
+        subject.findPaymentByPayerEmailAndPspTypeAndPspPaymentId(
+            paymentInfo.payerEmail(), paymentInfo.pspType(), paymentInfo.pspPaymentId());
+
+    var actual = Optional.of(subject.findPaymentsByPaymentInfos(List.of(paymentInfo)).getFirst());
+
+    assertEquals(expected, actual);
+    assertEquals(expected.get().id(), actual.get().id());
   }
 
   private void createPayments(String apiKey, List<PaymentInfo> paymentInfos) {
