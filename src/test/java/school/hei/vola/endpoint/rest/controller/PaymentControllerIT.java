@@ -106,8 +106,13 @@ class PaymentControllerIT extends FacadeIT {
     var pspType = ORANGE_MONEY;
     var pspPaymentId = ORANGE_REF_SUCCEEDED;
 
-    orangeDailyTransactionsRetrievalRequestedService.accept(
-        new OrangeDailyTransactionsRetrievalRequested(LocalDate.of(2025, 12, 25)));
+    try {
+      orangeDailyTransactionsRetrievalRequestedService.accept(
+          new OrangeDailyTransactionsRetrievalRequested(LocalDate.of(2025, 12, 25)));
+
+    } catch (Exception e) {
+      throw new RuntimeException("The error is ", e);
+    }
 
     var createdPayment = subject.createPayment(apiKey, email, pspType, pspPaymentId);
     assertNotNull(createdPayment.id());
