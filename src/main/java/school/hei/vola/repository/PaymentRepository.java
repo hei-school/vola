@@ -13,6 +13,7 @@ import school.hei.vola.model.PaymentInfo;
 import school.hei.vola.model.psp.PspType;
 import school.hei.vola.repository.jpa.JApplicationRepository;
 import school.hei.vola.repository.jpa.JPaymentRepository;
+import school.hei.vola.repository.jpa.JPaymentRepositoryCustom;
 import school.hei.vola.repository.jpa.JUserRepository;
 import school.hei.vola.repository.jpa.mapper.JPaymentMapper;
 import school.hei.vola.repository.jpa.model.JPayment;
@@ -22,7 +23,7 @@ import school.hei.vola.repository.jpa.model.JUser;
 @Repository
 @AllArgsConstructor
 public class PaymentRepository {
-  private static final int FAILED_PAYMENT_ATTEMPT_COUNT = 6;
+  private final JPaymentRepositoryCustom jPaymentRepositoryCustom;
   private final JPaymentRepository jPaymentRepository;
   private final JPaymentMapper jPaymentMapper;
   private final JUserRepository jUserRepository;
@@ -81,7 +82,7 @@ public class PaymentRepository {
   }
 
   public List<Payment> findPaymentsByPaymentInfos(List<PaymentInfo> paymentInfos) {
-    return jPaymentRepository.findByPaymentInfos(paymentInfos).stream()
+    return jPaymentRepositoryCustom.findByPaymentInfos(paymentInfos).stream()
         .map(jPaymentMapper::toDomain)
         .toList();
   }
