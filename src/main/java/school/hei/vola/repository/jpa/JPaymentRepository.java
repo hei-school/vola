@@ -37,9 +37,9 @@ public interface JPaymentRepository extends JpaRepository<JPayment, String> {
                  p.application_id, p.verification_attempt_nb
           FROM payment p
           INNER JOIN "user" u ON p.user_id = u.id
-          WHERE u.email = ANY(:emails)
-            AND p.psp_type = ANY(:pspTypes)
-            AND p.psp_payment_id = ANY(:pspPaymentIds)
+          WHERE (u.email, p.psp_type, p.psp_payment_id) IN (
+              SELECT * FROM UNNEST(:emails, :pspTypes, :pspPaymentIds)
+          )
           """,
       nativeQuery = true)
   List<JPayment> findByPaymentInfosBatch(
