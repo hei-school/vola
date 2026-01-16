@@ -11,15 +11,6 @@ import school.hei.vola.repository.jpa.model.JPayment;
 @Repository
 public class JPaymentRepositoryCustomImpl implements JPaymentRepositoryCustom {
 
-  private static final String PAYMENT_SELECT_QUERY =
-      """
-      SELECT p.id, p.user_id, p.psp_type, p.psp_payment_id, p.psp_creation_instant,
-             p.amount, p.creation_instant, p.last_psp_verification_instant,
-             p.application_id, p.verification_attempt_nb
-      FROM payment p
-      INNER JOIN "user" u ON p.user_id = u.id
-      """;
-
   private final EntityManager entityManager;
 
   public JPaymentRepositoryCustomImpl(EntityManager entityManager) {
@@ -28,62 +19,44 @@ public class JPaymentRepositoryCustomImpl implements JPaymentRepositoryCustom {
 
   @Override
   public List<JPayment> findByPaymentInfos(List<PaymentInfo> paymentInfos) {
-    if (isPaymentInfosNullOrEmpty(paymentInfos)) {
+    if (paymentInfos == null || paymentInfos.isEmpty()) {
       return List.of();
     }
 
-    String queryString = buildQuery(paymentInfos.size());
-    Query query = createQueryWithParameters(queryString, paymentInfos);
+    String sql = buildQueryForPaymentInfos(paymentInfos.size());
+    Query query = entityManager.createNativeQuery(sql, JPayment.class);
 
-    return getQueryResults(query);
-  }
-
-  private boolean isPaymentInfosNullOrEmpty(List<PaymentInfo> paymentInfos) {
-    return paymentInfos == null || paymentInfos.isEmpty();
-  }
-
-  private String buildQuery(int paymentInfoCount) {
-    StringBuilder whereClauseBuilder = new StringBuilder();
-
-    for (int i = 0; i < paymentInfoCount; i++) {
-      if (i > 0) {
-        whereClauseBuilder.append(" OR ");
-      }
-      whereClauseBuilder.append(buildPaymentInfoCondition(i));
+    int paramIndex = 1;
+    for (PaymentInfo info : paymentInfos) {
+      query.setParameter(paramIndex++, info.payerEmail());
+      query.setParameter(paramIndex++, info.pspType().name());
+      query.setParameter(paramIndex++, info.pspPaymentId());
     }
 
-    return PAYMENT_SELECT_QUERY + " WHERE " + whereClauseBuilder;
-  }
-
-  private String buildPaymentInfoCondition(int index) {
-    int baseParamIndex = index * 3 + 1;
-    int emailParamIndex = baseParamIndex;
-    int pspTypeParamIndex = baseParamIndex + 1;
-    int pspIdParamIndex = baseParamIndex + 2;
-
-    return String.format(
-        "(u.email = ?%d AND p.psp_type = ?%d AND p.psp_payment_id = ?%d)",
-        emailParamIndex, pspTypeParamIndex, pspIdParamIndex);
-  }
-
-  private Query createQueryWithParameters(String queryString, List<PaymentInfo> paymentInfos) {
-    Query query = entityManager.createNativeQuery(queryString, JPayment.class);
-    setQueryParameters(query, paymentInfos);
-    return query;
-  }
-
-  private void setQueryParameters(Query query, List<PaymentInfo> paymentInfos) {
-    int paramPosition = 1;
-
-    for (PaymentInfo paymentInfo : paymentInfos) {
-      query.setParameter(paramPosition++, paymentInfo.payerEmail());
-      query.setParameter(paramPosition++, paymentInfo.pspType().name());
-      query.setParameter(paramPosition++, paymentInfo.pspPaymentId());
-    }
-  }
-
-  @SuppressWarnings("unchecked")
-  private List<JPayment> getQueryResults(Query query) {
     return query.getResultList();
+  }
+
+  private String buildQueryForPaymentInfos(int count) {
+    StringBuilder conditions = new StringBuilder();
+
+    for (int i = 0; i < count; i++) {
+      if (i > 0) {
+        conditions.append(" OR ");
+      }
+      int base = i * 3 + 1;
+      conditions.append(
+          String.format(
+              "(u.email = ?%d AND p.psp_type = ?%d AND p.psp_payment_id = ?%d)",
+              base, base + 1, base + 2));
+    }
+
+    return """
+           SELECT p.id, p.user_id, p.psp_type, p.psp_payment_id, p.psp_creation_instant,
+                  p.amount, p.creation_instant, p.last_psp_verification_instant,
+                  p.application_id, p.verification_attempt_nb
+           FROM payment p
+           INNER JOIN "user" u ON p.user_id = u.id
+           WHERE """
+        + conditions;
   }
 }
