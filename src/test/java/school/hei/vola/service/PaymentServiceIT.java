@@ -1,9 +1,7 @@
 package school.hei.vola.service;
 
 import static java.util.UUID.randomUUID;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static school.hei.vola.model.psp.PspType.ORANGE_MONEY;
 
 import java.util.List;
@@ -84,6 +82,24 @@ class PaymentServiceIT extends FacadeIT {
 
     assertEquals(existingPayments.size(), retrieved.size());
     assertNotNull(retrieved.getFirst().id());
+  }
+
+  @Test
+  void findPayments_use_the_exact_same_process_as_findPaymentMethod() {
+    var apiKey = randomJApplication().getApiKey();
+    var paymentOne = randomPaymentInfo();
+    var paymentTwo = randomPaymentInfo();
+    var compositePayment =
+        PaymentInfo.builder()
+            .payerEmail(paymentOne.payerEmail())
+            .pspType(ORANGE_MONEY)
+            .pspPaymentId(paymentTwo.pspPaymentId())
+            .build();
+    var persistedPaymentList = List.of(paymentOne, paymentTwo);
+    createPayments(apiKey, persistedPaymentList);
+
+    assertEquals(List.of(), subject.findPaymentsByPaymentInfos(List.of(compositePayment)));
+    assertNotNull(subject.findPaymentsByPaymentInfos(persistedPaymentList));
   }
 
   @Test
