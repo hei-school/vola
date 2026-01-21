@@ -16,7 +16,6 @@ import static school.hei.vola.model.psp.PspType.ORANGE_MONEY;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,7 +72,6 @@ class PaymentControllerIT extends FacadeIT {
 
   @DirtiesContext(methodMode = BEFORE_METHOD) // note(unique_pspPayment)
   @Test
-  @Disabled("Orange api instable return")
   void can_create_payment_beforeOrangeDailyRetrieval_then_verify_it() {
     var apiKey = randomJApplication().getApiKey();
     var email = randomEmail();
@@ -87,13 +85,13 @@ class PaymentControllerIT extends FacadeIT {
     assertEquals(VERIFYING, createdPayment.getVerificationStatus());
 
     orangeDailyTransactionsRetrievalRequestedService.accept(
-        new OrangeDailyTransactionsRetrievalRequested(LocalDate.of(2025, 12, 25)));
+        new OrangeDailyTransactionsRetrievalRequested(LocalDate.of(2026, 1, 5)));
 
     var retrievedPayment = subject.getPayment(apiKey, email, pspType, pspPaymentId);
     assertEquals(
         createdPayment.pspPayment().toBuilder()
             .amount(316_800)
-            .creationInstant(Instant.parse("2025-12-25T00:03:45Z"))
+            .creationInstant(Instant.parse("2026-01-05T06:58:02Z"))
             .build(),
         retrievedPayment.pspPayment());
     assertNotNull(retrievedPayment.lastPspVerificationInstant());
@@ -102,7 +100,6 @@ class PaymentControllerIT extends FacadeIT {
 
   @DirtiesContext(methodMode = BEFORE_METHOD) // note(unique_pspPayment)
   @Test
-  @Disabled("Orange api instable return")
   void can_create_payment_afterOrangeDailyRetrieval_then_verify_it() {
     var apiKey = randomJApplication().getApiKey();
     var email = randomEmail();
@@ -111,7 +108,7 @@ class PaymentControllerIT extends FacadeIT {
 
     try {
       orangeDailyTransactionsRetrievalRequestedService.accept(
-          new OrangeDailyTransactionsRetrievalRequested(LocalDate.of(2025, 12, 25)));
+          new OrangeDailyTransactionsRetrievalRequested(LocalDate.of(2026, 1, 5)));
 
     } catch (Exception e) {
       throw new RuntimeException("The error is ", e);
@@ -136,7 +133,7 @@ class PaymentControllerIT extends FacadeIT {
     assertEquals(
         createdPayment.pspPayment().toBuilder()
             .amount(316_800)
-            .creationInstant(Instant.parse("2025-12-25T00:03:45Z"))
+            .creationInstant(Instant.parse("2026-01-05T06:58:02Z"))
             .build(),
         retrievedPayment.pspPayment());
     assertNotNull(retrievedPayment.lastPspVerificationInstant());
