@@ -73,7 +73,6 @@ class PaymentControllerIT extends FacadeIT {
 
   @DirtiesContext(methodMode = BEFORE_METHOD) // note(unique_pspPayment)
   @Test
-  @Disabled
   void can_create_payment_beforeOrangeDailyRetrieval_then_verify_it() {
     var apiKey = randomJApplication().getApiKey();
     var email = randomEmail();
@@ -102,7 +101,6 @@ class PaymentControllerIT extends FacadeIT {
 
   @DirtiesContext(methodMode = BEFORE_METHOD) // note(unique_pspPayment)
   @Test
-  @Disabled
   void can_create_payment_afterOrangeDailyRetrieval_then_verify_it() {
     var apiKey = randomJApplication().getApiKey();
     var email = randomEmail();
