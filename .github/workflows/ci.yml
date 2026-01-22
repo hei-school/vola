@@ -35,6 +35,17 @@ jobs:
         with:
           java-version: '21'
           distribution: 'corretto'
+
+      - name: Debug env vars
+        run: |
+          echo "ORANGE_API_URL is: $ORANGE_API_URL"
+          echo "Length: ${#ORANGE_API_URL}"
+          if [ -z "$ORANGE_API_URL" ]; then
+            echo "ORANGE_API_URL is empty!"
+          else
+            echo "ORANGE_API_URL is set"
+          fi    
+
       - run: chmod +x gradlew
       - run: chmod +x .shell/publish_gen_to_maven_local.sh
       - run: ./gradlew test
