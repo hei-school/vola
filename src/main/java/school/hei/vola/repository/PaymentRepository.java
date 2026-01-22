@@ -3,24 +3,29 @@ package school.hei.vola.repository;
 import static java.util.UUID.randomUUID;
 import static school.hei.vola.model.Time.millisNow;
 
+import java.util.List;
 import java.util.Optional;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 import school.hei.vola.model.Payment;
+import school.hei.vola.model.PaymentInfo;
 import school.hei.vola.model.psp.PspType;
 import school.hei.vola.repository.jpa.JApplicationRepository;
 import school.hei.vola.repository.jpa.JPaymentRepository;
+import school.hei.vola.repository.jpa.JPaymentRepositoryCustom;
 import school.hei.vola.repository.jpa.JUserRepository;
 import school.hei.vola.repository.jpa.mapper.JPaymentMapper;
 import school.hei.vola.repository.jpa.model.JPayment;
 import school.hei.vola.repository.jpa.model.JUser;
 
+@Slf4j
 @Repository
 @AllArgsConstructor
 public class PaymentRepository {
+  private final JPaymentRepositoryCustom jPaymentRepositoryCustom;
   private final JPaymentRepository jPaymentRepository;
   private final JPaymentMapper jPaymentMapper;
-
   private final JUserRepository jUserRepository;
   private final JApplicationRepository jApplicationRepository;
 
@@ -74,5 +79,11 @@ public class PaymentRepository {
     return jPaymentRepository
         .findPaymentByPayerEmailAndPspTypeAndPspPaymentId(payerEmail, pspType, pspPaymentId)
         .map(jPaymentMapper::toDomain);
+  }
+
+  public List<Payment> findPaymentsByPaymentInfos(List<PaymentInfo> paymentInfos) {
+    return jPaymentRepositoryCustom.findByPaymentInfos(paymentInfos).stream()
+        .map(jPaymentMapper::toDomain)
+        .toList();
   }
 }
