@@ -16,7 +16,6 @@ import static school.hei.vola.model.psp.PspType.ORANGE_MONEY;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
