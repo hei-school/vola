@@ -1,19 +1,17 @@
 package school.hei.vola.conf;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Value;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+public class ZavatraConf extends FacadeIT {
+  @Value("${orange.api.url}")
+  private String apiUrl;
 
-public class ZavatraConf extends FacadeIT{
-    @Value("${orange.api.url}")
-    private String apiUrl;
+  @Test
+  public void is_api_url_exist() {
 
-    @Test
-    public void is_api_url_exist(){
-
-        assertNotNull(apiUrl);
-    }
-
+    assertNotNull(apiUrl);
+  }
 }
-
