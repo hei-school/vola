@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import school.hei.vola.endpoint.event.EventProducer;
 import school.hei.vola.endpoint.event.model.PaymentVerificationRequested;
 import school.hei.vola.model.Payment;
+import school.hei.vola.model.PaymentInfo;
 import school.hei.vola.model.psp.PspType;
 import school.hei.vola.repository.PaymentRepository;
 
@@ -35,5 +36,9 @@ public class PaymentService {
       String payerEmail, PspType pspType, String pspPaymentId) {
     return paymentRepository.findPaymentByPayerEmailAndPspTypeAndPspPaymentId(
         payerEmail, pspType, pspPaymentId);
+  }
+
+  public List<Payment> findPaymentsByPaymentInfos(List<PaymentInfo> paymentInfos) {
+    return paymentRepository.findPaymentsByPaymentInfos(paymentInfos);
   }
 }

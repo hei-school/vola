@@ -85,13 +85,13 @@ class PaymentControllerIT extends FacadeIT {
     assertEquals(VERIFYING, createdPayment.getVerificationStatus());
 
     orangeDailyTransactionsRetrievalRequestedService.accept(
-        new OrangeDailyTransactionsRetrievalRequested(LocalDate.of(2025, 9, 9)));
+        new OrangeDailyTransactionsRetrievalRequested(LocalDate.of(2026, 1, 11)));
 
     var retrievedPayment = subject.getPayment(apiKey, email, pspType, pspPaymentId);
     assertEquals(
         createdPayment.pspPayment().toBuilder()
-            .amount(330_000)
-            .creationInstant(Instant.parse("2025-09-09T11:02:49Z"))
+            .amount(316_800)
+            .creationInstant(Instant.parse("2026-01-11T09:12:02Z"))
             .build(),
         retrievedPayment.pspPayment());
     assertNotNull(retrievedPayment.lastPspVerificationInstant());
@@ -106,8 +106,13 @@ class PaymentControllerIT extends FacadeIT {
     var pspType = ORANGE_MONEY;
     var pspPaymentId = ORANGE_REF_SUCCEEDED;
 
-    orangeDailyTransactionsRetrievalRequestedService.accept(
-        new OrangeDailyTransactionsRetrievalRequested(LocalDate.of(2025, 9, 9)));
+    try {
+      orangeDailyTransactionsRetrievalRequestedService.accept(
+          new OrangeDailyTransactionsRetrievalRequested(LocalDate.of(2026, 1, 11)));
+
+    } catch (Exception e) {
+      throw new RuntimeException("The error is ", e);
+    }
 
     var createdPayment = subject.createPayment(apiKey, email, pspType, pspPaymentId);
     assertNotNull(createdPayment.id());
@@ -127,8 +132,8 @@ class PaymentControllerIT extends FacadeIT {
     retrievedPayment = subject.getPayment(apiKey, email, pspType, pspPaymentId);
     assertEquals(
         createdPayment.pspPayment().toBuilder()
-            .amount(330_000)
-            .creationInstant(Instant.parse("2025-09-09T11:02:49Z"))
+            .amount(316_800)
+            .creationInstant(Instant.parse("2026-01-11T09:12:02Z"))
             .build(),
         retrievedPayment.pspPayment());
     assertNotNull(retrievedPayment.lastPspVerificationInstant());

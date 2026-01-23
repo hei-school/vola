@@ -1,91 +1,158 @@
 package school.hei.vola.service;
 
 import static java.util.UUID.randomUUID;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.junit.jupiter.api.Assertions.*;
 import static school.hei.vola.model.psp.PspType.ORANGE_MONEY;
 
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import school.hei.vola.conf.FacadeIT;
 import school.hei.vola.endpoint.event.EventProducer;
-import school.hei.vola.endpoint.event.model.PaymentVerificationRequested;
-import school.hei.vola.model.psp.PspPayment;
+import school.hei.vola.model.PaymentInfo;
 import school.hei.vola.repository.jpa.JApplicationRepository;
 import school.hei.vola.repository.jpa.model.JApplication;
 
 class PaymentServiceIT extends FacadeIT {
-
   @Autowired PaymentService subject;
   @MockBean EventProducer eventProducerMocked;
-
   @Autowired JApplicationRepository jApplicationRepository;
-
-  JApplication randomJApplication() {
-    var jApplication = new JApplication();
-    jApplication.setName(randomUUID().toString());
-    jApplication.setId(randomUUID().toString());
-    jApplication.setApiKey(randomUUID().toString());
-    return jApplicationRepository.save(jApplication);
-  }
 
   @Test
   void createdPayment_canBe_retrieved() {
-    var apiKey = randomJApplication().getApiKey();
     var email = randomEmail();
-    var pspType = ORANGE_MONEY;
+    var apiKey = randomJApplication().getApiKey();
     var pspPaymentId = randomUUID().toString();
-    var createdPayment = subject.createPayment(apiKey, email, pspType, pspPaymentId);
 
-    var retrievedPayment =
+    var created = subject.createPayment(apiKey, email, ORANGE_MONEY, pspPaymentId);
+    var retrieved =
         subject
-            .findPaymentByPayerEmailAndPspTypeAndPspPaymentId(email, pspType, pspPaymentId)
+            .findPaymentByPayerEmailAndPspTypeAndPspPaymentId(email, ORANGE_MONEY, pspPaymentId)
             .get();
-    assertEquals(createdPayment, retrievedPayment);
-    assertNotNull(retrievedPayment.id());
-    assertEquals(email, retrievedPayment.payer().email());
-    assertEquals(
-        new PspPayment(ORANGE_MONEY, pspPaymentId, null, null), retrievedPayment.pspPayment());
-    assertNotNull(retrievedPayment.creationInstant());
-    assertNull(retrievedPayment.lastPspVerificationInstant());
+
+    assertEquals(created, retrieved);
+    assertNotNull(retrieved.id());
   }
 
   @Test
-  void createdPayment_triggers_verificationEvent() {
+  void find_existing_payment_by_info() {
+    var email = "lou@hei.school";
     var apiKey = randomJApplication().getApiKey();
-    var email = randomEmail();
-    var createdPayment =
-        subject.createPayment(apiKey, email, ORANGE_MONEY, randomUUID().toString());
-
-    ArgumentCaptor<List<PaymentVerificationRequested>> captor = ArgumentCaptor.forClass(List.class);
-    verify(eventProducerMocked, times(1)).accept(captor.capture());
-    List<PaymentVerificationRequested> captured = captor.getValue();
-    assertEquals(1, captured.size());
-    assertEquals(createdPayment, captured.getFirst().getPayment());
-  }
-
-  @Test
-  void createdPayment_cannotBe_recreated() {
-    var apiKey = randomJApplication().getApiKey();
-    var email = randomEmail();
-    var pspPaymentId = randomUUID().toString();
+    var pspPaymentId = "MP250729.1216.D77954";
     subject.createPayment(apiKey, email, ORANGE_MONEY, pspPaymentId);
-    assertThrows(
-        RuntimeException.class,
-        () -> subject.createPayment(apiKey, email, ORANGE_MONEY, pspPaymentId));
-    assertThrows(
-        RuntimeException.class,
-        () -> subject.createPayment(apiKey, randomEmail(), ORANGE_MONEY, pspPaymentId));
+
+    var existingPaymentInfo =
+        PaymentInfo.builder()
+            .payerEmail(email)
+            .pspPaymentId(pspPaymentId)
+            .pspType(ORANGE_MONEY)
+            .build();
+    var paymentInfos = List.of(existingPaymentInfo);
+
+    var retrieved = subject.findPaymentsByPaymentInfos(paymentInfos);
+
+    assertEquals(1, retrieved.size());
+    assertNotNull(retrieved.getFirst().id());
+  }
+
+  @Test
+  void skip_nonexistent_payments() {
+    var nonExistentPaymentInfo = randomPaymentInfo();
+
+    var paymentInfos = List.of(nonExistentPaymentInfo);
+    var retrieved = subject.findPaymentsByPaymentInfos(paymentInfos);
+
+    assertTrue(retrieved.isEmpty());
+  }
+
+  @Test
+  void find_only_existing_payments_when_mixed_with_nonexistent() {
+    var apiKey = randomJApplication().getApiKey();
+    var existingPayments =
+        List.of(randomPaymentInfo(), randomPaymentInfo(), randomPaymentInfo(), randomPaymentInfo());
+    var nonExistentPayments =
+        List.of(randomPaymentInfo(), randomPaymentInfo(), randomPaymentInfo());
+
+    createPayments(apiKey, existingPayments);
+
+    var allPaymentInfos = mergePaymentInfos(existingPayments, nonExistentPayments);
+    var retrieved = subject.findPaymentsByPaymentInfos(allPaymentInfos);
+
+    assertEquals(existingPayments.size(), retrieved.size());
+    assertNotNull(retrieved.getFirst().id());
+  }
+
+  @Test
+  void findPayments_use_the_exact_same_process_as_findPaymentMethod() {
+    var apiKey = randomJApplication().getApiKey();
+    var paymentOne = randomPaymentInfo();
+    var paymentTwo = randomPaymentInfo();
+    var compositePayment =
+        PaymentInfo.builder()
+            .payerEmail(paymentOne.payerEmail())
+            .pspType(ORANGE_MONEY)
+            .pspPaymentId(paymentTwo.pspPaymentId())
+            .build();
+    var persistedPaymentList = List.of(paymentOne, paymentTwo);
+    createPayments(apiKey, persistedPaymentList);
+
+    assertEquals(List.of(), subject.findPaymentsByPaymentInfos(List.of(compositePayment)));
+    assertNotNull(subject.findPaymentsByPaymentInfos(persistedPaymentList));
+  }
+
+  @Test
+  void findPaymentsByInfo_retireve_the_exact_payment_in_base() {
+    var apiKey = randomJApplication().getApiKey();
+    var paymentInfo = randomPaymentInfo();
+    createPayments(apiKey, List.of(paymentInfo));
+
+    var expected =
+        subject.findPaymentByPayerEmailAndPspTypeAndPspPaymentId(
+            paymentInfo.payerEmail(), paymentInfo.pspType(), paymentInfo.pspPaymentId());
+
+    var actual = Optional.of(subject.findPaymentsByPaymentInfos(List.of(paymentInfo)).getFirst());
+
+    assertEquals(expected, actual);
+    assertEquals(expected.get().id(), actual.get().id());
+  }
+
+  private void createPayments(String apiKey, List<PaymentInfo> paymentInfos) {
+    paymentInfos.forEach(
+        info ->
+            subject.createPayment(apiKey, info.payerEmail(), info.pspType(), info.pspPaymentId()));
+  }
+
+  private List<PaymentInfo> mergePaymentInfos(
+      List<PaymentInfo> existing, List<PaymentInfo> nonExistent) {
+    return List.of(
+        existing.get(1),
+        existing.getFirst(),
+        existing.get(2),
+        existing.get(3),
+        nonExistent.getFirst(),
+        nonExistent.get(1),
+        nonExistent.get(2));
+  }
+
+  private JApplication randomJApplication() {
+    var app = new JApplication();
+    app.setName(randomUUID().toString());
+    app.setId(randomUUID().toString());
+    app.setApiKey(randomUUID().toString());
+    return jApplicationRepository.save(app);
+  }
+
+  private static PaymentInfo randomPaymentInfo() {
+    return PaymentInfo.builder()
+        .payerEmail(randomEmail())
+        .pspType(ORANGE_MONEY)
+        .pspPaymentId(randomUUID().toString())
+        .build();
   }
 
   private static String randomEmail() {
-    return "lou+ " + randomUUID() + "@cute.dev";
+    return "lou+" + randomUUID() + "@cute.dev";
   }
 }
