@@ -27,9 +27,6 @@ jobs:
               (github.ref == 'refs/heads/preprod') && secrets.PREPROD_ORANGE_API_URL
               }}
 
-      GRADLE_OPTS: >
-        -Dorange.api.url=${{ env.ORANGE_API_URL }}
-
     steps:
       - uses: actions/checkout@v4.1.6
 
@@ -39,7 +36,9 @@ jobs:
           distribution: 'corretto'
       - run: chmod +x gradlew
       - run: chmod +x .shell/publish_gen_to_maven_local.sh
-      - run: ./gradlew test
+      - run: |
+      ./gradlew test \
+        -Dvola.api.url="$ORANGE_API_URL"
 
       
 
