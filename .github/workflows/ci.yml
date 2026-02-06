@@ -37,7 +37,9 @@ jobs:
           distribution: 'corretto'
       - run: chmod +x gradlew
       - run: chmod +x .shell/publish_gen_to_maven_local.sh
-      - run: ./gradlew test --info -Dorange.api.url=$ORANGE_API_URL
+      - run: |
+          ./gradlew test \
+            -Dorange.api.url="$ORANGE_API_URL"
 
       
 
