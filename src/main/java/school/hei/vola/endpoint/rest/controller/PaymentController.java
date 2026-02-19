@@ -47,11 +47,11 @@ public class PaymentController {
         .orElseThrow(NotFoundException::new);
   }
 
-  @GetMapping("/payments")
+  @PutMapping("/payments/search")
   public List<Payment> getPayments(
-      @RequestParam String apiKey, @RequestBody List<PaymentInfo> paymentInfos) {
+      @RequestParam String apiKey, @RequestBody List<PaymentInfo> paymentSearch) {
     applicationAuthorizer.accept(apiKey);
-    return paymentService.findPaymentsByPaymentInfos(paymentInfos);
+    return paymentService.findPaymentsByPaymentInfos(paymentSearch);
   }
 
   @PutMapping("/orange/sync")
