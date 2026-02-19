@@ -1,2 +1,0 @@
-\
--Dorange.api.url="$ORANGE_API_URL"
