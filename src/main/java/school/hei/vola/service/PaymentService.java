@@ -1,8 +1,10 @@
 package school.hei.vola.service;
 
+import static java.util.UUID.randomUUID;
 import static school.hei.vola.model.Time.millisNow;
 import static school.hei.vola.model.psp.PspType.ORANGE_MONEY;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -26,6 +28,13 @@ import school.hei.vola.model.psp.orange.OrangeApiClient;
 import school.hei.vola.model.psp.orange.OrangeTransaction;
 import school.hei.vola.repository.OrangePaymentRepository;
 import school.hei.vola.repository.PaymentRepository;
+import school.hei.vola.repository.jpa.JApplicationRepository;
+import school.hei.vola.repository.jpa.JOrangeTransactionRepository;
+import school.hei.vola.repository.jpa.JPaymentRepository;
+import school.hei.vola.repository.jpa.JUserRepository;
+import school.hei.vola.repository.jpa.model.JOrangeTransaction;
+import school.hei.vola.repository.jpa.model.JPayment;
+import school.hei.vola.repository.jpa.model.JUser;
 
 @Service
 @AllArgsConstructor
@@ -37,6 +46,10 @@ public class PaymentService {
   private final OrangeApiClient orangeApiClient;
   private final EventProducer eventProducer;
   private final Workers workers;
+  private final JOrangeTransactionRepository jOrangeTransactionRepository;
+  private final JUserRepository jUserRepository;
+  private final JApplicationRepository jApplicationRepository;
+  private final JPaymentRepository jPaymentRepository;
 
   @Transactional
   public Payment createPayment(
@@ -131,6 +144,8 @@ public class PaymentService {
   private List<Payment> syncForDate(String apiKey, LocalDate date, List<PaymentInfo> infosForDate) {
     var pspPaymentIds =
         infosForDate.stream().map(PaymentInfo::pspPaymentId).collect(Collectors.toSet());
+    var infoByRef =
+        infosForDate.stream().collect(Collectors.toMap(PaymentInfo::pspPaymentId, info -> info));
 
     List<OrangeTransaction> transactions;
     try {
@@ -140,41 +155,97 @@ public class PaymentService {
       return List.of();
     }
 
-    var created = new ArrayList<Payment>();
+    var matchedTransactions =
+        transactions.stream().filter(ot -> pspPaymentIds.contains(ot.getRef())).toList();
 
-    for (var ot : transactions) {
-      if (!pspPaymentIds.contains(ot.getRef())) {
-        continue;
-      }
-
-      var matchingInfo =
-          infosForDate.stream()
-              .filter(info -> info.pspPaymentId().equals(ot.getRef()))
-              .findFirst()
-              .orElseThrow(
-                  () ->
-                      new IllegalStateException(
-                          "No matching PaymentInfo found for ref=" + ot.getRef()));
-
-      orangePaymentRepository.save(ot);
-
-      var payment =
-          paymentRepository.createPayment(
-              apiKey, matchingInfo.payerEmail(), ORANGE_MONEY, ot.getRef());
-
-      var verifiedPayment =
-          payment.toBuilder()
-              .pspPayment(
-                  new PspPayment(ORANGE_MONEY, ot.getRef(), ot.getAmount(), ot.creationInstant()))
-              .lastPspVerificationInstant(millisNow())
-              .build();
-      var savedPayment = paymentRepository.save(verifiedPayment);
-      created.add(savedPayment);
-
-      log.info("[SEARCH] Auto-created verified payment from scrapper for ref={}", ot.getRef());
+    if (matchedTransactions.isEmpty()) {
+      return List.of();
     }
 
-    return created;
+    // 1. Batch save all orange transactions
+    var jOrangeTransactions = matchedTransactions.stream().map(this::toJOrangeTransaction).toList();
+    jOrangeTransactionRepository.saveAll(jOrangeTransactions);
+
+    // 2. Resolve or create all users in batch
+    var emails =
+        matchedTransactions.stream()
+            .map(ot -> infoByRef.get(ot.getRef()).payerEmail())
+            .distinct()
+            .toList();
+    var existingUsers = jUserRepository.findByEmailIn(emails);
+    var userByEmail = existingUsers.stream().collect(Collectors.toMap(JUser::getEmail, u -> u));
+    var newUsers = new ArrayList<JUser>();
+    for (var email : emails) {
+      if (!userByEmail.containsKey(email)) {
+        var jUser = new JUser();
+        jUser.setId(randomUUID().toString());
+        jUser.setEmail(email);
+        newUsers.add(jUser);
+      }
+    }
+    if (!newUsers.isEmpty()) {
+      jUserRepository.saveAll(newUsers).forEach(u -> userByEmail.put(u.getEmail(), u));
+    }
+
+    // 3. Load application once
+    var jApplication = jApplicationRepository.findByApiKey(apiKey).get();
+
+    // 4. Build and batch save all payments
+    var now = millisNow();
+    var jPayments =
+        matchedTransactions.stream()
+            .map(
+                ot -> {
+                  var info = infoByRef.get(ot.getRef());
+                  var jUser = userByEmail.get(info.payerEmail());
+                  return new JPayment(
+                      randomUUID().toString(),
+                      ORANGE_MONEY,
+                      ot.getAmount(),
+                      ot.getRef(),
+                      ot.creationInstant(),
+                      now,
+                      now,
+                      0,
+                      jUser,
+                      jApplication);
+                })
+            .toList();
+    var savedJPayments = jPaymentRepository.saveAll(jPayments);
+
+    log.info(
+        "[SEARCH] Batch created {} verified payments from scrapper for date={}",
+        savedJPayments.size(),
+        date);
+
+    return savedJPayments.stream()
+        .map(
+            jp ->
+                new Payment(
+                    jp.getId(),
+                    new PspPayment(
+                        jp.getPspType(),
+                        jp.getPspPaymentId(),
+                        jp.getAmount(),
+                        jp.getPspCreationInstant()),
+                    jp.getCreationInstant(),
+                    jp.getLastPspVerificationInstant(),
+                    jp.getVerificationAttemptNb(),
+                    new school.hei.vola.model.User(jp.getPayer().getEmail()),
+                    new school.hei.vola.model.Application(
+                        jp.getApplication().getName(), jp.getApplication().getApiKey())))
+        .toList();
+  }
+
+  private JOrangeTransaction toJOrangeTransaction(OrangeTransaction ot) {
+    var jot = new JOrangeTransaction();
+    jot.setRef(ot.getRef());
+    try {
+      jot.setOrangeApiRawResponse(OrangeApiClient.om.writeValueAsString(ot));
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e);
+    }
+    return jot;
   }
 
   static LocalDate extractDateFromPspPaymentId(String pspPaymentId) {
