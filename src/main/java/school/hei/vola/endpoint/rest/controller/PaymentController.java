@@ -51,7 +51,14 @@ public class PaymentController {
   public List<Payment> getPayments(
       @RequestParam String apiKey, @RequestBody List<PaymentInfo> paymentSearch) {
     applicationAuthorizer.accept(apiKey);
-    return paymentService.findPaymentsByPaymentInfos(paymentSearch);
+    return paymentService.findPaymentsByPaymentInfos(apiKey, paymentSearch);
+  }
+
+  @PutMapping("/payments/create")
+  public List<Payment> createPayments(
+      @RequestParam String apiKey, @RequestBody List<PaymentInfo> paymentInfos) {
+    applicationAuthorizer.accept(apiKey);
+    return paymentService.createPayments(apiKey, paymentInfos);
   }
 
   @PutMapping("/orange/sync")
