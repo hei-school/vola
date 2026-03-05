@@ -6,13 +6,16 @@ import static school.hei.vola.model.psp.PspType.ORANGE_MONEY;
 import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import school.hei.vola.concurrency.Workers;
 import school.hei.vola.endpoint.event.EventProducer;
 import school.hei.vola.endpoint.event.model.PaymentVerificationRequested;
 import school.hei.vola.model.Payment;
@@ -33,6 +36,7 @@ public class PaymentService {
   private final OrangePaymentRepository orangePaymentRepository;
   private final OrangeApiClient orangeApiClient;
   private final EventProducer eventProducer;
+  private final Workers workers;
 
   @Transactional
   public Payment createPayment(
@@ -105,53 +109,69 @@ public class PaymentService {
             .collect(
                 Collectors.groupingBy(info -> extractDateFromPspPaymentId(info.pspPaymentId())));
 
+    var created = Collections.synchronizedList(new ArrayList<Payment>());
+
+    List<Callable<Void>> callables =
+        infosByDate.entrySet().stream()
+            .map(
+                entry ->
+                    (Callable<Void>)
+                        () -> {
+                          var synced = syncForDate(apiKey, entry.getKey(), entry.getValue());
+                          created.addAll(synced);
+                          return null;
+                        })
+            .toList();
+
+    workers.invokeAll(callables);
+
+    return created;
+  }
+
+  private List<Payment> syncForDate(String apiKey, LocalDate date, List<PaymentInfo> infosForDate) {
+    var pspPaymentIds =
+        infosForDate.stream().map(PaymentInfo::pspPaymentId).collect(Collectors.toSet());
+
+    List<OrangeTransaction> transactions;
+    try {
+      transactions = orangeApiClient.transactionsOf(date).getTransactions();
+    } catch (Exception e) {
+      log.error("[SEARCH] Failed to fetch Orange transactions for date={}", date, e);
+      return List.of();
+    }
+
     var created = new ArrayList<Payment>();
 
-    for (var entry : infosByDate.entrySet()) {
-      var date = entry.getKey();
-      var infosForDate = entry.getValue();
-      var pspPaymentIds =
-          infosForDate.stream().map(PaymentInfo::pspPaymentId).collect(Collectors.toSet());
-
-      List<OrangeTransaction> transactions;
-      try {
-        transactions = orangeApiClient.transactionsOf(date).getTransactions();
-      } catch (Exception e) {
-        log.error("[SEARCH] Failed to fetch Orange transactions for date={}", date, e);
+    for (var ot : transactions) {
+      if (!pspPaymentIds.contains(ot.getRef())) {
         continue;
       }
 
-      for (var ot : transactions) {
-        if (!pspPaymentIds.contains(ot.getRef())) {
-          continue;
-        }
+      var matchingInfo =
+          infosForDate.stream()
+              .filter(info -> info.pspPaymentId().equals(ot.getRef()))
+              .findFirst()
+              .orElseThrow(
+                  () ->
+                      new IllegalStateException(
+                          "No matching PaymentInfo found for ref=" + ot.getRef()));
 
-        var matchingInfo =
-            infosForDate.stream()
-                .filter(info -> info.pspPaymentId().equals(ot.getRef()))
-                .findFirst()
-                .orElseThrow(
-                    () ->
-                        new IllegalStateException(
-                            "No matching PaymentInfo found for ref=" + ot.getRef()));
+      orangePaymentRepository.save(ot);
 
-        orangePaymentRepository.save(ot);
+      var payment =
+          paymentRepository.createPayment(
+              apiKey, matchingInfo.payerEmail(), ORANGE_MONEY, ot.getRef());
 
-        var payment =
-            paymentRepository.createPayment(
-                apiKey, matchingInfo.payerEmail(), ORANGE_MONEY, ot.getRef());
+      var verifiedPayment =
+          payment.toBuilder()
+              .pspPayment(
+                  new PspPayment(ORANGE_MONEY, ot.getRef(), ot.getAmount(), ot.creationInstant()))
+              .lastPspVerificationInstant(millisNow())
+              .build();
+      var savedPayment = paymentRepository.save(verifiedPayment);
+      created.add(savedPayment);
 
-        var verifiedPayment =
-            payment.toBuilder()
-                .pspPayment(
-                    new PspPayment(ORANGE_MONEY, ot.getRef(), ot.getAmount(), ot.creationInstant()))
-                .lastPspVerificationInstant(millisNow())
-                .build();
-        var savedPayment = paymentRepository.save(verifiedPayment);
-        created.add(savedPayment);
-
-        log.info("[SEARCH] Auto-created verified payment from scrapper for ref={}", ot.getRef());
-      }
+      log.info("[SEARCH] Auto-created verified payment from scrapper for ref={}", ot.getRef());
     }
 
     return created;
