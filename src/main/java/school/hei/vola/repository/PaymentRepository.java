@@ -3,8 +3,11 @@ package school.hei.vola.repository;
 import static java.util.UUID.randomUUID;
 import static school.hei.vola.model.Time.millisNow;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
@@ -31,6 +34,17 @@ public class PaymentRepository {
 
   public Payment createPayment(
       String apiKey, String payerEmail, PspType pspType, String pspPaymentId) {
+    var existing = jPaymentRepository.findByPspTypeAndPspPaymentId(pspType, pspPaymentId);
+    if (existing.isPresent()) {
+      throw new IllegalArgumentException(
+          "Payment with pspType="
+              + pspType
+              + " and pspPaymentId="
+              + pspPaymentId
+              + " already exists, owned by "
+              + existing.get().getPayer().getEmail());
+    }
+
     var jUserSaved = jUserRepository.findByEmail(payerEmail);
     if (jUserSaved == null) {
       var jUserToSave = new JUser();
@@ -55,6 +69,52 @@ public class PaymentRepository {
     var savedJPayment = jPaymentRepository.save(toSaveJPayment);
 
     return jPaymentMapper.toDomain(savedJPayment);
+  }
+
+  public List<Payment> createPayments(String apiKey, List<PaymentInfo> paymentInfos) {
+    var jApplication = jApplicationRepository.findByApiKey(apiKey).get();
+    var jPaymentsToSave = new ArrayList<JPayment>();
+
+    var pspPaymentIds = paymentInfos.stream().map(PaymentInfo::pspPaymentId).toList();
+    var existingByPspPaymentId =
+        jPaymentRepository.findByPspPaymentIdIn(pspPaymentIds).stream()
+            .collect(Collectors.toMap(JPayment::getPspPaymentId, Function.identity(), (a, b) -> a));
+
+    for (PaymentInfo paymentInfo : paymentInfos) {
+      var existing = existingByPspPaymentId.get(paymentInfo.pspPaymentId());
+      if (existing != null) {
+        log.warn(
+            "Payment with pspType={} and pspPaymentId={} already exists, owned by {}. Skipping.",
+            existing.getPspType(),
+            existing.getPspPaymentId(),
+            existing.getPayer().getEmail());
+        continue;
+      }
+
+      var jUserSaved = jUserRepository.findByEmail(paymentInfo.payerEmail());
+      if (jUserSaved == null) {
+        var jUserToSave = new JUser();
+        jUserToSave.setEmail(paymentInfo.payerEmail());
+        jUserToSave.setId(randomUUID().toString());
+        jUserSaved = jUserRepository.save(jUserToSave);
+      }
+
+      var toSaveJPayment =
+          new JPayment(
+              randomUUID().toString(),
+              paymentInfo.pspType(),
+              null,
+              paymentInfo.pspPaymentId(),
+              null,
+              millisNow(),
+              null,
+              0,
+              jUserSaved,
+              jApplication);
+      jPaymentsToSave.add(toSaveJPayment);
+    }
+    var savedJPayments = jPaymentRepository.saveAll(jPaymentsToSave);
+    return savedJPayments.stream().map(jPaymentMapper::toDomain).toList();
   }
 
   public Payment findPaymentById(String id) {
