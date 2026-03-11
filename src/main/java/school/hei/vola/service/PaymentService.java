@@ -1,6 +1,7 @@
 package school.hei.vola.service;
 
 import jakarta.transaction.Transactional;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import lombok.AllArgsConstructor;
@@ -32,13 +33,40 @@ public class PaymentService {
     return payment;
   }
 
+  public List<Payment> createPayments(String apiKey, List<PaymentInfo> paymentInfos) {
+    var payments = paymentRepository.createPayments(apiKey, paymentInfos);
+    if (payments.isEmpty()) {
+      return List.of();
+    }
+
+    var paymentRequests = payments.stream().map(PaymentVerificationRequested::new).toList();
+    eventProducer.accept(paymentRequests);
+    log.info("PaymentVerificationRequested event sent for {} payments", payments.size());
+
+    return payments;
+  }
+
   public Optional<Payment> findPaymentByPayerEmailAndPspTypeAndPspPaymentId(
       String payerEmail, PspType pspType, String pspPaymentId) {
     return paymentRepository.findPaymentByPayerEmailAndPspTypeAndPspPaymentId(
         payerEmail, pspType, pspPaymentId);
   }
 
-  public List<Payment> findPaymentsByPaymentInfos(List<PaymentInfo> paymentInfos) {
-    return paymentRepository.findPaymentsByPaymentInfos(paymentInfos);
+  public List<Payment> findPaymentsByPaymentInfos(String apiKey, List<PaymentInfo> paymentInfos) {
+    var foundPayments = paymentRepository.findPaymentsByPaymentInfos(paymentInfos);
+    var foundPaymentInfos =
+        new HashSet<>(
+            foundPayments.stream()
+                .map(
+                    p ->
+                        new PaymentInfo(
+                            p.payer().email(), p.pspPayment().pspType(), p.pspPayment().id()))
+                .toList());
+    var missingPaymentInfos =
+        paymentInfos.stream().filter(info -> !foundPaymentInfos.contains(info)).toList();
+    if (!missingPaymentInfos.isEmpty()) {
+      createPayments(apiKey, missingPaymentInfos);
+    }
+    return foundPayments;
   }
 }
