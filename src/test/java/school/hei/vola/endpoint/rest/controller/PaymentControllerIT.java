@@ -85,7 +85,7 @@ class PaymentControllerIT extends FacadeIT {
     assertEquals(VERIFYING, createdPayment.getVerificationStatus());
 
     orangeDailyTransactionsRetrievalRequestedService.accept(
-        new OrangeDailyTransactionsRetrievalRequested(LocalDate.of(2026, 3,9)));
+        new OrangeDailyTransactionsRetrievalRequested(LocalDate.of(2026, 3, 9)));
 
     var retrievedPayment = subject.getPayment(apiKey, email, pspType, pspPaymentId);
     assertEquals(
@@ -108,7 +108,7 @@ class PaymentControllerIT extends FacadeIT {
 
     try {
       orangeDailyTransactionsRetrievalRequestedService.accept(
-          new OrangeDailyTransactionsRetrievalRequested(LocalDate.of(2026, 3,9)));
+          new OrangeDailyTransactionsRetrievalRequested(LocalDate.of(2026, 3, 9)));
 
     } catch (Exception e) {
       throw new RuntimeException("The error is ", e);

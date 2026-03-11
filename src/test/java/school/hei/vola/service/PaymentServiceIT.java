@@ -123,8 +123,7 @@ class PaymentServiceIT extends FacadeIT {
     createPayments(apiKey, List.of(paymentOne));
     reset(eventProducerMocked);
 
-    var retrieved =
-        subject.findPaymentsByPaymentInfos(apiKey, List.of(compositePayment));
+    var retrieved = subject.findPaymentsByPaymentInfos(apiKey, List.of(compositePayment));
 
     assertTrue(retrieved.isEmpty());
     verify(eventProducerMocked).accept(eventCaptor.capture());
@@ -192,8 +191,7 @@ class PaymentServiceIT extends FacadeIT {
     createPayments(apiKey, existing);
     reset(eventProducerMocked);
 
-    var allInfos =
-        List.of(existing.getFirst(), missing.getFirst(), existing.get(1));
+    var allInfos = List.of(existing.getFirst(), missing.getFirst(), existing.get(1));
     var retrieved = subject.findPaymentsByPaymentInfos(apiKey, allInfos);
 
     assertEquals(2, retrieved.size());
@@ -203,8 +201,7 @@ class PaymentServiceIT extends FacadeIT {
     var sentEvents = eventCaptor.getValue();
     assertEquals(1, sentEvents.size());
     assertEquals(
-        missing.getFirst().pspPaymentId(),
-        sentEvents.getFirst().getPayment().pspPayment().id());
+        missing.getFirst().pspPaymentId(), sentEvents.getFirst().getPayment().pspPayment().id());
   }
 
   @Test
