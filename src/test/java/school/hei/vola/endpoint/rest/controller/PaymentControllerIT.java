@@ -91,7 +91,7 @@ class PaymentControllerIT extends FacadeIT {
     assertEquals(
         createdPayment.pspPayment().toBuilder()
             .amount(71500)
-            .creationInstant(Instant.parse("2026-03-9T9:14:29Z"))
+            .creationInstant(Instant.parse("2026-03-09T09:14:29Z"))
             .build(),
         retrievedPayment.pspPayment());
     assertNotNull(retrievedPayment.lastPspVerificationInstant());
@@ -133,7 +133,7 @@ class PaymentControllerIT extends FacadeIT {
     assertEquals(
         createdPayment.pspPayment().toBuilder()
             .amount(71500)
-            .creationInstant(Instant.parse("2026-03-9T9:14:29Z"))
+            .creationInstant(Instant.parse("2026-03-09T09:14:29Z"))
             .build(),
         retrievedPayment.pspPayment());
     assertNotNull(retrievedPayment.lastPspVerificationInstant());
