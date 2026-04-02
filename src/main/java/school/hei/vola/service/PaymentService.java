@@ -1,17 +1,26 @@
 package school.hei.vola.service;
 
 import jakarta.transaction.Transactional;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import school.hei.vola.endpoint.event.EventProducer;
 import school.hei.vola.endpoint.event.model.PaymentVerificationRequested;
 import school.hei.vola.model.Payment;
 import school.hei.vola.model.PaymentInfo;
 import school.hei.vola.model.psp.PspType;
+import school.hei.vola.model.psp.orange.OrangeTransaction;
+import school.hei.vola.repository.OrangePaymentRepository;
 import school.hei.vola.repository.PaymentRepository;
 
 @Service
@@ -21,6 +30,7 @@ public class PaymentService {
 
   private final PaymentRepository paymentRepository;
   private final EventProducer eventProducer;
+  private final OrangePaymentRepository orangePaymentRepository;
 
   @Transactional
   public Payment createPayment(
@@ -68,5 +78,32 @@ public class PaymentService {
       createPayments(apiKey, missingPaymentInfos);
     }
     return foundPayments;
+  }
+
+  public int saveTransactionFromExcel(MultipartFile excel) throws IOException {
+    ArrayList<OrangeTransaction> orangeTransactions = new ArrayList<>();
+
+    try (Workbook workbook = WorkbookFactory.create(excel.getInputStream())) {
+      Sheet sheet = workbook.getSheetAt(0);
+      for (Row row : sheet) {
+        if (row.getRowNum() == 0) continue;
+        int number = Integer.parseInt(row.getCell(0).getStringCellValue());
+        String date = row.getCell(1).getStringCellValue();
+        String time = row.getCell(2).getStringCellValue();
+        String ref = row.getCell(3).getStringCellValue();
+        String status = row.getCell(6).getStringCellValue();
+        String clientNumber = row.getCell(11).getStringCellValue();
+        int amount = Integer.parseInt(row.getCell(14).getStringCellValue());
+
+        OrangeTransaction orangeTransaction =
+            new OrangeTransaction(number, date, time, ref, status, clientNumber, amount);
+        orangeTransactions.add(orangeTransaction);
+      }
+
+      orangePaymentRepository.saveAll(orangeTransactions);
+    } catch (IOException e) {
+      throw new IOException("failed to load the xls file");
+    }
+    return orangeTransactions.size();
   }
 }

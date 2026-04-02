@@ -2,16 +2,13 @@ package school.hei.vola.endpoint.rest.controller;
 
 import static org.springframework.format.annotation.DateTimeFormat.ISO;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import school.hei.vola.endpoint.rest.security.ApplicationAuthorizer;
 import school.hei.vola.model.Payment;
 import school.hei.vola.model.PaymentInfo;
@@ -57,5 +54,10 @@ public class PaymentController {
   @PutMapping("/orange/sync")
   public RecoveryResult sync(@RequestParam("date") @DateTimeFormat(iso = ISO.DATE) LocalDate date) {
     return recoveryService.sync(date);
+  }
+
+  @PutMapping("/orange/transaction")
+  public int saveTransaction(@RequestPart MultipartFile excel) throws IOException {
+    return paymentService.saveTransactionFromExcel(excel);
   }
 }
