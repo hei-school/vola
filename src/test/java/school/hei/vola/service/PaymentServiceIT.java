@@ -8,14 +8,19 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static school.hei.vola.model.psp.PspType.ORANGE_MONEY;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.mock.web.MockMultipartFile;
 import school.hei.vola.conf.FacadeIT;
 import school.hei.vola.endpoint.event.EventProducer;
 import school.hei.vola.endpoint.event.model.PaymentVerificationRequested;
@@ -23,6 +28,7 @@ import school.hei.vola.model.PaymentInfo;
 import school.hei.vola.repository.jpa.JApplicationRepository;
 import school.hei.vola.repository.jpa.model.JApplication;
 
+@Slf4j
 class PaymentServiceIT extends FacadeIT {
   @Autowired PaymentService subject;
   @MockBean EventProducer eventProducerMocked;
@@ -49,6 +55,20 @@ class PaymentServiceIT extends FacadeIT {
 
     assertEquals(created, retrieved);
     assertNotNull(retrieved.id());
+  }
+
+  @Test
+  void create_payment_from_xls_file_OK() throws IOException {
+    var path = Paths.get("src/test/resources/mock/transaction-to-save.xls");
+    var file =
+        new MockMultipartFile(
+            "excel",
+            "transaction-to-save.xls",
+            "application/vnd.ms-excel",
+            Files.readAllBytes(path));
+
+    var result = subject.saveTransactionFromExcel(file);
+    assertEquals(11, result);
   }
 
   @Test
