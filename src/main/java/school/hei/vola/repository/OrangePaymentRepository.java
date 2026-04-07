@@ -47,9 +47,7 @@ public class OrangePaymentRepository {
   public List<OrangeTransaction> saveAll(List<OrangeTransaction> ots) {
     try {
       var jOrangeTransactions = orangeTransactionMapper.toEntity(ots);
-      return jOrangeTransactionRepository.saveAll(jOrangeTransactions).stream()
-          .map(ot -> typeRawOrangeApiResponse(ot.getOrangeApiRawResponse()))
-          .toList();
+      return typeRawOrangeApiResponse(jOrangeTransactionRepository.saveAll(jOrangeTransactions));
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -61,6 +59,12 @@ public class OrangePaymentRepository {
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  private List<OrangeTransaction> typeRawOrangeApiResponse(List<JOrangeTransaction> raws) {
+    return raws.stream()
+        .map(raw -> typeRawOrangeApiResponse(raw.getOrangeApiRawResponse()))
+        .toList();
   }
 
   private PspPayment toPspPayment(OrangeTransaction orangeTransaction) {

@@ -81,12 +81,12 @@ public class PaymentService {
     ArrayList<OrangeTransaction> orangeTransactions = new ArrayList<>();
 
     try (Workbook workbook = WorkbookFactory.create(excel.getInputStream())) {
-      Sheet sheet = workbook.getSheetAt(0);
+      var sheet = workbook.getSheetAt(0);
       for (Row row : sheet) {
-        Cell firstCell = row.getCell(0, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
+        var firstCell = row.getCell(0, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
         if (firstCell == null || firstCell.getCellType() != CellType.NUMERIC) continue;
 
-        int number = (int) row.getCell(0).getNumericCellValue();
+        var number = (int) row.getCell(0).getNumericCellValue();
         String date = getCellAsString(row, 1);
         String time = getCellAsString(row, 2);
         String ref = getCellAsString(row, 3);
@@ -109,8 +109,7 @@ public class PaymentService {
   }
 
   private String getCellAsString(Row row, int colIndex) {
-    Cell cell = row.getCell(colIndex, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
-    if (cell == null) return "";
+    var cell = row.getCell(colIndex, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
     return switch (cell.getCellType()) {
       case STRING -> cell.getStringCellValue();
       case NUMERIC -> String.valueOf((long) cell.getNumericCellValue());
