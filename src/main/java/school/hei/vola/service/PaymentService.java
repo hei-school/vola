@@ -8,10 +8,7 @@ import java.util.List;
 import java.util.Optional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.ss.usermodel.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import school.hei.vola.endpoint.event.EventProducer;
@@ -86,24 +83,39 @@ public class PaymentService {
     try (Workbook workbook = WorkbookFactory.create(excel.getInputStream())) {
       Sheet sheet = workbook.getSheetAt(0);
       for (Row row : sheet) {
-        if (row.getRowNum() == 0) continue;
-        int number = Integer.parseInt(row.getCell(0).getStringCellValue());
-        String date = row.getCell(1).getStringCellValue();
-        String time = row.getCell(2).getStringCellValue();
-        String ref = row.getCell(3).getStringCellValue();
-        String status = row.getCell(6).getStringCellValue();
-        String clientNumber = row.getCell(11).getStringCellValue();
-        int amount = Integer.parseInt(row.getCell(14).getStringCellValue());
+        Cell firstCell = row.getCell(0, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
+        if (firstCell == null || firstCell.getCellType() != CellType.NUMERIC) continue;
 
-        OrangeTransaction orangeTransaction =
-            new OrangeTransaction(number, date, time, ref, status, clientNumber, amount);
-        orangeTransactions.add(orangeTransaction);
+        int number = (int) row.getCell(0).getNumericCellValue();
+        String date = getCellAsString(row, 1);
+        String time = getCellAsString(row, 2);
+        String ref = getCellAsString(row, 3);
+        String status = getCellAsString(row, 6);
+        String clientNumber = getCellAsString(row, 11);
+
+        Cell creditCell = row.getCell(14, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
+        if (creditCell == null || creditCell.getCellType() != CellType.NUMERIC) continue;
+        int amount = (int) creditCell.getNumericCellValue();
+
+        orangeTransactions.add(
+            new OrangeTransaction(number, date, time, ref, status, clientNumber, amount));
       }
 
       orangePaymentRepository.saveAll(orangeTransactions);
     } catch (IOException e) {
-      throw new IOException("failed to load the xls file");
+      throw new IOException("Failed to load the xls file", e);
     }
     return orangeTransactions.size();
+  }
+
+  private String getCellAsString(Row row, int colIndex) {
+    Cell cell = row.getCell(colIndex, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
+    if (cell == null) return "";
+    return switch (cell.getCellType()) {
+      case STRING -> cell.getStringCellValue();
+      case NUMERIC -> String.valueOf((long) cell.getNumericCellValue());
+      case BOOLEAN -> String.valueOf(cell.getBooleanCellValue());
+      default -> "";
+    };
   }
 }
