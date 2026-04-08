@@ -10,6 +10,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import school.hei.vola.endpoint.rest.security.ApplicationAuthorizer;
+import school.hei.vola.model.ImportedTransactionDetails;
 import school.hei.vola.model.Payment;
 import school.hei.vola.model.PaymentInfo;
 import school.hei.vola.model.psp.PspType;
@@ -57,7 +58,8 @@ public class PaymentController {
   }
 
   @PutMapping("/orange/transaction")
-  public int saveTransaction(@RequestPart MultipartFile excel) throws IOException {
+  public ImportedTransactionDetails saveTransaction(@RequestPart MultipartFile excel)
+      throws IOException {
     return paymentService.saveTransactionFromExcel(excel);
   }
 }

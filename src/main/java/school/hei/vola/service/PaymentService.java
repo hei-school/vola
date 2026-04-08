@@ -11,7 +11,9 @@ import org.apache.poi.ss.usermodel.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import school.hei.vola.endpoint.event.EventProducer;
+import school.hei.vola.endpoint.event.model.OrangeTransactionsImportFromXlsxRequested;
 import school.hei.vola.endpoint.event.model.PaymentVerificationRequested;
+import school.hei.vola.model.ImportedTransactionDetails;
 import school.hei.vola.model.Payment;
 import school.hei.vola.model.PaymentInfo;
 import school.hei.vola.model.psp.PspType;
@@ -77,9 +79,17 @@ public class PaymentService {
     return foundPayments;
   }
 
-  public int saveTransactionFromExcel(MultipartFile excel) throws IOException {
-    var orangeTransactions = excelParser.parseToOrangeTransaction(excel);
-    orangePaymentRepository.saveAll(orangeTransactions);
-    return orangeTransactions.size();
+  public ImportedTransactionDetails saveTransactionFromExcel(MultipartFile excel)
+      throws IOException {
+    try {
+      var orangeTransactions = excelParser.parseToOrangeTransaction(excel);
+      var validTransactions = orangeTransactions.successfulTransactions();
+      eventProducer.accept(
+          List.of(new OrangeTransactionsImportFromXlsxRequested(validTransactions)));
+      return new ImportedTransactionDetails(
+          orangeTransactions.failedTransactions(), validTransactions);
+    } catch (IOException e) {
+      throw new RuntimeException("Enable to read file");
+    }
   }
 }
