@@ -68,7 +68,7 @@ class PaymentServiceIT extends FacadeIT {
             Files.readAllBytes(path));
 
     var result = subject.saveTransactionFromExcel(file);
-    assertEquals(9, result.successfulTransactions().size());
+    assertEquals(16, result.successfulTransactions().size());
   }
 
   @Test
