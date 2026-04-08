@@ -58,7 +58,7 @@ class PaymentServiceIT extends FacadeIT {
   }
 
   @Test
-  void create_payment_from_xls_file_OK() throws IOException {
+  void save_transactions_from_xls_file_OK() throws IOException {
     var path = Paths.get("src/test/resources/mock/transaction-to-save.xls");
     var file =
         new MockMultipartFile(
@@ -68,6 +68,21 @@ class PaymentServiceIT extends FacadeIT {
             Files.readAllBytes(path));
 
     var result = subject.saveTransactionFromExcel(file);
+    assertEquals(9, result.successfulTransactions().size());
+  }
+
+  @Test
+  void save_transactions_from_xls_file_K0() throws IOException {
+    var path = Paths.get("src/test/resources/mock/bad-transactions-data.xls");
+    var file =
+        new MockMultipartFile(
+            "excel",
+            "bad-transactions-data.xls",
+            "application/vnd.ms-excel",
+            Files.readAllBytes(path));
+
+    var result = subject.saveTransactionFromExcel(file);
+    log.info("failed data : " + result.failedTransactions());
     assertEquals(9, result.successfulTransactions().size());
   }
 
