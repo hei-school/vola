@@ -17,7 +17,7 @@ import school.hei.vola.model.psp.orange.OrangeTransaction;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @ToString
-public class OrangeTransactionsImportFromXlsxRequested extends PojaEvent {
+public class OrangeTransactionsImportRequested extends PojaEvent {
   private List<OrangeTransaction> orangeTransactions;
 
   @Override

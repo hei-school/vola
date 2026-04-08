@@ -7,11 +7,10 @@ import java.util.List;
 import java.util.Optional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.poi.ss.usermodel.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import school.hei.vola.endpoint.event.EventProducer;
-import school.hei.vola.endpoint.event.model.OrangeTransactionsImportFromXlsxRequested;
+import school.hei.vola.endpoint.event.model.OrangeTransactionsImportRequested;
 import school.hei.vola.endpoint.event.model.PaymentVerificationRequested;
 import school.hei.vola.model.ImportedTransactionDetails;
 import school.hei.vola.model.Payment;
@@ -79,13 +78,11 @@ public class PaymentService {
     return foundPayments;
   }
 
-  public ImportedTransactionDetails saveTransactionFromExcel(MultipartFile excel)
-      throws IOException {
+  public ImportedTransactionDetails saveTransactionFromExcel(MultipartFile excel) {
     try {
       var orangeTransactions = excelParser.parseToOrangeTransaction(excel);
       var validTransactions = orangeTransactions.successfulTransactions();
-      eventProducer.accept(
-          List.of(new OrangeTransactionsImportFromXlsxRequested(validTransactions)));
+      eventProducer.accept(List.of(new OrangeTransactionsImportRequested(validTransactions)));
       return new ImportedTransactionDetails(
           orangeTransactions.failedTransactions(), validTransactions);
     } catch (IOException e) {
