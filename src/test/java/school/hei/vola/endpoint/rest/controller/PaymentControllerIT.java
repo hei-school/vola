@@ -171,6 +171,6 @@ class PaymentControllerIT extends FacadeIT {
   }
 
   private static String randomEmail() {
-    return "lou+ " + randomUUID() + "@cute.dev";
+    return "lou+" + randomUUID() + "@cute.dev";
   }
 }
