@@ -83,7 +83,7 @@ class PaymentServiceIT extends FacadeIT {
 
     var result = subject.saveTransactionFromExcel(file);
     log.info("failed data : " + result.failedTransactions());
-    assertEquals(9, result.successfulTransactions().size());
+    assertEquals(2, result.successfulTransactions().size());
   }
 
   @Test

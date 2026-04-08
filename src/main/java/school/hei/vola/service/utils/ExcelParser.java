@@ -55,6 +55,7 @@ public class ExcelParser {
 
   private String getCellAsString(Row row, int colIndex) {
     var cell = row.getCell(colIndex, RETURN_BLANK_AS_NULL);
+    if (cell == null) return "";
     return switch (cell.getCellType()) {
       case STRING -> cell.getStringCellValue();
       case NUMERIC -> String.valueOf((long) cell.getNumericCellValue());

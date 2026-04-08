@@ -62,6 +62,6 @@ public class OrangeTransaction {
   }
 
   public boolean validateRef(String ref) {
-    return ref != null && REF_PATTERN.matcher(ref).matches();
+    return ref != null && !ref.isEmpty() && REF_PATTERN.matcher(ref).matches();
   }
 }
