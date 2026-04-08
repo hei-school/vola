@@ -5,20 +5,22 @@ import static org.apache.poi.ss.usermodel.Row.MissingCellPolicy.RETURN_BLANK_AS_
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
+import school.hei.vola.model.ImportedTransactionDetails;
 import school.hei.vola.model.psp.orange.OrangeTransaction;
 
 @Component
 @AllArgsConstructor
 public class ExcelParser {
 
-  public List<OrangeTransaction> parseToOrangeTransaction(MultipartFile excel) throws IOException {
-    var orangeTransactions = new ArrayList<OrangeTransaction>();
+  public ImportedTransactionDetails parseToOrangeTransaction(MultipartFile excel)
+      throws IOException {
+    var failed = new ArrayList<OrangeTransaction>();
+    var succed = new ArrayList<OrangeTransaction>();
 
     try (var workbook = WorkbookFactory.create(excel.getInputStream())) {
       var sheet = workbook.getSheetAt(0);
@@ -36,12 +38,16 @@ public class ExcelParser {
         var creditCell = row.getCell(14, RETURN_BLANK_AS_NULL);
         if (creditCell == null || creditCell.getCellType() != NUMERIC) continue;
         var amount = (int) creditCell.getNumericCellValue();
+        var parsed = new OrangeTransaction(number, date, time, ref, status, clientNumber, amount);
 
-        orangeTransactions.add(
-            new OrangeTransaction(number, date, time, ref, status, clientNumber, amount));
+        if (!parsed.validateRef(ref) || !parsed.validateClientNumber(clientNumber)) {
+          failed.add(parsed);
+        } else {
+          succed.add(parsed);
+        }
       }
 
-      return orangeTransactions;
+      return new ImportedTransactionDetails(failed, succed);
     } catch (IOException e) {
       throw new IOException("Failed to load the xls file", e);
     }

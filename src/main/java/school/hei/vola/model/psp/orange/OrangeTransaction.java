@@ -5,6 +5,7 @@ import static school.hei.vola.model.psp.orange.OrangeTransaction.TransactionStat
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.Instant;
+import java.util.regex.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -26,6 +27,9 @@ public class OrangeTransaction {
   private String time;
   private String ref;
   private String status;
+  private static final Pattern REF_PATTERN =
+      Pattern.compile("^[A-Z]{2}\\d{6}\\.\\d{4}\\.[A-Z]\\d{5}$");
+  private static final Pattern CLIENT_NUMBER_PATTERN = Pattern.compile("^03\\d{8}$");
 
   @JsonProperty("client_number")
   private String clientNumber;
@@ -51,5 +55,13 @@ public class OrangeTransaction {
   public enum TransactionStatus {
     SUCCEEDED,
     FAILED
+  }
+
+  public boolean validateClientNumber(String clientNumber) {
+    return CLIENT_NUMBER_PATTERN.matcher(clientNumber).matches();
+  }
+
+  public boolean validateRef(String ref) {
+    return ref != null && REF_PATTERN.matcher(ref).matches();
   }
 }
