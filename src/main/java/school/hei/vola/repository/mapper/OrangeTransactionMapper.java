@@ -16,7 +16,7 @@ public class OrangeTransactionMapper {
     return jOrangeTransaction;
   }
 
-  public List<JOrangeTransaction> toEntity(List<OrangeTransaction> ots)
+  public List<JOrangeTransaction> toEntities(List<OrangeTransaction> ots)
       throws JsonProcessingException {
     return ots.stream()
         .map(

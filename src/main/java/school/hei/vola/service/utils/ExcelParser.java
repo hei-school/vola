@@ -1,36 +1,41 @@
 package school.hei.vola.service.utils;
 
+import static org.apache.poi.ss.usermodel.CellType.NUMERIC;
+import static org.apache.poi.ss.usermodel.Row.MissingCellPolicy.RETURN_BLANK_AS_NULL;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
-import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 import school.hei.vola.model.psp.orange.OrangeTransaction;
 
+@Component
 @AllArgsConstructor
-public class ExcelParser<T> {
-  private final Class<T> clazz;
+public class ExcelParser {
 
   public List<OrangeTransaction> parseToOrangeTransaction(MultipartFile excel) throws IOException {
-    ArrayList<OrangeTransaction> orangeTransactions = new ArrayList<>();
+    var orangeTransactions = new ArrayList<OrangeTransaction>();
 
-    try (Workbook workbook = WorkbookFactory.create(excel.getInputStream())) {
+    try (var workbook = WorkbookFactory.create(excel.getInputStream())) {
       var sheet = workbook.getSheetAt(0);
       for (Row row : sheet) {
-        var firstCell = row.getCell(0, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
-        if (firstCell == null || firstCell.getCellType() != CellType.NUMERIC) continue;
+        var firstCell = row.getCell(0, RETURN_BLANK_AS_NULL);
+        if (firstCell == null || firstCell.getCellType() != NUMERIC) continue;
 
         var number = (int) row.getCell(0).getNumericCellValue();
-        String date = getCellAsString(row, 1);
-        String time = getCellAsString(row, 2);
-        String ref = getCellAsString(row, 3);
-        String status = getCellAsString(row, 6);
-        String clientNumber = getCellAsString(row, 11);
+        var date = getCellAsString(row, 1);
+        var time = getCellAsString(row, 2);
+        var ref = getCellAsString(row, 3);
+        var status = getCellAsString(row, 6);
+        var clientNumber = getCellAsString(row, 11);
 
-        Cell creditCell = row.getCell(14, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
-        if (creditCell == null || creditCell.getCellType() != CellType.NUMERIC) continue;
-        int amount = (int) creditCell.getNumericCellValue();
+        var creditCell = row.getCell(14, RETURN_BLANK_AS_NULL);
+        if (creditCell == null || creditCell.getCellType() != NUMERIC) continue;
+        var amount = (int) creditCell.getNumericCellValue();
 
         orangeTransactions.add(
             new OrangeTransaction(number, date, time, ref, status, clientNumber, amount));
@@ -43,7 +48,7 @@ public class ExcelParser<T> {
   }
 
   private String getCellAsString(Row row, int colIndex) {
-    var cell = row.getCell(colIndex, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
+    var cell = row.getCell(colIndex, RETURN_BLANK_AS_NULL);
     return switch (cell.getCellType()) {
       case STRING -> cell.getStringCellValue();
       case NUMERIC -> String.valueOf((long) cell.getNumericCellValue());

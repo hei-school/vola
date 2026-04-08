@@ -46,7 +46,7 @@ public class OrangePaymentRepository {
 
   public List<OrangeTransaction> saveAll(List<OrangeTransaction> ots) {
     try {
-      var jOrangeTransactions = orangeTransactionMapper.toEntity(ots);
+      var jOrangeTransactions = orangeTransactionMapper.toEntities(ots);
       return typeRawOrangeApiResponse(jOrangeTransactionRepository.saveAll(jOrangeTransactions));
     } catch (Exception e) {
       throw new RuntimeException(e);
