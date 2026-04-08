@@ -2,7 +2,6 @@ package school.hei.vola.service;
 
 import jakarta.transaction.Transactional;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -16,9 +15,9 @@ import school.hei.vola.endpoint.event.model.PaymentVerificationRequested;
 import school.hei.vola.model.Payment;
 import school.hei.vola.model.PaymentInfo;
 import school.hei.vola.model.psp.PspType;
-import school.hei.vola.model.psp.orange.OrangeTransaction;
 import school.hei.vola.repository.OrangePaymentRepository;
 import school.hei.vola.repository.PaymentRepository;
+import school.hei.vola.service.utils.ExcelParser;
 
 @Service
 @AllArgsConstructor
@@ -28,6 +27,7 @@ public class PaymentService {
   private final PaymentRepository paymentRepository;
   private final EventProducer eventProducer;
   private final OrangePaymentRepository orangePaymentRepository;
+  private final ExcelParser excelParser;
 
   @Transactional
   public Payment createPayment(
@@ -78,43 +78,8 @@ public class PaymentService {
   }
 
   public int saveTransactionFromExcel(MultipartFile excel) throws IOException {
-    ArrayList<OrangeTransaction> orangeTransactions = new ArrayList<>();
-
-    try (Workbook workbook = WorkbookFactory.create(excel.getInputStream())) {
-      var sheet = workbook.getSheetAt(0);
-      for (Row row : sheet) {
-        var firstCell = row.getCell(0, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
-        if (firstCell == null || firstCell.getCellType() != CellType.NUMERIC) continue;
-
-        var number = (int) row.getCell(0).getNumericCellValue();
-        String date = getCellAsString(row, 1);
-        String time = getCellAsString(row, 2);
-        String ref = getCellAsString(row, 3);
-        String status = getCellAsString(row, 6);
-        String clientNumber = getCellAsString(row, 11);
-
-        Cell creditCell = row.getCell(14, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
-        if (creditCell == null || creditCell.getCellType() != CellType.NUMERIC) continue;
-        int amount = (int) creditCell.getNumericCellValue();
-
-        orangeTransactions.add(
-            new OrangeTransaction(number, date, time, ref, status, clientNumber, amount));
-      }
-
-      orangePaymentRepository.saveAll(orangeTransactions);
-    } catch (IOException e) {
-      throw new IOException("Failed to load the xls file", e);
-    }
+    var orangeTransactions = excelParser.parseToOrangeTransaction(excel);
+    orangePaymentRepository.saveAll(orangeTransactions);
     return orangeTransactions.size();
-  }
-
-  private String getCellAsString(Row row, int colIndex) {
-    var cell = row.getCell(colIndex, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
-    return switch (cell.getCellType()) {
-      case STRING -> cell.getStringCellValue();
-      case NUMERIC -> String.valueOf((long) cell.getNumericCellValue());
-      case BOOLEAN -> String.valueOf(cell.getBooleanCellValue());
-      default -> "";
-    };
   }
 }
