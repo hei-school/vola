@@ -72,7 +72,7 @@ class PaymentServiceIT extends FacadeIT {
             Files.readAllBytes(path));
 
     var result = subject.saveTransactionFromExcel(file);
-    assertEquals(16, result.successfulTransactions().size());
+    assertEquals(16, result.validTransactions().size());
   }
 
   @Test
@@ -86,8 +86,8 @@ class PaymentServiceIT extends FacadeIT {
             Files.readAllBytes(path));
 
     var result = subject.saveTransactionFromExcel(file);
-    log.info("failed data : " + result.failedTransactions());
-    assertEquals(2, result.successfulTransactions().size());
+    log.info("failed data : " + result.invalidTransaction());
+    assertEquals(2, result.validTransactions().size());
   }
 
   @Test
