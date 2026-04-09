@@ -58,10 +58,10 @@ public class OrangeTransaction {
   }
 
   public boolean validateClientNumber(String clientNumber) {
-    return CLIENT_NUMBER_PATTERN.matcher(clientNumber).matches();
+    return ref != null && CLIENT_NUMBER_PATTERN.matcher(clientNumber).matches();
   }
 
   public boolean validateRef(String ref) {
-    return ref != null && !ref.isEmpty() && REF_PATTERN.matcher(ref).matches();
+    return ref != null && REF_PATTERN.matcher(ref).matches();
   }
 }

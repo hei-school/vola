@@ -63,7 +63,7 @@ public class PaymentController {
     return recoveryService.sync(date);
   }
 
-  @PutMapping("/orange/transaction")
+  @PutMapping(" /orange/transactions/import")
   public ImportedTransactionDetails saveTransaction(@RequestPart MultipartFile excel)
       throws IOException {
     return paymentService.saveTransactionFromExcel(excel);
