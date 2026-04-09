@@ -1,5 +1,6 @@
 package school.hei.vola.endpoint.rest.controller;
 
+import static java.nio.file.Files.readAllBytes;
 import static java.util.UUID.randomUUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -15,14 +16,13 @@ import static school.hei.vola.model.VerificationStatus.VERIFYING;
 import static school.hei.vola.model.psp.PspType.ORANGE_MONEY;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
-import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.mock.web.MockMultipartFile;
@@ -38,12 +38,12 @@ import school.hei.vola.repository.jpa.model.JApplication;
 import school.hei.vola.service.event.OrangeDailyTransactionsRetrievalRequestedService;
 import school.hei.vola.service.event.PaymentVerificationRequestedService;
 
-@Slf4j
 class PaymentControllerIT extends FacadeIT {
 
   @Autowired PaymentController subject;
   @MockBean EventProducer eventProducerMocked;
   @MockBean BucketComponent bucketComponent;
+  @Captor ArgumentCaptor<List<OrangeTransactionsImportRequested>> eventCaptor;
 
   @Autowired
   private OrangeDailyTransactionsRetrievalRequestedService
@@ -189,15 +189,13 @@ class PaymentControllerIT extends FacadeIT {
             "transaction-to-save.xls",
             "transaction-to-save.xls",
             "application/vnd.ms-excel",
-            Files.readAllBytes(path));
-    var bucketKey = "/TRANSACTIONS_XLS_IMPORT/" + file.getName();
+            readAllBytes(path));
+    var bucketKey = "/TRANSACTIONS_IMPORT_XLS/" + file.getName();
     subject.saveTransaction(file, apiKey);
-    ArgumentCaptor<List<OrangeTransactionsImportRequested>> captor =
-        ArgumentCaptor.forClass(List.class);
 
-    verify(eventProducerMocked).accept(captor.capture());
+    verify(eventProducerMocked).accept(eventCaptor.capture());
 
-    var events = captor.getValue();
+    var events = eventCaptor.getValue();
     assertEquals(1, events.size());
     assertTrue(events.getFirst().getBucketKey().contains(bucketKey));
   }
@@ -211,16 +209,14 @@ class PaymentControllerIT extends FacadeIT {
             "bad-transactions-data.xls",
             "bad-transactions-data.xls",
             "application/vnd.ms-excel",
-            Files.readAllBytes(path));
+            readAllBytes(path));
 
-    var bucketKey = "/TRANSACTIONS_XLS_IMPORT/" + file.getName();
+    var bucketKey = "/TRANSACTIONS_IMPORT_XLS/" + file.getName();
     subject.saveTransaction(file, apiKey);
-    ArgumentCaptor<List<OrangeTransactionsImportRequested>> captor =
-        ArgumentCaptor.forClass(List.class);
 
-    verify(eventProducerMocked).accept(captor.capture());
+    verify(eventProducerMocked).accept(eventCaptor.capture());
 
-    var events = captor.getValue();
+    var events = eventCaptor.getValue();
     assertEquals(1, events.size());
     assertTrue(events.getFirst().getBucketKey().contains(bucketKey));
   }
