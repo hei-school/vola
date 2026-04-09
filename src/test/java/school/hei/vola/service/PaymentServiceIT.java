@@ -28,6 +28,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import school.hei.vola.conf.FacadeIT;
 import school.hei.vola.endpoint.event.EventProducer;
 import school.hei.vola.endpoint.event.model.PaymentVerificationRequested;
+import school.hei.vola.file.bucket.BucketComponent;
 import school.hei.vola.model.PaymentInfo;
 import school.hei.vola.repository.jpa.JApplicationRepository;
 import school.hei.vola.repository.jpa.model.JApplication;
@@ -37,6 +38,8 @@ class PaymentServiceIT extends FacadeIT {
   @Autowired PaymentService subject;
   @MockBean EventProducer eventProducerMocked;
   @Autowired JApplicationRepository jApplicationRepository;
+  @MockBean BucketComponent bucketComponent;
+  @Autowired MultipartFileConverter multipartFileConverter;
 
   @Captor ArgumentCaptor<List<PaymentVerificationRequested>> eventCaptor;
 
@@ -72,7 +75,7 @@ class PaymentServiceIT extends FacadeIT {
             Files.readAllBytes(path));
 
     var result = subject.saveTransactionFromExcel(file);
-    assertEquals(16, result.validTransactions().size());
+    assertEquals(16, result.successfulTransactions().size());
   }
 
   @Test
@@ -86,8 +89,8 @@ class PaymentServiceIT extends FacadeIT {
             Files.readAllBytes(path));
 
     var result = subject.saveTransactionFromExcel(file);
-    log.info("failed data : " + result.invalidTransactions());
-    assertEquals(7, result.invalidTransactions().size());
+    log.info("failed data : " + result.failedTransactions());
+    assertEquals(2, result.successfulTransactions().size());
   }
 
   @Test

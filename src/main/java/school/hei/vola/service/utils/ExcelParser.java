@@ -3,13 +3,13 @@ package school.hei.vola.service.utils;
 import static org.apache.poi.ss.usermodel.CellType.NUMERIC;
 import static org.apache.poi.ss.usermodel.Row.MissingCellPolicy.RETURN_BLANK_AS_NULL;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import lombok.AllArgsConstructor;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.springframework.stereotype.Component;
-import org.springframework.web.multipart.MultipartFile;
 import school.hei.vola.model.ImportedTransactionDetails;
 import school.hei.vola.model.psp.orange.OrangeTransaction;
 
@@ -17,12 +17,11 @@ import school.hei.vola.model.psp.orange.OrangeTransaction;
 @AllArgsConstructor
 public class ExcelParser {
 
-  public ImportedTransactionDetails parseToOrangeTransaction(MultipartFile excel)
-      throws IOException {
+  public ImportedTransactionDetails parseToOrangeTransaction(File excel) throws IOException {
     var failed = new ArrayList<OrangeTransaction>();
     var succed = new ArrayList<OrangeTransaction>();
 
-    try (var workbook = WorkbookFactory.create(excel.getInputStream())) {
+    try (var workbook = WorkbookFactory.create(excel)) {
       var sheet = workbook.getSheetAt(0);
       for (Row row : sheet) {
         var firstCell = row.getCell(0, RETURN_BLANK_AS_NULL);

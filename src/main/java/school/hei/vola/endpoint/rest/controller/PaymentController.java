@@ -1,6 +1,7 @@
 package school.hei.vola.endpoint.rest.controller;
 
 import static org.springframework.format.annotation.DateTimeFormat.ISO;
+import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -20,6 +21,7 @@ import school.hei.vola.model.ImportedTransactionDetails;
 import school.hei.vola.model.Payment;
 import school.hei.vola.model.PaymentInfo;
 import school.hei.vola.model.psp.PspType;
+import school.hei.vola.service.MultipartFileConverter;
 import school.hei.vola.service.OrangeSyncService;
 import school.hei.vola.service.PaymentService;
 import school.hei.vola.service.sync.model.RecoveryResult;
@@ -31,6 +33,7 @@ public class PaymentController {
   private final PaymentService paymentService;
   private final ApplicationAuthorizer applicationAuthorizer;
   private final OrangeSyncService recoveryService;
+  private final MultipartFileConverter multipartFileConverter;
 
   @PostMapping("/payment")
   public Payment createPayment(
@@ -63,10 +66,10 @@ public class PaymentController {
     return recoveryService.sync(date);
   }
 
-  @PostMapping(" /orange/transactions/import")
+  @PostMapping(value = " /orange/transactions/import", consumes = MULTIPART_FORM_DATA_VALUE)
   public ImportedTransactionDetails saveTransaction(
       @RequestPart MultipartFile excel, @RequestParam String apiKey) throws IOException {
     applicationAuthorizer.accept(apiKey);
-    return paymentService.saveTransactionFromExcel(excel);
+    return paymentService.saveTransactionFromExcel(multipartFileConverter.apply(excel));
   }
 }

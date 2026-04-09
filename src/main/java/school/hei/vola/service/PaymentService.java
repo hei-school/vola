@@ -1,6 +1,7 @@
 package school.hei.vola.service;
 
 import jakarta.transaction.Transactional;
+import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
@@ -8,10 +9,10 @@ import java.util.Optional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 import school.hei.vola.endpoint.event.EventProducer;
 import school.hei.vola.endpoint.event.model.OrangeTransactionsImportRequested;
 import school.hei.vola.endpoint.event.model.PaymentVerificationRequested;
+import school.hei.vola.file.bucket.BucketComponent;
 import school.hei.vola.model.ImportedTransactionDetails;
 import school.hei.vola.model.Payment;
 import school.hei.vola.model.PaymentInfo;
@@ -25,10 +26,12 @@ import school.hei.vola.service.utils.ExcelParser;
 @Slf4j
 public class PaymentService {
 
+  private static final String TRANSACTIONS_XLS_IMPORT_BUCKET_KEY = "/TRANSACTIONS_XLS_IMPORT/";
   private final PaymentRepository paymentRepository;
   private final EventProducer eventProducer;
   private final OrangePaymentRepository orangePaymentRepository;
   private final ExcelParser excelParser;
+  private final BucketComponent bucketComponent;
 
   @Transactional
   public Payment createPayment(
@@ -78,10 +81,11 @@ public class PaymentService {
     return foundPayments;
   }
 
-  public ImportedTransactionDetails saveTransactionFromExcel(MultipartFile excel) {
+  public ImportedTransactionDetails saveTransactionFromExcel(File excel) {
     try {
       var orangeTransactions = excelParser.parseToOrangeTransaction(excel);
       var validTransactions = orangeTransactions.validTransactions();
+      bucketComponent.upload(excel, TRANSACTIONS_XLS_IMPORT_BUCKET_KEY + excel.getName());
       eventProducer.accept(List.of(new OrangeTransactionsImportRequested(validTransactions)));
       return new ImportedTransactionDetails(
           orangeTransactions.invalidTransactions(), validTransactions);
