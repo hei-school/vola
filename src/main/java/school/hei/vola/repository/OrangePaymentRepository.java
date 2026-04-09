@@ -26,7 +26,7 @@ public class OrangePaymentRepository {
     var jOrangeTransactionOpt = jOrangeTransactionRepository.findById(orangeRef);
     return jOrangeTransactionOpt
         .map(JOrangeTransaction::getOrangeApiRawResponse)
-        .map(this::typeRawOrangeApiResponse)
+        .map(this::typeRawOrangeApiResponseForList)
         // /!\ Other status have no test, yet critical. Do __NOT__ remove.
         .filter(ot -> SUCCEEDED.equals(ot.status()))
         .map(this::toPspPayment);
@@ -37,7 +37,7 @@ public class OrangePaymentRepository {
       var jOrangeTransaction = new JOrangeTransaction();
       jOrangeTransaction.setRef(ot.getRef());
       jOrangeTransaction.setOrangeApiRawResponse(OrangeApiClient.om.writeValueAsString(ot));
-      return typeRawOrangeApiResponse(
+      return typeRawOrangeApiResponseForList(
           jOrangeTransactionRepository.save(jOrangeTransaction).getOrangeApiRawResponse());
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);
@@ -47,13 +47,14 @@ public class OrangePaymentRepository {
   public List<OrangeTransaction> saveAll(List<OrangeTransaction> ots) {
     try {
       var jOrangeTransactions = orangeTransactionMapper.toEntities(ots);
-      return typeRawOrangeApiResponse(jOrangeTransactionRepository.saveAll(jOrangeTransactions));
+      return typeRawOrangeApiResponseForList(
+          jOrangeTransactionRepository.saveAll(jOrangeTransactions));
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
   }
 
-  private OrangeTransaction typeRawOrangeApiResponse(String raw) {
+  private OrangeTransaction typeRawOrangeApiResponseForList(String raw) {
     try {
       return OrangeApiClient.om.readValue(raw, OrangeTransaction.class);
     } catch (JsonProcessingException e) {
@@ -61,9 +62,9 @@ public class OrangePaymentRepository {
     }
   }
 
-  private List<OrangeTransaction> typeRawOrangeApiResponse(List<JOrangeTransaction> raws) {
+  private List<OrangeTransaction> typeRawOrangeApiResponseForList(List<JOrangeTransaction> raws) {
     return raws.stream()
-        .map(raw -> typeRawOrangeApiResponse(raw.getOrangeApiRawResponse()))
+        .map(raw -> typeRawOrangeApiResponseForList(raw.getOrangeApiRawResponse()))
         .toList();
   }
 
