@@ -84,7 +84,7 @@ public class PaymentService {
       var validTransactions = orangeTransactions.validTransactions();
       eventProducer.accept(List.of(new OrangeTransactionsImportRequested(validTransactions)));
       return new ImportedTransactionDetails(
-          orangeTransactions.invalidTransaction(), validTransactions);
+          orangeTransactions.invalidTransactions(), validTransactions);
     } catch (IOException e) {
       throw new RuntimeException("Enable to read file");
     }

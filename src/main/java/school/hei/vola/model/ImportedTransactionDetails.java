@@ -4,4 +4,4 @@ import java.util.List;
 import school.hei.vola.model.psp.orange.OrangeTransaction;
 
 public record ImportedTransactionDetails(
-    List<OrangeTransaction> invalidTransaction, List<OrangeTransaction> validTransactions) {}
+    List<OrangeTransaction> invalidTransactions, List<OrangeTransaction> validTransactions) {}
