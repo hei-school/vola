@@ -4,13 +4,11 @@ import static java.time.Duration.ofHours;
 import static java.time.Duration.ofMinutes;
 
 import java.time.Duration;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-import school.hei.vola.model.psp.orange.OrangeTransaction;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -18,7 +16,7 @@ import school.hei.vola.model.psp.orange.OrangeTransaction;
 @EqualsAndHashCode(callSuper = false)
 @ToString
 public class OrangeTransactionsImportRequested extends PojaEvent {
-  private List<OrangeTransaction> orangeTransactions;
+  private String bucketKey;
 
   @Override
   public Duration maxConsumerDuration() {

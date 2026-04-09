@@ -4,6 +4,7 @@ import static java.util.UUID.randomUUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.annotation.DirtiesContext.MethodMode.BEFORE_METHOD;
@@ -13,6 +14,9 @@ import static school.hei.vola.model.VerificationStatus.SUCCEEDED;
 import static school.hei.vola.model.VerificationStatus.VERIFYING;
 import static school.hei.vola.model.psp.PspType.ORANGE_MONEY;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
@@ -20,11 +24,14 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.annotation.DirtiesContext;
 import school.hei.vola.conf.FacadeIT;
 import school.hei.vola.endpoint.event.EventProducer;
 import school.hei.vola.endpoint.event.model.OrangeDailyTransactionsRetrievalRequested;
+import school.hei.vola.endpoint.event.model.OrangeTransactionsImportRequested;
 import school.hei.vola.endpoint.event.model.PaymentVerificationRequested;
+import school.hei.vola.file.bucket.BucketComponent;
 import school.hei.vola.repository.jpa.JApplicationRepository;
 import school.hei.vola.repository.jpa.model.JApplication;
 import school.hei.vola.service.event.OrangeDailyTransactionsRetrievalRequestedService;
@@ -34,6 +41,7 @@ class PaymentControllerIT extends FacadeIT {
 
   @Autowired PaymentController subject;
   @MockBean EventProducer eventProducerMocked;
+  @MockBean BucketComponent bucketComponent;
 
   @Autowired
   private OrangeDailyTransactionsRetrievalRequestedService
@@ -168,6 +176,51 @@ class PaymentControllerIT extends FacadeIT {
 
     var retrievedPayment = subject.getPayment(apiKey, email, pspType, pspPaymentId);
     assertEquals(FAILED, retrievedPayment.getVerificationStatus());
+  }
+
+  @Test
+  void save_transactions_from_xls_file_OK() throws IOException {
+    var apiKey = randomJApplication().getApiKey();
+    var path = Paths.get("src/test/resources/mock/transaction-to-save.xls");
+    var file =
+        new MockMultipartFile(
+            "transaction-to-save.xls",
+            "transaction-to-save.xls",
+            "application/vnd.ms-excel",
+            Files.readAllBytes(path));
+    var bucketKey = "/TRANSACTIONS_IMPORT_XLS/" + file.getName();
+    subject.saveTransaction(file, apiKey);
+    ArgumentCaptor<List<OrangeTransactionsImportRequested>> captor =
+        ArgumentCaptor.forClass(List.class);
+
+    verify(eventProducerMocked).accept(captor.capture());
+
+    var events = captor.getValue();
+    assertEquals(1, events.size());
+    assertTrue(events.getFirst().getBucketKey().contains(bucketKey));
+  }
+
+  @Test
+  void save_transactions_from_xls_file_K0() throws IOException {
+    var apiKey = randomJApplication().getApiKey();
+    var path = Paths.get("src/test/resources/mock/bad-transactions-data.xls");
+    var file =
+        new MockMultipartFile(
+            "bad-transactions-data.xls",
+            "bad-transactions-data.xls",
+            "application/vnd.ms-excel",
+            Files.readAllBytes(path));
+
+    var bucketKey = "/TRANSACTIONS_IMPORT_XLS/" + file.getName();
+    subject.saveTransaction(file, apiKey);
+    ArgumentCaptor<List<OrangeTransactionsImportRequested>> captor =
+        ArgumentCaptor.forClass(List.class);
+
+    verify(eventProducerMocked).accept(captor.capture());
+
+    var events = captor.getValue();
+    assertEquals(1, events.size());
+    assertTrue(events.getFirst().getBucketKey().contains(bucketKey));
   }
 
   private static String randomEmail() {

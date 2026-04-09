@@ -12,9 +12,6 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static school.hei.vola.model.psp.PspType.ORANGE_MONEY;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
@@ -24,11 +21,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.mock.web.MockMultipartFile;
 import school.hei.vola.conf.FacadeIT;
 import school.hei.vola.endpoint.event.EventProducer;
 import school.hei.vola.endpoint.event.model.PaymentVerificationRequested;
-import school.hei.vola.file.bucket.BucketComponent;
 import school.hei.vola.model.PaymentInfo;
 import school.hei.vola.repository.jpa.JApplicationRepository;
 import school.hei.vola.repository.jpa.model.JApplication;
@@ -38,8 +33,6 @@ class PaymentServiceIT extends FacadeIT {
   @Autowired PaymentService subject;
   @MockBean EventProducer eventProducerMocked;
   @Autowired JApplicationRepository jApplicationRepository;
-  @MockBean BucketComponent bucketComponent;
-  @Autowired MultipartFileConverter multipartFileConverter;
 
   @Captor ArgumentCaptor<List<PaymentVerificationRequested>> eventCaptor;
 
@@ -62,35 +55,6 @@ class PaymentServiceIT extends FacadeIT {
 
     assertEquals(created, retrieved);
     assertNotNull(retrieved.id());
-  }
-
-  @Test
-  void save_transactions_from_xls_file_OK() throws IOException {
-    var path = Paths.get("src/test/resources/mock/transaction-to-save.xls");
-    var file =
-        new MockMultipartFile(
-            "excel",
-            "transaction-to-save.xls",
-            "application/vnd.ms-excel",
-            Files.readAllBytes(path));
-
-    var result = subject.saveTransactionFromExcel(multipartFileConverter.apply(file));
-    assertEquals(16, result.validTransactions().size());
-  }
-
-  @Test
-  void save_transactions_from_xls_file_K0() throws IOException {
-    var path = Paths.get("src/test/resources/mock/bad-transactions-data.xls");
-    var file =
-        new MockMultipartFile(
-            "excel",
-            "bad-transactions-data.xls",
-            "application/vnd.ms-excel",
-            Files.readAllBytes(path));
-
-    var result = subject.saveTransactionFromExcel(multipartFileConverter.apply(file));
-    log.info("failed data : " + result.invalidTransactions());
-    assertEquals(2, result.validTransactions().size());
   }
 
   @Test
