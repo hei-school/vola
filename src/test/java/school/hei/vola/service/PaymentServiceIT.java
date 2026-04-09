@@ -74,8 +74,8 @@ class PaymentServiceIT extends FacadeIT {
             "application/vnd.ms-excel",
             Files.readAllBytes(path));
 
-    var result = subject.saveTransactionFromExcel(file);
-    assertEquals(16, result.successfulTransactions().size());
+    var result = subject.saveTransactionFromExcel(multipartFileConverter.apply(file));
+    assertEquals(16, result.validTransactions().size());
   }
 
   @Test
@@ -88,9 +88,9 @@ class PaymentServiceIT extends FacadeIT {
             "application/vnd.ms-excel",
             Files.readAllBytes(path));
 
-    var result = subject.saveTransactionFromExcel(file);
-    log.info("failed data : " + result.failedTransactions());
-    assertEquals(2, result.successfulTransactions().size());
+    var result = subject.saveTransactionFromExcel(multipartFileConverter.apply(file));
+    log.info("failed data : " + result.invalidTransactions());
+    assertEquals(2, result.validTransactions().size());
   }
 
   @Test
