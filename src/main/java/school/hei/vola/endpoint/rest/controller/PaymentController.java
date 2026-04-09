@@ -64,8 +64,9 @@ public class PaymentController {
   }
 
   @PostMapping(" /orange/transactions/import")
-  public ImportedTransactionDetails saveTransaction(@RequestPart MultipartFile excel)
-      throws IOException {
+  public ImportedTransactionDetails saveTransaction(
+      @RequestPart MultipartFile excel, @RequestParam String apiKey) throws IOException {
+    applicationAuthorizer.accept(apiKey);
     return paymentService.saveTransactionFromExcel(excel);
   }
 }

@@ -81,10 +81,10 @@ public class PaymentService {
   public ImportedTransactionDetails saveTransactionFromExcel(MultipartFile excel) {
     try {
       var orangeTransactions = excelParser.parseToOrangeTransaction(excel);
-      var validTransactions = orangeTransactions.successfulTransactions();
+      var validTransactions = orangeTransactions.validTransactions();
       eventProducer.accept(List.of(new OrangeTransactionsImportRequested(validTransactions)));
       return new ImportedTransactionDetails(
-          orangeTransactions.failedTransactions(), validTransactions);
+          orangeTransactions.invalidTransaction(), validTransactions);
     } catch (IOException e) {
       throw new RuntimeException("Enable to read file");
     }
