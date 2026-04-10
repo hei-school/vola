@@ -20,6 +20,7 @@ import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -38,6 +39,7 @@ import school.hei.vola.repository.jpa.model.JApplication;
 import school.hei.vola.service.event.OrangeDailyTransactionsRetrievalRequestedService;
 import school.hei.vola.service.event.PaymentVerificationRequestedService;
 
+@Slf4j
 class PaymentControllerIT extends FacadeIT {
 
   @Autowired PaymentController subject;
@@ -190,7 +192,7 @@ class PaymentControllerIT extends FacadeIT {
             "transaction-to-save.xls",
             "application/vnd.ms-excel",
             readAllBytes(path));
-    var bucketKey = "/TRANSACTIONS_IMPORT_XLS/" + file.getName();
+    var bucketKey = "/TRANSACTIONS_XLS_IMPORT/" + file.getName();
     subject.saveTransaction(file, apiKey);
 
     verify(eventProducerMocked).accept(eventCaptor.capture());
@@ -211,7 +213,7 @@ class PaymentControllerIT extends FacadeIT {
             "application/vnd.ms-excel",
             readAllBytes(path));
 
-    var bucketKey = "/TRANSACTIONS_IMPORT_XLS/" + file.getName();
+    var bucketKey = "/TRANSACTIONS_XLS_IMPORT/" + file.getName();
     subject.saveTransaction(file, apiKey);
 
     verify(eventProducerMocked).accept(eventCaptor.capture());
