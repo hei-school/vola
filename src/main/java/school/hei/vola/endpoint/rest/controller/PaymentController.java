@@ -1,7 +1,9 @@
 package school.hei.vola.endpoint.rest.controller;
 
 import static org.springframework.format.annotation.DateTimeFormat.ISO;
+import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -11,11 +13,15 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import school.hei.vola.endpoint.rest.security.ApplicationAuthorizer;
+import school.hei.vola.model.ImportedTransactionDetails;
 import school.hei.vola.model.Payment;
 import school.hei.vola.model.PaymentInfo;
 import school.hei.vola.model.psp.PspType;
+import school.hei.vola.service.MultipartFileConverter;
 import school.hei.vola.service.OrangeSyncService;
 import school.hei.vola.service.PaymentService;
 import school.hei.vola.service.sync.model.RecoveryResult;
@@ -27,6 +33,7 @@ public class PaymentController {
   private final PaymentService paymentService;
   private final ApplicationAuthorizer applicationAuthorizer;
   private final OrangeSyncService recoveryService;
+  private final MultipartFileConverter multipartFileConverter;
 
   @PostMapping("/payment")
   public Payment createPayment(
@@ -57,5 +64,12 @@ public class PaymentController {
   @PutMapping("/orange/sync")
   public RecoveryResult sync(@RequestParam("date") @DateTimeFormat(iso = ISO.DATE) LocalDate date) {
     return recoveryService.sync(date);
+  }
+
+  @PostMapping(value = " /orange/transactions/import", consumes = MULTIPART_FORM_DATA_VALUE)
+  public ImportedTransactionDetails saveTransactions(
+      @RequestPart MultipartFile excel, @RequestParam String apiKey) throws IOException {
+    applicationAuthorizer.accept(apiKey);
+    return paymentService.saveTransactionFromExcel(multipartFileConverter.apply(excel));
   }
 }

@@ -1,7 +1,6 @@
 package school.hei.vola.model.psp.orange;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,5 +21,5 @@ public class OrangeDailyTransactions {
   @JsonProperty("transactionDate")
   private String transactionDate;
 
-  private List<OrangeTransaction> transactions = new ArrayList<>();
+  private List<OrangeTransaction> transactions;
 }
