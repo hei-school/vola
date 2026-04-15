@@ -10,14 +10,14 @@ import lombok.AllArgsConstructor;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.springframework.stereotype.Component;
-import school.hei.vola.model.ImportedTransactionDetails;
+import school.hei.vola.model.ParsedData;
 import school.hei.vola.model.psp.orange.OrangeTransaction;
 
 @Component
 @AllArgsConstructor
 public class ExcelParser {
 
-  public ImportedTransactionDetails parseToOrangeTransaction(File excel) throws IOException {
+  public ParsedData parseToOrangeTransaction(File excel) throws IOException {
     var failed = new ArrayList<OrangeTransaction>();
     var succed = new ArrayList<OrangeTransaction>();
 
@@ -46,7 +46,7 @@ public class ExcelParser {
         }
       }
 
-      return new ImportedTransactionDetails(failed, succed);
+      return new ParsedData(succed, failed);
     } catch (IOException e) {
       throw new IOException("Failed to load the xls file", e);
     }
@@ -59,9 +59,7 @@ public class ExcelParser {
       case STRING -> cell.getStringCellValue();
       case NUMERIC -> {
         double val = cell.getNumericCellValue();
-        yield (val == Math.floor(val))
-            ? String.valueOf((long) val) // "12" si pas de décimales
-            : String.valueOf(val); // "12.5" si décimales
+        yield (val == Math.floor(val)) ? String.valueOf((long) val) : String.valueOf(val);
       }
       case BOOLEAN -> String.valueOf(cell.getBooleanCellValue());
       default -> "";

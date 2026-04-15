@@ -24,7 +24,7 @@ public class OrangeTransactionsImportRequestedService
     var file = bucketComponent.download(event.getBucketKey());
     try {
       var orangeTransactions = excelParser.parseToOrangeTransaction(file);
-      var validTransactions = orangeTransactions.validTransactions();
+      var validTransactions = orangeTransactions.validOrangeTransactions();
       log.info("Save valid transactions : " + validTransactions.toString());
       var savedOrangeTransactions = orangePaymentRepository.saveAll(validTransactions);
       log.info("Saved valid transactions : " + savedOrangeTransactions.toString());

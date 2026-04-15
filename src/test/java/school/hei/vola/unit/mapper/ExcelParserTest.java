@@ -84,10 +84,10 @@ public class ExcelParserTest {
 
     var result = parser.parseToOrangeTransaction(file);
 
-    assertEquals(1, result.validTransactions().size());
-    assertEquals(0, result.invalidTransactions().size());
+    assertEquals(1, result.validOrangeTransactions().size());
+    assertEquals(0, result.invalidOrangeTransactions().size());
 
-    var tx = result.validTransactions().get(0);
+    var tx = result.validOrangeTransactions().get(0);
     assertEquals(1, tx.getNumber());
     assertEquals(VALID_REF, tx.getRef());
     assertEquals(VALID_CLIENT, tx.getClientNumber());
@@ -120,8 +120,8 @@ public class ExcelParserTest {
 
     var result = parser.parseToOrangeTransaction(file);
 
-    assertEquals(0, result.validTransactions().size());
-    assertEquals(1, result.invalidTransactions().size());
+    assertEquals(0, result.validOrangeTransactions().size());
+    assertEquals(1, result.invalidOrangeTransactions().size());
   }
 
   @Test
@@ -150,8 +150,8 @@ public class ExcelParserTest {
 
     var result = parser.parseToOrangeTransaction(file);
 
-    assertEquals(0, result.validTransactions().size());
-    assertEquals(1, result.invalidTransactions().size());
+    assertEquals(0, result.validOrangeTransactions().size());
+    assertEquals(1, result.invalidOrangeTransactions().size());
   }
 
   @Test
@@ -180,8 +180,8 @@ public class ExcelParserTest {
 
     var result = parser.parseToOrangeTransaction(file);
 
-    assertEquals(0, result.validTransactions().size());
-    assertEquals(0, result.invalidTransactions().size());
+    assertEquals(0, result.validOrangeTransactions().size());
+    assertEquals(0, result.invalidOrangeTransactions().size());
   }
 
   @Test
@@ -196,8 +196,8 @@ public class ExcelParserTest {
 
     var result = parser.parseToOrangeTransaction(tmp);
 
-    assertEquals(0, result.validTransactions().size());
-    assertEquals(0, result.invalidTransactions().size());
+    assertEquals(0, result.validOrangeTransactions().size());
+    assertEquals(0, result.invalidOrangeTransactions().size());
   }
 
   @Test
@@ -260,8 +260,8 @@ public class ExcelParserTest {
 
     var result = parser.parseToOrangeTransaction(file);
 
-    assertEquals(1, result.validTransactions().size());
-    assertEquals(2, result.invalidTransactions().size());
+    assertEquals(1, result.validOrangeTransactions().size());
+    assertEquals(2, result.invalidOrangeTransactions().size());
   }
 
   @Test
@@ -270,8 +270,8 @@ public class ExcelParserTest {
 
     var result = parser.parseToOrangeTransaction(file);
 
-    assertEquals(0, result.validTransactions().size());
-    assertEquals(0, result.invalidTransactions().size());
+    assertEquals(0, result.validOrangeTransactions().size());
+    assertEquals(0, result.invalidOrangeTransactions().size());
   }
 
   private File createXls(Object[][] rows) throws IOException {

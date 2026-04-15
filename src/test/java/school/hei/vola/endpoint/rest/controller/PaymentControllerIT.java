@@ -193,7 +193,7 @@ class PaymentControllerIT extends FacadeIT {
             "application/vnd.ms-excel",
             readAllBytes(path));
     var bucketKey = "/TRANSACTIONS_XLS_IMPORT/" + file.getName();
-    subject.saveTransaction(file, apiKey);
+    subject.saveTransactions(file, apiKey);
 
     verify(eventProducerMocked).accept(eventCaptor.capture());
 
@@ -214,7 +214,7 @@ class PaymentControllerIT extends FacadeIT {
             readAllBytes(path));
 
     var bucketKey = "/TRANSACTIONS_XLS_IMPORT/" + file.getName();
-    subject.saveTransaction(file, apiKey);
+    subject.saveTransactions(file, apiKey);
 
     verify(eventProducerMocked).accept(eventCaptor.capture());
 

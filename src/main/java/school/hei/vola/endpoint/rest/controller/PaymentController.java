@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import school.hei.vola.endpoint.rest.security.ApplicationAuthorizer;
+import school.hei.vola.model.ImportedTransactionDetails;
 import school.hei.vola.model.Payment;
 import school.hei.vola.model.PaymentInfo;
 import school.hei.vola.model.psp.PspType;
@@ -66,9 +67,9 @@ public class PaymentController {
   }
 
   @PostMapping(value = " /orange/transactions/import", consumes = MULTIPART_FORM_DATA_VALUE)
-  public void saveTransaction(@RequestPart MultipartFile excel, @RequestParam String apiKey)
-      throws IOException {
+  public ImportedTransactionDetails saveTransactions(
+      @RequestPart MultipartFile excel, @RequestParam String apiKey) throws IOException {
     applicationAuthorizer.accept(apiKey);
-    paymentService.saveTransactionFromExcel(multipartFileConverter.apply(excel));
+    return paymentService.saveTransactionFromExcel(multipartFileConverter.apply(excel));
   }
 }

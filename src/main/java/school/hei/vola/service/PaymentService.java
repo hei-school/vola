@@ -1,5 +1,7 @@
 package school.hei.vola.service;
 
+import static java.time.Instant.now;
+
 import jakarta.transaction.Transactional;
 import java.io.File;
 import java.util.HashSet;
@@ -12,6 +14,7 @@ import school.hei.vola.endpoint.event.EventProducer;
 import school.hei.vola.endpoint.event.model.OrangeTransactionsImportRequested;
 import school.hei.vola.endpoint.event.model.PaymentVerificationRequested;
 import school.hei.vola.file.bucket.BucketComponent;
+import school.hei.vola.model.ImportedTransactionDetails;
 import school.hei.vola.model.Payment;
 import school.hei.vola.model.PaymentInfo;
 import school.hei.vola.model.psp.PspType;
@@ -79,10 +82,11 @@ public class PaymentService {
     return foundPayments;
   }
 
-  public void saveTransactionFromExcel(File excel) {
+  public ImportedTransactionDetails saveTransactionFromExcel(File excel) {
     log.info("File name : " + excel.getName());
     var bucketKey = TRANSACTIONS_XLS_IMPORT_BUCKET_KEY + excel.getName();
     bucketComponent.upload(excel, bucketKey);
     eventProducer.accept(List.of(new OrangeTransactionsImportRequested(bucketKey)));
+    return new ImportedTransactionDetails(bucketKey, now(), excel.getName());
   }
 }

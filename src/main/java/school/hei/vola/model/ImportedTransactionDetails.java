@@ -1,7 +1,5 @@
 package school.hei.vola.model;
 
-import java.util.List;
-import school.hei.vola.model.psp.orange.OrangeTransaction;
+import java.time.Instant;
 
-public record ImportedTransactionDetails(
-    List<OrangeTransaction> invalidTransactions, List<OrangeTransaction> validTransactions) {}
+public record ImportedTransactionDetails(String bucketKey, Instant importDate, String fileName) {}

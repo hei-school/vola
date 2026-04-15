@@ -16,7 +16,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import school.hei.vola.conf.FacadeIT;
 import school.hei.vola.endpoint.event.model.OrangeTransactionsImportRequested;
 import school.hei.vola.file.bucket.BucketComponent;
-import school.hei.vola.model.ImportedTransactionDetails;
+import school.hei.vola.model.ParsedData;
 import school.hei.vola.repository.OrangePaymentRepository;
 import school.hei.vola.service.MultipartFileConverter;
 import school.hei.vola.service.utils.ExcelParser;
@@ -39,7 +39,7 @@ public class OrangeTransactionImportRequestedServiceIT extends FacadeIT {
             readAllBytes(path));
     var file = multipartFileConverter.apply(multipartFile);
     var bucketKey = "/TRANSACTIONS_IMPORT_XLS/" + file.getName();
-    var result = new ImportedTransactionDetails(List.of(), List.of());
+    var result = new ParsedData(List.of(), List.of());
     when(bucketComponent.download(any())).thenReturn(file);
     when(excelParser.parseToOrangeTransaction(file)).thenReturn(result);
     when(orangePaymentRepository.saveAll(anyList())).thenReturn(List.of());
