@@ -1,7 +1,11 @@
 package school.hei.vola.service;
 
 import static java.util.UUID.randomUUID;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
@@ -10,6 +14,7 @@ import static school.hei.vola.model.psp.PspType.ORANGE_MONEY;
 
 import java.util.List;
 import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -23,6 +28,7 @@ import school.hei.vola.model.PaymentInfo;
 import school.hei.vola.repository.jpa.JApplicationRepository;
 import school.hei.vola.repository.jpa.model.JApplication;
 
+@Slf4j
 class PaymentServiceIT extends FacadeIT {
   @Autowired PaymentService subject;
   @MockBean EventProducer eventProducerMocked;

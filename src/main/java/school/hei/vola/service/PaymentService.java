@@ -1,6 +1,9 @@
 package school.hei.vola.service;
 
+import static java.time.Instant.now;
+
 import jakarta.transaction.Transactional;
+import java.io.File;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -8,19 +11,28 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import school.hei.vola.endpoint.event.EventProducer;
+import school.hei.vola.endpoint.event.model.OrangeTransactionsImportRequested;
 import school.hei.vola.endpoint.event.model.PaymentVerificationRequested;
+import school.hei.vola.file.bucket.BucketComponent;
+import school.hei.vola.model.ImportedTransactionDetails;
 import school.hei.vola.model.Payment;
 import school.hei.vola.model.PaymentInfo;
 import school.hei.vola.model.psp.PspType;
+import school.hei.vola.repository.OrangePaymentRepository;
 import school.hei.vola.repository.PaymentRepository;
+import school.hei.vola.service.utils.ExcelParser;
 
 @Service
 @AllArgsConstructor
 @Slf4j
 public class PaymentService {
 
+  private static final String TRANSACTIONS_XLS_IMPORT_BUCKET_KEY = "/TRANSACTIONS_XLS_IMPORT/";
   private final PaymentRepository paymentRepository;
   private final EventProducer eventProducer;
+  private final OrangePaymentRepository orangePaymentRepository;
+  private final ExcelParser excelParser;
+  private final BucketComponent bucketComponent;
 
   @Transactional
   public Payment createPayment(
@@ -68,5 +80,13 @@ public class PaymentService {
       createPayments(apiKey, missingPaymentInfos);
     }
     return foundPayments;
+  }
+
+  public ImportedTransactionDetails saveTransactionFromExcel(File excel) {
+    log.info("File name : " + excel.getName());
+    var bucketKey = TRANSACTIONS_XLS_IMPORT_BUCKET_KEY + excel.getName();
+    bucketComponent.upload(excel, bucketKey);
+    eventProducer.accept(List.of(new OrangeTransactionsImportRequested(bucketKey)));
+    return new ImportedTransactionDetails(bucketKey, now(), excel.getName());
   }
 }
