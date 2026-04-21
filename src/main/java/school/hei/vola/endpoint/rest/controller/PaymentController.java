@@ -66,7 +66,7 @@ public class PaymentController {
     return recoveryService.sync(date);
   }
 
-  @PostMapping(value = " /orange/transactions/import", consumes = MULTIPART_FORM_DATA_VALUE)
+  @PostMapping(value = "/orange/transactions/import", consumes = MULTIPART_FORM_DATA_VALUE)
   public ImportedTransactionDetails saveTransactions(
       @RequestPart MultipartFile excel, @RequestParam String apiKey) throws IOException {
     applicationAuthorizer.accept(apiKey);
