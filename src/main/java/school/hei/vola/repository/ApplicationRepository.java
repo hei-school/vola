@@ -2,7 +2,6 @@ package school.hei.vola.repository;
 
 import java.util.List;
 import java.util.Optional;
-
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Repository;
 import school.hei.vola.model.Application;

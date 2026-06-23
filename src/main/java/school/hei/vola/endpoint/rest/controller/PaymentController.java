@@ -18,7 +18,6 @@ import school.hei.vola.endpoint.rest.security.ApplicationAuthorizer;
 import school.hei.vola.model.ImportedTransactionDetails;
 import school.hei.vola.model.Payment;
 import school.hei.vola.model.PaymentInfo;
-import school.hei.vola.model.VerificationStatus;
 import school.hei.vola.model.psp.PspType;
 import school.hei.vola.service.MultipartFileConverter;
 import school.hei.vola.service.OrangeSyncService;
@@ -58,67 +57,14 @@ public class PaymentController {
       @RequestParam String applicationName,
       @RequestParam(required = false) @DateTimeFormat(iso = ISO.DATE) LocalDate startDate,
       @RequestParam(required = false) @DateTimeFormat(iso = ISO.DATE) LocalDate endDate) {
-    List<Payment> payments;
-    if (startDate != null && endDate != null) {
-      Instant start = startDate.atStartOfDay(ZoneOffset.UTC).toInstant();
-      Instant end = endDate.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant();
-      payments =
-          paymentService.findPaymentsByApplicationNameAndDateRange(applicationName, start, end);
-    } else {
-      payments = paymentService.findPaymentsByApplicationName(applicationName);
-    }
-    byte[] csv = buildCsv(payments);
+    Instant start = startDate != null ? startDate.atStartOfDay(ZoneOffset.UTC).toInstant() : null;
+    Instant end =
+        endDate != null ? endDate.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant() : null;
+    var csv = paymentService.buildPaymentsCsv(applicationName, start, end);
     return ResponseEntity.ok()
         .header(CONTENT_DISPOSITION, "attachment; filename=payments_" + applicationName + ".csv")
         .header("Content-Type", "text/csv")
-        .body(csv);
-  }
-
-  private byte[] buildCsv(List<Payment> payments) {
-    var sb = new StringBuilder();
-    sb.append(
-        "Email payeur;PSP;Ref paiement;Montant (Ar);Statut;Date cr\u00e9ation;Derni\u00e8re"
-            + " v\u00e9rification;Application\n");
-    for (var p : payments) {
-      var amount = p.pspPayment().amount();
-      var status = p.getVerificationStatus();
-      sb.append(escapeCsv(p.payer().email()))
-          .append(';')
-          .append(p.pspPayment().pspType())
-          .append(';')
-          .append(escapeCsv(p.pspPayment().id()))
-          .append(';')
-          .append(amount != null ? amount : "")
-          .append(';')
-          .append(statusLabel(status))
-          .append(';')
-          .append(p.creationInstant() != null ? p.creationInstant().toString() : "")
-          .append(';')
-          .append(
-              p.lastPspVerificationInstant() != null
-                  ? p.lastPspVerificationInstant().toString()
-                  : "")
-          .append(';')
-          .append(p.application().name())
-          .append('\n');
-    }
-    return sb.toString().getBytes();
-  }
-
-  private String escapeCsv(String value) {
-    if (value == null) return "";
-    if (value.contains(";") || value.contains("\"") || value.contains("\n")) {
-      return "\"" + value.replace("\"", "\"\"") + "\"";
-    }
-    return value;
-  }
-
-  private String statusLabel(VerificationStatus status) {
-    return switch (status) {
-      case VERIFYING -> "En vérification";
-      case SUCCEEDED -> "Succès";
-      case FAILED -> "Échoué";
-    };
+        .body(csv.getBytes());
   }
 
   @PutMapping("/payments/search")
