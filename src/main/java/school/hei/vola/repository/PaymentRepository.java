@@ -166,8 +166,4 @@ public class PaymentRepository {
         .map(jPaymentMapper::toDomain)
         .toList();
   }
-
-  public List<Payment> findAll() {
-    return jPaymentRepository.findAll().stream().map(jPaymentMapper::toDomain).toList();
-  }
 }
