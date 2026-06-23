@@ -23,10 +23,9 @@ public class SecurityConf {
     http.authorizeHttpRequests(
             auth ->
                 auth.requestMatchers(
-                        "/ping", "/health/**", "/error", "/swagger-ui/**", "/v3/api-docs/**")
+                  "/ping", "/health/**", "/error", "/swagger-ui/**", "/v3/api-docs/**", "/payment", "/payments/search", "/orange/**")
                     .permitAll()
-                    .anyRequest()
-                    .authenticated())
+                    .requestMatchers("/payments/**").authenticated()
         .oauth2Login(oauth2 -> oauth2.successHandler(authenticationSuccessHandler()))
         .logout(LogoutConfigurer::permitAll)
         .csrf(csrf -> csrf.ignoringRequestMatchers("/payment", "/payments/search", "/orange/**"));
