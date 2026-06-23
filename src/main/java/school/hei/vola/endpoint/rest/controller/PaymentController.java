@@ -12,9 +12,13 @@ import java.util.List;
 import lombok.AllArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import school.hei.vola.endpoint.rest.security.ApplicationAuthorizer;
+import school.hei.vola.endpoint.rest.security.VolaAdminChecker;
 import school.hei.vola.model.ImportedTransactionDetails;
 import school.hei.vola.model.Payment;
 import school.hei.vola.model.PaymentInfo;
@@ -30,6 +34,7 @@ public class PaymentController {
 
   private final PaymentService paymentService;
   private final ApplicationAuthorizer applicationAuthorizer;
+  private final VolaAdminChecker volaAdminChecker;
   private final OrangeSyncService recoveryService;
   private final MultipartFileConverter multipartFileConverter;
 
@@ -57,6 +62,12 @@ public class PaymentController {
       @RequestParam String applicationName,
       @RequestParam(required = false) @DateTimeFormat(iso = ISO.DATE) LocalDate startDate,
       @RequestParam(required = false) @DateTimeFormat(iso = ISO.DATE) LocalDate endDate) {
+    var authentication = SecurityContextHolder.getContext().getAuthentication();
+    if (authentication != null && authentication.getPrincipal() instanceof OidcUser oidcUser) {
+      if (!volaAdminChecker.isAdmin(oidcUser.getEmail())) {
+        throw new AccessDeniedException("Accès refusé : vous n'êtes pas administrateur Vola");
+      }
+    }
     Instant start =
         startDate != null ? startDate.atStartOfDay(ZoneOffset.UTC).toInstant() : Instant.EPOCH;
     Instant end =
