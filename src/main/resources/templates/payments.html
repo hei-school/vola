@@ -16,6 +16,7 @@
       href="https://fonts.googleapis.com/icon?family=Material+Icons"
     />
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/css/style.css" />
   </head>
   <body class="min-h-screen bg-gray-100 font-[Poppins] text-gray-700">
     <div th:replace="fragments/header :: header"></div>
@@ -216,8 +217,7 @@
               <tr
                 th:each="p : ${payments}"
                 class="border-b border-gray-100 hover:bg-gray-50 transition-colors"
-                th:with="verifStatus=${p.getVerificationStatus()}; borderColor=${verifStatus.name() == 'SUCCEEDED'} ? '#22c55e' : (${verifStatus.name() == 'FAILED'} ? '#ef4444' : '#eab308')"
-                th:style="'border-left: 3px solid ' + ${borderColor}"
+                th:classappend="${p.getVerificationStatus().name() == 'SUCCEEDED'} ? 'border-left-succeeded' : (${p.getVerificationStatus().name() == 'FAILED'} ? 'border-left-failed' : 'border-left-verifying')"
               >
                 <td class="px-2 sm:px-3 py-2 sm:py-3 text-xs">
                   <span
