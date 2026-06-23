@@ -33,13 +33,6 @@ public class PaymentViewController {
       Model model) {
     model.addAttribute("applications", jApplicationRepository.findAll());
 
-    if (applicationName == null) {
-      model.addAttribute("payments", List.of());
-      model.addAttribute("totalCollected", "0 Ar");
-      model.addAttribute("pendingCount", 0L);
-      return "payments";
-    }
-
     var parsedStartDate = parseDate(startDate);
     var parsedEndDate = parseDate(endDate);
 
