@@ -4,6 +4,7 @@ import static java.time.Instant.now;
 
 import jakarta.transaction.Transactional;
 import java.io.File;
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -17,6 +18,7 @@ import school.hei.vola.file.bucket.BucketComponent;
 import school.hei.vola.model.ImportedTransactionDetails;
 import school.hei.vola.model.Payment;
 import school.hei.vola.model.PaymentInfo;
+import school.hei.vola.model.VerificationStatus;
 import school.hei.vola.model.psp.PspType;
 import school.hei.vola.repository.OrangePaymentRepository;
 import school.hei.vola.repository.PaymentRepository;
@@ -80,6 +82,62 @@ public class PaymentService {
       createPayments(apiKey, missingPaymentInfos);
     }
     return foundPayments;
+  }
+
+  public List<Payment> findPaymentsByApplicationName(String applicationName) {
+    return paymentRepository.findByApplicationName(applicationName);
+  }
+
+  public List<Payment> findPaymentsByApplicationNameAndDateRange(
+      String applicationName, Instant start, Instant end) {
+    return paymentRepository.findByApplicationNameAndDateRange(applicationName, start, end);
+  }
+
+  public String buildPaymentsCsv(String applicationName, Instant start, Instant end) {
+    List<Payment> payments = findPaymentsByApplicationNameAndDateRange(applicationName, start, end);
+    var sb = new StringBuilder();
+    sb.append(
+        "Email payeur;PSP;Ref paiement;Montant (Ar);Statut;Date cr\u00e9ation;Derni\u00e8re"
+            + " v\u00e9rification;Application\n");
+    for (var p : payments) {
+      var amount = p.pspPayment().amount();
+      sb.append(escapeCsv(p.payer().email()))
+          .append(';')
+          .append(p.pspPayment().pspType())
+          .append(';')
+          .append(escapeCsv(p.pspPayment().id()))
+          .append(';')
+          .append(amount != null ? amount : "")
+          .append(';')
+          .append(statusLabel(p.getVerificationStatus()))
+          .append(';')
+          .append(p.creationInstant() != null ? p.creationInstant().toString() : "")
+          .append(';')
+          .append(
+              p.lastPspVerificationInstant() != null
+                  ? p.lastPspVerificationInstant().toString()
+                  : "")
+          .append(';')
+          .append(p.application().name())
+          .append('\n');
+    }
+    return sb.toString();
+  }
+
+  private String escapeCsv(String value) {
+    if (value == null) return "";
+    if (value.contains(";") || value.contains("\"") || value.contains("\n")) {
+      return "\"" + value.replace("\"", "\"\"") + "\"";
+    }
+    return value;
+  }
+
+  private String statusLabel(VerificationStatus status) {
+    return switch (status) {
+      case VERIFYING -> "En vérification";
+      case SUCCEEDED -> "Succès";
+      case FAILED -> "Échoué";
+    };
   }
 
   public ImportedTransactionDetails saveTransactionFromExcel(File excel) {

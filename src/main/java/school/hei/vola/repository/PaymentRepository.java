@@ -3,6 +3,7 @@ package school.hei.vola.repository;
 import static java.util.UUID.randomUUID;
 import static school.hei.vola.model.Time.millisNow;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -143,6 +144,21 @@ public class PaymentRepository {
 
   public List<Payment> findPaymentsByPaymentInfos(List<PaymentInfo> paymentInfos) {
     return jPaymentRepositoryCustom.findByPaymentInfos(paymentInfos).stream()
+        .map(jPaymentMapper::toDomain)
+        .toList();
+  }
+
+  public List<Payment> findByApplicationName(String applicationName) {
+    return jPaymentRepository.findByApplication_Name(applicationName).stream()
+        .map(jPaymentMapper::toDomain)
+        .toList();
+  }
+
+  public List<Payment> findByApplicationNameAndDateRange(
+      String applicationName, Instant start, Instant end) {
+    return jPaymentRepository
+        .findByApplicationNameAndCreationInstantBetween(applicationName, start, end)
+        .stream()
         .map(jPaymentMapper::toDomain)
         .toList();
   }
