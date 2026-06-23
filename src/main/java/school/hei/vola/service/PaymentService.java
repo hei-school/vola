@@ -94,12 +94,7 @@ public class PaymentService {
   }
 
   public String buildPaymentsCsv(String applicationName, Instant start, Instant end) {
-    List<Payment> payments;
-    if (start != null && end != null) {
-      payments = findPaymentsByApplicationNameAndDateRange(applicationName, start, end);
-    } else {
-      payments = findPaymentsByApplicationName(applicationName);
-    }
+    List<Payment> payments = findPaymentsByApplicationNameAndDateRange(applicationName, start, end);
     var sb = new StringBuilder();
     sb.append(
         "Email payeur;PSP;Ref paiement;Montant (Ar);Statut;Date cr\u00e9ation;Derni\u00e8re"

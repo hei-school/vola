@@ -57,9 +57,12 @@ public class PaymentController {
       @RequestParam String applicationName,
       @RequestParam(required = false) @DateTimeFormat(iso = ISO.DATE) LocalDate startDate,
       @RequestParam(required = false) @DateTimeFormat(iso = ISO.DATE) LocalDate endDate) {
-    Instant start = startDate != null ? startDate.atStartOfDay(ZoneOffset.UTC).toInstant() : null;
+    Instant start =
+        startDate != null ? startDate.atStartOfDay(ZoneOffset.UTC).toInstant() : Instant.EPOCH;
     Instant end =
-        endDate != null ? endDate.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant() : null;
+        endDate != null
+            ? endDate.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant()
+            : Instant.parse("9999-12-31T23:59:59Z");
     var csv = paymentService.buildPaymentsCsv(applicationName, start, end);
     return ResponseEntity.ok()
         .header(CONTENT_DISPOSITION, "attachment; filename=payments_" + applicationName + ".csv")
