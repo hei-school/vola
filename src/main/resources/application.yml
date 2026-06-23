@@ -11,6 +11,6 @@ spring:
             redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
         provider:
           casdoor:
-            issuer-uri: ${CASDOOR_ISSUER_URI}
+            issuer-uri: ${CASDOOR_ISSUER_URI:}
 vola:
   admins: ${VOLA_ADMINS}
