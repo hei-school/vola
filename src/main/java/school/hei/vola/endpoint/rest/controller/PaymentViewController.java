@@ -3,7 +3,6 @@ package school.hei.vola.endpoint.rest.controller;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -74,5 +73,4 @@ public class PaymentViewController {
     }
     return LocalDate.parse(dateStr);
   }
-
 }
