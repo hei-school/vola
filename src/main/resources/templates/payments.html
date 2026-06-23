@@ -239,16 +239,16 @@
                 </td>
                 <td class="px-2 sm:px-3 py-2 sm:py-3">
                   <span
-                    class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 whitespace-nowrap"
-                    th:text="${p.pspPayment().pspType()}"
-                    >ORANGE_MONEY</span
+                    th:text="${p.application().name()}"
+                    class="text-xs text-gray-700"
+                    >App</span
                   >
                 </td>
                 <td class="px-2 sm:px-3 py-2 sm:py-3">
                   <span
-                    th:text="${p.application().name()}"
-                    class="text-xs text-gray-700"
-                    >App</span
+                    class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 whitespace-nowrap"
+                    th:text="${p.pspPayment().pspType()}"
+                    >ORANGE_MONEY</span
                   >
                 </td>
                 <td class="px-2 sm:px-3 py-2 sm:py-3 text-right">

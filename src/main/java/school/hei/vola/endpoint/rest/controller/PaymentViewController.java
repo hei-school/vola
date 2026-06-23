@@ -5,6 +5,7 @@ import static org.springframework.format.annotation.DateTimeFormat.ISO;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
@@ -35,6 +36,9 @@ public class PaymentViewController {
       Model model) {
     if (applicationName == null || applicationName.isBlank()) {
       model.addAttribute("applications", jApplicationRepository.findAll());
+      model.addAttribute("payments", List.of());
+      model.addAttribute("totalCollected", "0 Ar");
+      model.addAttribute("pendingCount", 0L);
       return "payments";
     }
 
