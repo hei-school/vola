@@ -84,6 +84,10 @@ public class PaymentService {
     return foundPayments;
   }
 
+  public List<Payment> findAllPayments() {
+    return paymentRepository.findAll();
+  }
+
   public List<Payment> findPaymentsByApplicationName(String applicationName) {
     return paymentRepository.findByApplicationName(applicationName);
   }
