@@ -1,25 +1,29 @@
 package school.hei.vola.endpoint.rest.controller;
 
 import static org.springframework.format.annotation.DateTimeFormat.ISO;
+import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
 import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
 
+import java.io.IOException;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.List;
-
 import lombok.AllArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import school.hei.vola.endpoint.rest.security.ApplicationAuthorizer;
 import school.hei.vola.model.ImportedTransactionDetails;
 import school.hei.vola.model.Payment;
 import school.hei.vola.model.PaymentInfo;
+import school.hei.vola.model.VerificationStatus;
 import school.hei.vola.model.psp.PspType;
 import school.hei.vola.service.MultipartFileConverter;
 import school.hei.vola.service.OrangeSyncService;
 import school.hei.vola.service.PaymentService;
 import school.hei.vola.service.sync.model.RecoveryResult;
-import java.io.IOException;
 
 @RestController
 @AllArgsConstructor
@@ -49,13 +53,72 @@ public class PaymentController {
         .orElseThrow(NotFoundException::new);
   }
 
-  @GetMapping("/payments")
-  public List<Payment> getPaymentsByApplication(
-      @RequestParam String applicationName, @RequestParam(required = false) String apiKey) {
-    if (apiKey != null) {
-      applicationAuthorizer.accept(apiKey);
+  @GetMapping("/payments/export/csv")
+  public ResponseEntity<byte[]> exportPaymentsCsv(
+      @RequestParam String applicationName,
+      @RequestParam(required = false) @DateTimeFormat(iso = ISO.DATE) LocalDate startDate,
+      @RequestParam(required = false) @DateTimeFormat(iso = ISO.DATE) LocalDate endDate) {
+    List<Payment> payments;
+    if (startDate != null && endDate != null) {
+      Instant start = startDate.atStartOfDay(ZoneOffset.UTC).toInstant();
+      Instant end = endDate.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant();
+      payments =
+          paymentService.findPaymentsByApplicationNameAndDateRange(applicationName, start, end);
+    } else {
+      payments = paymentService.findPaymentsByApplicationName(applicationName);
     }
-    return paymentService.findPaymentsByApplicationName(applicationName);
+    byte[] csv = buildCsv(payments);
+    return ResponseEntity.ok()
+        .header(CONTENT_DISPOSITION, "attachment; filename=payments_" + applicationName + ".csv")
+        .header("Content-Type", "text/csv")
+        .body(csv);
+  }
+
+  private byte[] buildCsv(List<Payment> payments) {
+    var sb = new StringBuilder();
+    sb.append(
+        "Email payeur;PSP;Ref paiement;Montant (Ar);Statut;Date cr\u00e9ation;Derni\u00e8re"
+            + " v\u00e9rification;Application\n");
+    for (var p : payments) {
+      var amount = p.pspPayment().amount();
+      var status = p.getVerificationStatus();
+      sb.append(escapeCsv(p.payer().email()))
+          .append(';')
+          .append(p.pspPayment().pspType())
+          .append(';')
+          .append(escapeCsv(p.pspPayment().id()))
+          .append(';')
+          .append(amount != null ? amount : "")
+          .append(';')
+          .append(statusLabel(status))
+          .append(';')
+          .append(p.creationInstant() != null ? p.creationInstant().toString() : "")
+          .append(';')
+          .append(
+              p.lastPspVerificationInstant() != null
+                  ? p.lastPspVerificationInstant().toString()
+                  : "")
+          .append(';')
+          .append(p.application().name())
+          .append('\n');
+    }
+    return sb.toString().getBytes();
+  }
+
+  private String escapeCsv(String value) {
+    if (value == null) return "";
+    if (value.contains(";") || value.contains("\"") || value.contains("\n")) {
+      return "\"" + value.replace("\"", "\"\"") + "\"";
+    }
+    return value;
+  }
+
+  private String statusLabel(VerificationStatus status) {
+    return switch (status) {
+      case VERIFYING -> "En vérification";
+      case SUCCEEDED -> "Succès";
+      case FAILED -> "Échoué";
+    };
   }
 
   @PutMapping("/payments/search")

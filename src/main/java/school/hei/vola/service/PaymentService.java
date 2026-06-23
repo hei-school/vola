@@ -4,6 +4,7 @@ import static java.time.Instant.now;
 
 import jakarta.transaction.Transactional;
 import java.io.File;
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -84,6 +85,11 @@ public class PaymentService {
 
   public List<Payment> findPaymentsByApplicationName(String applicationName) {
     return paymentRepository.findByApplicationName(applicationName);
+  }
+
+  public List<Payment> findPaymentsByApplicationNameAndDateRange(
+      String applicationName, Instant start, Instant end) {
+    return paymentRepository.findByApplicationNameAndDateRange(applicationName, start, end);
   }
 
   public ImportedTransactionDetails saveTransactionFromExcel(File excel) {
