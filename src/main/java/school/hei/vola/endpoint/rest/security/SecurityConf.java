@@ -1,9 +1,9 @@
 package school.hei.vola.endpoint.rest.security;
 
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
@@ -23,10 +23,19 @@ public class SecurityConf {
     http.authorizeHttpRequests(
             auth ->
                 auth.requestMatchers(
-                  "/ping", "/health/**", "/error", "/swagger-ui/**", "/v3/api-docs/**", "/payment", "/payments/search", "/orange/**")
+                        "/ping",
+                        "/health/**",
+                        "/error",
+                        "/swagger-ui/**",
+                        "/v3/api-docs/**",
+                        "/payment",
+                        "/payments/search",
+                        "/orange/**")
                     .permitAll()
-                    .requestMatchers("/payments/**").authenticated()
-                    .anyRequest().denyAll())
+                    .requestMatchers("/payments/**")
+                    .authenticated()
+                    .anyRequest()
+                    .denyAll())
         .oauth2Login(oauth2 -> oauth2.successHandler(authenticationSuccessHandler()))
         .logout(LogoutConfigurer::permitAll)
         .csrf(csrf -> csrf.ignoringRequestMatchers("/payment", "/payments/search", "/orange/**"));
