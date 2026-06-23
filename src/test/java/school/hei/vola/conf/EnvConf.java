@@ -12,6 +12,8 @@ public class EnvConf {
     registry.add("spring.jpa.database-platform", () -> "org.hibernate.dialect.H2Dialect");
     registry.add("orange.api.url", () -> apiUrl != null ? apiUrl : "http://dummy.orange.api");
     registry.add(
+        "spring.security.oauth2.client.registration.casdoor.provider", () -> "casdoor-test");
+    registry.add(
         "spring.security.oauth2.client.registration.casdoor.client-id", () -> "dummy");
     registry.add(
         "spring.security.oauth2.client.registration.casdoor.client-secret", () -> "dummy");
@@ -22,9 +24,9 @@ public class EnvConf {
         "spring.security.oauth2.client.registration.casdoor.redirect-uri",
         () -> "{baseUrl}/login/oauth2/code/casdoor");
     registry.add(
-        "spring.security.oauth2.client.provider.casdoor.authorization-uri", () -> "dummy");
+        "spring.security.oauth2.client.provider.casdoor-test.authorization-uri", () -> "dummy");
     registry.add(
-        "spring.security.oauth2.client.provider.casdoor.token-uri", () -> "dummy");
+        "spring.security.oauth2.client.provider.casdoor-test.token-uri", () -> "dummy");
     registry.add("vola.admins", () -> "admin@test.com");
   }
 }
