@@ -97,6 +97,10 @@ public class PaymentService {
     return paymentRepository.findByApplicationNameAndDateRange(applicationName, start, end);
   }
 
+  public List<Payment> findAllPayments() {
+    return paymentRepository.findAll();
+  }
+
   public String buildPaymentsCsv(String applicationName, Instant start, Instant end) {
     List<Payment> payments = findPaymentsByApplicationNameAndDateRange(applicationName, start, end);
     var sb = new StringBuilder();
