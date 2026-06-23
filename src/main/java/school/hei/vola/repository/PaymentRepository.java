@@ -148,6 +148,10 @@ public class PaymentRepository {
         .toList();
   }
 
+  public List<Payment> findAll() {
+    return jPaymentRepository.findAll().stream().map(jPaymentMapper::toDomain).toList();
+  }
+
   public List<Payment> findByApplicationName(String applicationName) {
     return jPaymentRepository.findByApplication_Name(applicationName).stream()
         .map(jPaymentMapper::toDomain)

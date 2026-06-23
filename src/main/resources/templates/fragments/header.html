@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+<header th:fragment="header" class="bg-[#16163f] text-white shadow-md">
+  <div class="container mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <h1 class="text-xl sm:text-2xl font-bold tracking-tight">Vola</h1>
+    </div>
+    <div class="flex items-center gap-3 sm:gap-4">
+      <span class="text-xs sm:text-sm text-white/70" sec:authentication="principal.attributes['email']">Admin</span>
+      <form th:action="@{/logout}" method="POST">
+        <button type="submit"
+                class="text-xs bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg transition-all flex items-center gap-1">
+          <span class="material-icons text-sm">logout</span>
+          <span class="hidden sm:inline">Déconnexion</span>
+        </button>
+      </form>
+    </div>
+  </div>
+</header>
+</body>
+</html>
