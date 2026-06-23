@@ -26,6 +26,7 @@ public class SecurityConf {
                   "/ping", "/health/**", "/error", "/swagger-ui/**", "/v3/api-docs/**", "/payment", "/payments/search", "/orange/**")
                     .permitAll()
                     .requestMatchers("/payments/**").authenticated()
+                    .anyRequest().denyAll())
         .oauth2Login(oauth2 -> oauth2.successHandler(authenticationSuccessHandler()))
         .logout(LogoutConfigurer::permitAll)
         .csrf(csrf -> csrf.ignoringRequestMatchers("/payment", "/payments/search", "/orange/**"));
