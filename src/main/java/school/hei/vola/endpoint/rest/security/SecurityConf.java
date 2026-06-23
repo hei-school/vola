@@ -40,9 +40,7 @@ public class SecurityConf {
       var oidcUser = (OidcUser) authentication.getPrincipal();
       String email = oidcUser.getEmail();
       if (!volaAdminChecker.isAdmin(email)) {
-        response.sendError(
-            HttpServletResponse.SC_FORBIDDEN, "Access denied. You are not a Vola administrator.");
-        return;
+        throw new AccessDeniedException("You're not a Vola Administrator");
       }
       response.sendRedirect("/payments");
     };
