@@ -6,8 +6,11 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class VolaAdminChecker {
-  @Value("${vola.admins}")
   private String admins;
+
+  public VolaAdminChecker(@Value("${vola.admins}") String admins) {
+    this.admins = admins;
+  }
 
   public boolean isAdmin(String email) {
     if (email == null || admins == null) {
