@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
 import static org.springframework.test.annotation.DirtiesContext.MethodMode.BEFORE_METHOD;
 import static school.hei.vola.conf.TestData.ORANGE_REF_SUCCEEDED;
 import static school.hei.vola.model.VerificationStatus.FAILED;
@@ -221,6 +222,74 @@ class PaymentControllerIT extends FacadeIT {
     var events = eventCaptor.getValue();
     assertEquals(1, events.size());
     assertTrue(events.getFirst().getBucketKey().contains(bucketKey));
+  }
+
+  @Test
+  void exportPaymentsCsv_returns_csv_with_correct_headers() {
+    var app = randomJApplication();
+    var apiKey = app.getApiKey();
+    var appName = app.getName();
+    var email = randomEmail();
+
+    subject.createPayment(apiKey, email, ORANGE_MONEY, randomUUID().toString());
+
+    var response = subject.exportPaymentsCsv(appName, null, null);
+
+    assertEquals(200, response.getStatusCodeValue());
+    assertTrue(response.getHeaders().get(CONTENT_DISPOSITION).getFirst().contains("attachment"));
+    assertTrue(response.getHeaders().getContentType().toString().contains("text/csv"));
+    var body = new String(response.getBody());
+    assertTrue(body.contains("Email payeur"));
+    assertTrue(body.contains(email));
+    assertTrue(body.contains(appName));
+  }
+
+  @Test
+  void exportPaymentsCsv_filters_by_date_range() {
+    var app = randomJApplication();
+    var apiKey = app.getApiKey();
+    var appName = app.getName();
+    var email = randomEmail();
+
+    subject.createPayment(apiKey, email, ORANGE_MONEY, randomUUID().toString());
+
+    var response =
+        subject.exportPaymentsCsv(appName, LocalDate.of(2020, 1, 1), LocalDate.of(2099, 1, 1));
+
+    assertEquals(200, response.getStatusCodeValue());
+    var body = new String(response.getBody());
+    assertTrue(body.contains(email));
+  }
+
+  @Test
+  void exportPaymentsCsv_outside_date_range_returns_header_only() {
+    var app = randomJApplication();
+    var apiKey = app.getApiKey();
+    var appName = app.getName();
+
+    subject.createPayment(apiKey, randomEmail(), ORANGE_MONEY, randomUUID().toString());
+
+    var response =
+        subject.exportPaymentsCsv(appName, LocalDate.of(2020, 1, 1), LocalDate.of(2020, 1, 2));
+
+    assertEquals(200, response.getStatusCodeValue());
+    var body = new String(response.getBody());
+    var lines = body.split("\n");
+    assertEquals(1, lines.length);
+  }
+
+  @Test
+  void exportPaymentsCsv_filename_contains_application_name() {
+    var app = randomJApplication();
+    var apiKey = app.getApiKey();
+    var appName = app.getName();
+
+    subject.createPayment(apiKey, randomEmail(), ORANGE_MONEY, randomUUID().toString());
+
+    var response = subject.exportPaymentsCsv(appName, null, null);
+
+    var disposition = response.getHeaders().get(CONTENT_DISPOSITION).getFirst();
+    assertTrue(disposition.contains("payments_" + appName + ".csv"));
   }
 
   private static String randomEmail() {

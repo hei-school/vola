@@ -1,20 +1,18 @@
 package school.hei.vola.endpoint.rest.controller;
 
 import static org.springframework.format.annotation.DateTimeFormat.ISO;
+import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
 import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import school.hei.vola.endpoint.rest.security.ApplicationAuthorizer;
 import school.hei.vola.model.ImportedTransactionDetails;
@@ -52,6 +50,24 @@ public class PaymentController {
     return paymentService
         .findPaymentByPayerEmailAndPspTypeAndPspPaymentId(payerEmail, pspType, pspPaymentId)
         .orElseThrow(NotFoundException::new);
+  }
+
+  @GetMapping("/payments/export/csv")
+  public ResponseEntity<byte[]> exportPaymentsCsv(
+      @RequestParam String applicationName,
+      @RequestParam(required = false) @DateTimeFormat(iso = ISO.DATE) LocalDate startDate,
+      @RequestParam(required = false) @DateTimeFormat(iso = ISO.DATE) LocalDate endDate) {
+    Instant start =
+        startDate != null ? startDate.atStartOfDay(ZoneOffset.UTC).toInstant() : Instant.EPOCH;
+    Instant end =
+        endDate != null
+            ? endDate.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant()
+            : Instant.parse("9999-12-31T23:59:59Z");
+    var csv = paymentService.buildPaymentsCsv(applicationName, start, end);
+    return ResponseEntity.ok()
+        .header(CONTENT_DISPOSITION, "attachment; filename=payments_" + applicationName + ".csv")
+        .header("Content-Type", "text/csv")
+        .body(csv.getBytes());
   }
 
   @PutMapping("/payments/search")

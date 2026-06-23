@@ -1,5 +1,6 @@
 package school.hei.vola.repository;
 
+import java.util.List;
 import java.util.Optional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -15,5 +16,9 @@ public class ApplicationRepository {
 
   public Optional<Application> findByApiKey(String apiKey) {
     return jApplicationRepository.findByApiKey(apiKey).map(jApplicationMapper::toDomain);
+  }
+
+  public List<Application> findAll() {
+    return jApplicationRepository.findAll().stream().map(jApplicationMapper::toDomain).toList();
   }
 }
