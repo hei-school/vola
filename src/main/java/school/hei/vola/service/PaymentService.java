@@ -94,7 +94,8 @@ public class PaymentService {
 
   public List<Payment> findPaymentsByApplicationNameAndDateRange(
       String applicationName, Instant start, Instant end) {
-    return paymentRepository.findByApplicationNameAndDateRange(applicationName, start, end);
+    var effectiveApp = "all".equals(applicationName) ? null : applicationName;
+    return paymentRepository.findByApplicationNameAndDateRange(effectiveApp, start, end);
   }
 
   public String buildPaymentsCsv(String applicationName, Instant start, Instant end) {
