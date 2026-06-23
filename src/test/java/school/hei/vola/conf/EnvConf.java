@@ -13,10 +13,8 @@ public class EnvConf {
     registry.add("orange.api.url", () -> apiUrl != null ? apiUrl : "http://dummy.orange.api");
     registry.add(
         "spring.security.oauth2.client.registration.casdoor.provider", () -> "casdoor-test");
-    registry.add(
-        "spring.security.oauth2.client.registration.casdoor.client-id", () -> "dummy");
-    registry.add(
-        "spring.security.oauth2.client.registration.casdoor.client-secret", () -> "dummy");
+    registry.add("spring.security.oauth2.client.registration.casdoor.client-id", () -> "dummy");
+    registry.add("spring.security.oauth2.client.registration.casdoor.client-secret", () -> "dummy");
     registry.add(
         "spring.security.oauth2.client.registration.casdoor.authorization-grant-type",
         () -> "authorization_code");
@@ -25,8 +23,7 @@ public class EnvConf {
         () -> "{baseUrl}/login/oauth2/code/casdoor");
     registry.add(
         "spring.security.oauth2.client.provider.casdoor-test.authorization-uri", () -> "dummy");
-    registry.add(
-        "spring.security.oauth2.client.provider.casdoor-test.token-uri", () -> "dummy");
+    registry.add("spring.security.oauth2.client.provider.casdoor-test.token-uri", () -> "dummy");
     registry.add("vola.admins", () -> "admin@test.com");
   }
 }

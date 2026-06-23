@@ -216,7 +216,8 @@
               <tr
                 th:each="p : ${payments}"
                 class="border-b border-gray-100 hover:bg-gray-50 transition-colors"
-                th:style="'border-left: 3px solid ' + (p.getVerificationStatus().name() == 'SUCCEEDED' ? '#22c55e' : (p.getVerificationStatus().name() == 'FAILED' ? '#ef4444' : '#eab308'))"
+                th:with="verifStatus=${p.getVerificationStatus()}; borderColor=${verifStatus.name() == 'SUCCEEDED'} ? '#22c55e' : (${verifStatus.name() == 'FAILED'} ? '#ef4444' : '#eab308')"
+                th:style="'border-left: 3px solid ' + ${borderColor}"
               >
                 <td class="px-2 sm:px-3 py-2 sm:py-3 text-xs">
                   <span
