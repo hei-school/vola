@@ -43,25 +43,31 @@ public class PaymentViewController {
     var parsedStartDate = parseDate(startDate);
     var parsedEndDate = parseDate(endDate);
 
-    var start = parsedStartDate != null
-        ? parsedStartDate.atStartOfDay(ZoneOffset.UTC).toInstant()
-        : Instant.EPOCH;
-    var end = parsedEndDate != null
-        ? parsedEndDate.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant()
-        : Instant.parse("9999-12-31T23:59:59Z");
+    var start =
+        parsedStartDate != null
+            ? parsedStartDate.atStartOfDay(ZoneOffset.UTC).toInstant()
+            : Instant.EPOCH;
+    var end =
+        parsedEndDate != null
+            ? parsedEndDate.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant()
+            : Instant.parse("9999-12-31T23:59:59Z");
 
-    var payments = paymentService.findPaymentsByApplicationNameAndDateRange(applicationName, start, end);
+    var payments =
+        paymentService.findPaymentsByApplicationNameAndDateRange(applicationName, start, end);
 
-    var totalAmount = payments.stream()
-        .filter(p -> p.getVerificationStatus() == VerificationStatus.SUCCEEDED)
-        .mapToLong(p -> p.pspPayment().amount() != null ? p.pspPayment().amount() : 0)
-        .sum();
+    var totalAmount =
+        payments.stream()
+            .filter(p -> p.getVerificationStatus() == VerificationStatus.SUCCEEDED)
+            .mapToLong(p -> p.pspPayment().amount() != null ? p.pspPayment().amount() : 0)
+            .sum();
 
     model.addAttribute("payments", payments);
     model.addAttribute("totalCollected", String.format("%,d Ar", totalAmount));
-    model.addAttribute("pendingCount", payments.stream()
-        .filter(p -> p.getVerificationStatus() == VerificationStatus.VERIFYING)
-        .count());
+    model.addAttribute(
+        "pendingCount",
+        payments.stream()
+            .filter(p -> p.getVerificationStatus() == VerificationStatus.VERIFYING)
+            .count());
     model.addAttribute("selectedApplication", applicationName);
     model.addAttribute("selectedStartDate", parsedStartDate);
     model.addAttribute("selectedEndDate", parsedEndDate);
