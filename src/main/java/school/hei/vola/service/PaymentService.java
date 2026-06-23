@@ -82,6 +82,10 @@ public class PaymentService {
     return foundPayments;
   }
 
+  public List<Payment> findPaymentsByApplicationName(String applicationName) {
+    return paymentRepository.findByApplicationName(applicationName);
+  }
+
   public ImportedTransactionDetails saveTransactionFromExcel(File excel) {
     log.info("File name : " + excel.getName());
     var bucketKey = TRANSACTIONS_XLS_IMPORT_BUCKET_KEY + excel.getName();

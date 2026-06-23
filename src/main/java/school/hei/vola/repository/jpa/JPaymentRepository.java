@@ -15,4 +15,6 @@ public interface JPaymentRepository extends JpaRepository<JPayment, String> {
 
   Optional<JPayment> findPaymentByPayerEmailAndPspTypeAndPspPaymentId(
       String payerEmail, PspType pspType, String pspPaymentId);
+
+  List<JPayment> findByApplication_Name(String applicationName);
 }

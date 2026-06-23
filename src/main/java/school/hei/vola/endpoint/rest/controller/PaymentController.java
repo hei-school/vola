@@ -3,18 +3,12 @@ package school.hei.vola.endpoint.rest.controller;
 import static org.springframework.format.annotation.DateTimeFormat.ISO;
 import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
 
-import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
+
 import lombok.AllArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import school.hei.vola.endpoint.rest.security.ApplicationAuthorizer;
 import school.hei.vola.model.ImportedTransactionDetails;
@@ -25,6 +19,7 @@ import school.hei.vola.service.MultipartFileConverter;
 import school.hei.vola.service.OrangeSyncService;
 import school.hei.vola.service.PaymentService;
 import school.hei.vola.service.sync.model.RecoveryResult;
+import java.io.IOException;
 
 @RestController
 @AllArgsConstructor
@@ -52,6 +47,15 @@ public class PaymentController {
     return paymentService
         .findPaymentByPayerEmailAndPspTypeAndPspPaymentId(payerEmail, pspType, pspPaymentId)
         .orElseThrow(NotFoundException::new);
+  }
+
+  @GetMapping("/payments")
+  public List<Payment> getPaymentsByApplication(
+      @RequestParam String applicationName, @RequestParam(required = false) String apiKey) {
+    if (apiKey != null) {
+      applicationAuthorizer.accept(apiKey);
+    }
+    return paymentService.findPaymentsByApplicationName(applicationName);
   }
 
   @PutMapping("/payments/search")
