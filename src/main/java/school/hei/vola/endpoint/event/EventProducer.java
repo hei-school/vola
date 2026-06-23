@@ -49,6 +49,7 @@ public class EventProducer<T extends PojaEvent> implements Consumer<Collection<T
       log.info("Events to send: {}", batch);
       PutEventsResponse response = sendRequest(batch);
       checkResponse(response);
+      log.warn("");
     }
   }
 
