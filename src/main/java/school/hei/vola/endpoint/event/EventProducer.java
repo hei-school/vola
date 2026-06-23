@@ -47,10 +47,13 @@ public class EventProducer<T extends PojaEvent> implements Consumer<Collection<T
   public void accept(Collection<T> events) {
     for (var batch : listGrouper.apply(events.stream().toList(), MAX_EVENTS_FOR_PUT_REQUEST)) {
       log.info("Events to send: {}", batch);
-      PutEventsResponse response = sendRequest(batch);
-      checkResponse(response);
-    }
-  }
+      try{
+	PutEventsResponse response = sendRequest(batch);
+        checkResponse(response);
+      }catch(Exception e){
+      	log.info("Error" + e.getMessage());
+      }
+  }}
 
   private PutEventsRequest toEventsRequest(List<T> events) {
     return PutEventsRequest.builder()
