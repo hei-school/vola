@@ -33,7 +33,7 @@ public class PaymentViewController {
       Model model) {
     model.addAttribute("applications", jApplicationRepository.findAll());
 
-    if (isBlank(applicationName)) {
+    if (applicationName == null) {
       model.addAttribute("payments", List.of());
       model.addAttribute("totalCollected", "0 Ar");
       model.addAttribute("pendingCount", 0L);
@@ -52,8 +52,9 @@ public class PaymentViewController {
             ? parsedEndDate.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant()
             : Instant.parse("9999-12-31T23:59:59Z");
 
+    var effectiveApp = "all".equals(applicationName) ? null : applicationName;
     var payments =
-        paymentService.findPaymentsByApplicationNameAndDateRange(applicationName, start, end);
+        paymentService.findPaymentsByApplicationNameAndDateRange(effectiveApp, start, end);
 
     var totalAmount =
         payments.stream()
@@ -81,7 +82,4 @@ public class PaymentViewController {
     return LocalDate.parse(dateStr);
   }
 
-  private static boolean isBlank(String str) {
-    return str == null || str.isBlank();
-  }
 }
