@@ -22,7 +22,7 @@ public interface JPaymentRepository extends JpaRepository<JPayment, String> {
   List<JPayment> findByApplication_Name(String applicationName);
 
   @Query(
-      "SELECT p FROM JPayment p WHERE p.application.name = :applicationName "
+      "SELECT p FROM JPayment p WHERE (:applicationName IS NULL OR p.application.name = :applicationName) "
           + "AND p.creationInstant >= :start AND p.creationInstant < :end")
   List<JPayment> findByApplicationNameAndCreationInstantBetween(
       @Param("applicationName") String applicationName,
