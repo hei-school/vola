@@ -41,7 +41,7 @@ class JPaymentRepositoryIT extends FacadeIT {
 
     var result =
         subject.findByApplicationNameAndCreationInstantBetween(
-            app.getName(), Instant.EPOCH, Instant.parse("9999-12-31T23:59:59Z"));
+            app.getName(), null, Instant.EPOCH, Instant.parse("9999-12-31T23:59:59Z"));
 
     assertEquals(1, result.size());
   }
@@ -53,6 +53,7 @@ class JPaymentRepositoryIT extends FacadeIT {
     var result =
         subject.findByApplicationNameAndCreationInstantBetween(
             app.getName(),
+            null,
             Instant.parse("2025-01-01T00:00:00Z"),
             Instant.parse("2025-12-31T23:59:59Z"));
 
@@ -71,7 +72,7 @@ class JPaymentRepositoryIT extends FacadeIT {
 
     var result =
         subject.findByApplicationNameAndCreationInstantBetween(
-            app.getName(), Instant.EPOCH, Instant.parse("9999-12-31T23:59:59Z"));
+            app.getName(), null, Instant.EPOCH, Instant.parse("9999-12-31T23:59:59Z"));
 
     assertTrue(result.isEmpty());
   }
@@ -83,7 +84,7 @@ class JPaymentRepositoryIT extends FacadeIT {
 
     var result =
         subject.findByApplicationNameAndCreationInstantBetween(
-            app.getName(), instant, Instant.parse("9999-12-31T23:59:59Z"));
+            app.getName(), null, instant, Instant.parse("9999-12-31T23:59:59Z"));
 
     assertEquals(1, result.size());
   }
@@ -95,7 +96,7 @@ class JPaymentRepositoryIT extends FacadeIT {
 
     var result =
         subject.findByApplicationNameAndCreationInstantBetween(
-            app.getName(), Instant.EPOCH, instant);
+            app.getName(), null, Instant.EPOCH, instant);
 
     assertTrue(result.isEmpty());
   }
@@ -109,6 +110,7 @@ class JPaymentRepositoryIT extends FacadeIT {
     var result =
         subject.findByApplicationNameAndCreationInstantBetween(
             app.getName(),
+            null,
             Instant.parse("2025-01-01T00:00:00Z"),
             Instant.parse("2026-01-01T00:00:00Z"));
 
