@@ -18,14 +18,14 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="/css/style.css" />
   </head>
-  <body class="min-h-screen bg-gray-100 font-[Poppins] text-gray-700">
+  <body class="min-h-screen bg-[#F5F5F5] font-[Poppins] text-gray-700">
     <div th:replace="fragments/header :: header"></div>
 
     <div class="container mx-auto px-4 sm:px-6 pt-6 sm:pt-10 pb-10 sm:pb-14">
       <div
         class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-3"
       >
-        <h1 class="text-2xl sm:text-3xl font-bold text-[#16163f]">
+        <h1 class="text-2xl sm:text-3xl font-bold text-[#3C3C3C]">
           Historique des paiements
         </h1>
         <div class="flex items-center gap-2">
@@ -37,7 +37,7 @@
            startDate=${selectedStartDate},
            endDate=${selectedEndDate}
          )}"
-            class="bg-[#9933cc] hover:bg-purple-700 text-white text-xs font-medium py-2 px-4 rounded-lg transition-all inline-flex items-center gap-1"
+            class="bg-[#D32F2F] hover:bg-red-700 text-white text-xs font-medium py-2 px-4 rounded-lg transition-all inline-flex items-center gap-1"
           >
             <span class="material-icons text-sm">download</span>
             Exporter
@@ -57,40 +57,40 @@
         class="mx-auto grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6 max-w-4xl"
       >
         <div
-          class="bg-white rounded-lg shadow-sm p-4 hover:shadow transition flex flex-col justify-center items-center"
+          class="bg-[#FDFDFD] rounded-lg shadow-sm p-4 hover:shadow transition flex flex-col justify-center items-center"
         >
           <h3
-            class="text-[#16163f] font-semibold text-sm sm:text-base lg:text-lg text-center"
+            class="text-[#3C3C3C] font-semibold text-sm sm:text-base lg:text-lg text-center"
           >
             Total collecté
           </h3>
           <p
-            class="text-lg sm:text-xl font-extrabold text-[#9933cc] mt-1"
+            class="text-lg sm:text-xl font-extrabold text-[#800000] mt-1"
             th:text="${totalCollected}"
           >
             0 Ar
           </p>
         </div>
         <div
-          class="bg-white rounded-lg shadow-sm p-4 hover:shadow transition flex flex-col justify-center items-center"
+          class="bg-[#FDFDFD] rounded-lg shadow-sm p-4 hover:shadow transition flex flex-col justify-center items-center"
         >
           <h3
-            class="text-[#16163f] font-semibold text-sm sm:text-base lg:text-lg text-center"
+            class="text-[#3C3C3C] font-semibold text-sm sm:text-base lg:text-lg text-center"
           >
             Nombre de paiements
           </h3>
           <p
-            class="text-lg sm:text-xl font-extrabold text-[#16163f] mt-1"
+            class="text-lg sm:text-xl font-extrabold text-[#3C3C3C] mt-1"
             th:text="${totalCount}"
           >
             0
           </p>
         </div>
         <div
-          class="bg-white rounded-lg shadow-sm p-4 hover:shadow transition flex flex-col justify-center items-center"
+          class="bg-[#FDFDFD] rounded-lg shadow-sm p-4 hover:shadow transition flex flex-col justify-center items-center"
         >
           <h3
-            class="text-[#16163f] font-semibold text-sm sm:text-base lg:text-lg text-center"
+            class="text-[#3C3C3C] font-semibold text-sm sm:text-base lg:text-lg text-center"
           >
             En attente
           </h3>
@@ -106,7 +106,7 @@
       <form
         th:action="@{/payments}"
         method="get"
-        class="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-6"
+        class="bg-[#FDFDFD] rounded-lg shadow-sm p-4 sm:p-6 mb-6"
       >
         <div class="flex flex-wrap justify-center gap-4 items-end">
           <div class="w-44">
@@ -175,7 +175,7 @@
           <div class="flex items-end gap-2">
             <button
               type="submit"
-              class="bg-[#16163f] hover:bg-opacity-90 text-white text-xs font-medium py-2 px-4 rounded-lg transition-all flex items-center justify-center gap-1"
+              class="bg-[#D32F2F] hover:bg-opacity-90 text-white text-xs font-medium py-2 px-4 rounded-lg transition-all flex items-center justify-center gap-1"
             >
               <span class="material-icons text-sm">filter_list</span>
               Filtrer
@@ -192,10 +192,10 @@
         </div>
       </form>
 
-      <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+      <div class="bg-[#FDFDFD] rounded-lg shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
           <table class="w-full table-auto min-w-[800px]">
-            <thead class="bg-[#16163f] text-white">
+            <thead class="bg-[#800000] text-white">
               <tr>
                 <th
                   class="px-2 sm:px-3 py-2 sm:py-3 text-left font-semibold text-xs whitespace-nowrap"
@@ -285,7 +285,7 @@
                 </td>
                 <td class="px-2 sm:px-3 py-2 sm:py-3">
                   <span
-                    class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 whitespace-nowrap"
+                    class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 whitespace-nowrap"
                     th:text="${p.pspPayment().pspType()}"
                     >ORANGE_MONEY</span
                   >
@@ -390,7 +390,7 @@
              class="px-3 py-2 text-xs font-medium rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
              th:text="${i + 1}">1</a>
           <span th:unless="${i != currentPage}"
-                class="px-3 py-2 text-xs font-medium rounded-lg bg-[#16163f] text-white"
+                class="px-3 py-2 text-xs font-medium rounded-lg bg-[#800000] text-white"
                 th:text="${i + 1}">1</span>
         </span>
         <a th:if="${currentPage < totalPages - 1}"
