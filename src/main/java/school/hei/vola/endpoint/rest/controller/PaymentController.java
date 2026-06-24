@@ -63,9 +63,12 @@ public class PaymentController {
         endDate != null
             ? endDate.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant()
             : Instant.parse("9999-12-31T23:59:59Z");
+
     var csv = paymentService.buildPaymentsCsv(applicationName, start, end);
+    var filename = "payments_" + applicationName + ".csv";
+
     return ResponseEntity.ok()
-        .header(CONTENT_DISPOSITION, "attachment; filename=payments_" + applicationName + ".csv")
+        .header(CONTENT_DISPOSITION, "attachment; filename=" + filename)
         .header("Content-Type", "text/csv")
         .body(csv.getBytes());
   }

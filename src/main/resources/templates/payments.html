@@ -16,6 +16,7 @@
       href="https://fonts.googleapis.com/icon?family=Material+Icons"
     />
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/css/style.css" />
   </head>
   <body class="min-h-screen bg-gray-100 font-[Poppins] text-gray-700">
     <div th:replace="fragments/header :: header"></div>
@@ -118,7 +119,7 @@
               id="applicationName"
               class="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs outline-none focus:ring-0 focus:border-gray-400 transition-all"
             >
-              <option value="">Toutes les applications</option>
+              <option value="all">Toutes les applications</option>
               <option
                 th:each="app : ${applications}"
                 th:value="${app.name}"
@@ -216,7 +217,7 @@
               <tr
                 th:each="p : ${payments}"
                 class="border-b border-gray-100 hover:bg-gray-50 transition-colors"
-                th:style="'border-left: 3px solid ' + (p.getVerificationStatus().name() == 'SUCCEEDED' ? '#22c55e' : (p.getVerificationStatus().name() == 'FAILED' ? '#ef4444' : '#eab308'))"
+                th:classappend="${p.getVerificationStatus().name() == 'SUCCEEDED'} ? 'border-left-succeeded' : (${p.getVerificationStatus().name() == 'FAILED'} ? 'border-left-failed' : 'border-left-verifying')"
               >
                 <td class="px-2 sm:px-3 py-2 sm:py-3 text-xs">
                   <span
@@ -239,16 +240,16 @@
                 </td>
                 <td class="px-2 sm:px-3 py-2 sm:py-3">
                   <span
-                    class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 whitespace-nowrap"
-                    th:text="${p.pspPayment().pspType()}"
-                    >ORANGE_MONEY</span
+                    th:text="${p.application().name()}"
+                    class="text-xs text-gray-700"
+                    >App</span
                   >
                 </td>
                 <td class="px-2 sm:px-3 py-2 sm:py-3">
                   <span
-                    th:text="${p.application().name()}"
-                    class="text-xs text-gray-700"
-                    >App</span
+                    class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 whitespace-nowrap"
+                    th:text="${p.pspPayment().pspType()}"
+                    >ORANGE_MONEY</span
                   >
                 </td>
                 <td class="px-2 sm:px-3 py-2 sm:py-3 text-right">
