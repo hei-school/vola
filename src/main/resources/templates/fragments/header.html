@@ -1,15 +1,21 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <body>
-<header th:fragment="header" class="bg-[#800000] text-white shadow-md">
-  <div class="container mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
-    <div class="flex items-center gap-3">
+<header th:fragment="header" class="app-header text-white shadow-[0_2px_12px_rgba(83,12,8,0.35)] border-b-[3px] border-[#D32F2F]">
+  <div class="container mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between relative">
+    <div class="flex items-center gap-2.5">
+      <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-white">
+        <span class="material-icons text-lg sm:text-lg">account_balance_wallet</span>
+      </span>
       <h1 class="text-xl sm:text-2xl font-bold tracking-tight">Vola</h1>
     </div>
-    <div class="flex items-center gap-3 sm:gap-4">
-      <span class="text-xs sm:text-sm text-white/70" sec:authentication="principal.attributes['email']">Admin</span>
+    <div class="flex items-center gap-2 sm:gap-3">
+      <span class="inline-flex items-center gap-1.5 text-white">
+        <span class="material-icons text-sm">person</span>
+        <span class="text-xs sm:text-sm" sec:authentication="principal.attributes['email']">Admin</span>
+      </span>
       <button type="button" onclick="document.getElementById('logout-dialog').showModal()"
-              class="text-xs bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg transition-all flex items-center gap-1">
+              class="bg-[#D32F2F] hover:bg-[#b71c1c] border border-[#D32F2F] hover:border-[#b71c1c] text-white text-xs sm:text-sm font-medium px-3 sm:px-4 py-2 rounded-lg transition-all flex items-center gap-1.5">
         <span class="material-icons text-sm">logout</span>
         <span class="hidden sm:inline">Déconnexion</span>
       </button>
@@ -34,7 +40,7 @@
       <form th:action="@{/logout}" method="POST" class="space-y-3">
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
         <button type="submit"
-                class="w-full bg-[#D32F2F] hover:bg-opacity-90 text-white font-bold py-3 px-6 rounded-full transition-all transform hover:scale-[1.02] text-sm flex items-center justify-center gap-2">
+                class="w-full bg-[#D32F2F] hover:bg-[#b71c1c] text-white font-bold py-3 px-6 rounded-full transition-all transform hover:scale-[1.02] text-sm flex items-center justify-center gap-2">
           <i class="material-icons text-lg">logout</i>
           <span>Oui, me déconnecter</span>
         </button>
