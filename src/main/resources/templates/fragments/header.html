@@ -1,15 +1,21 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <body>
-<header th:fragment="header" class="bg-[#16163f] text-white shadow-md">
-  <div class="container mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
-    <div class="flex items-center gap-3">
+<header th:fragment="header" class="app-header text-white shadow-[0_2px_12px_rgba(83,12,8,0.35)] border-b-[3px] border-[#D32F2F]">
+  <div class="container mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between relative">
+    <div class="flex items-center gap-2.5">
+      <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-white">
+        <span class="material-icons text-lg sm:text-lg">account_balance_wallet</span>
+      </span>
       <h1 class="text-xl sm:text-2xl font-bold tracking-tight">Vola</h1>
     </div>
-    <div class="flex items-center gap-3 sm:gap-4">
-      <span class="text-xs sm:text-sm text-white/70" sec:authentication="principal.attributes['email']">Admin</span>
+    <div class="flex items-center gap-2 sm:gap-3">
+      <span class="inline-flex items-center gap-1.5 text-white">
+        <span class="material-icons text-sm">person</span>
+        <span class="text-xs sm:text-sm" sec:authentication="principal.attributes['email']">Admin</span>
+      </span>
       <button type="button" onclick="document.getElementById('logout-dialog').showModal()"
-              class="text-xs bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg transition-all flex items-center gap-1">
+              class="bg-[#D32F2F] hover:bg-[#b71c1c] border border-[#D32F2F] hover:border-[#b71c1c] text-white text-xs sm:text-sm font-medium px-3 sm:px-4 py-2 rounded-lg transition-all flex items-center gap-1.5">
         <span class="material-icons text-sm">logout</span>
         <span class="hidden sm:inline">Déconnexion</span>
       </button>
@@ -23,10 +29,10 @@
     <div class="bg-white p-6 sm:p-8 rounded-xl shadow-2xl max-w-md w-full mx-4">
       <!-- Icon -->
       <div class="text-center mb-6">
-        <div class="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-[#16163f] bg-opacity-10 rounded-full mb-4">
-          <i class="material-icons text-[#16163f] text-4xl sm:text-5xl">logout</i>
+        <div class="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-[#800000] bg-opacity-10 rounded-full mb-4">
+          <i class="material-icons text-[#800000] text-4xl sm:text-5xl">logout</i>
         </div>
-        <h2 class="text-2xl font-bold text-[#16163f] mb-2">Confirmer la déconnexion</h2>
+        <h2 class="text-2xl font-bold text-[#3C3C3C] mb-2">Confirmer la déconnexion</h2>
         <p class="text-sm text-gray-600">Voulez-vous vraiment vous déconnecter ?</p>
       </div>
 
@@ -34,7 +40,7 @@
       <form th:action="@{/logout}" method="POST" class="space-y-3">
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
         <button type="submit"
-                class="w-full bg-[#16163f] hover:bg-opacity-90 text-white font-bold py-3 px-6 rounded-full transition-all transform hover:scale-[1.02] text-sm flex items-center justify-center gap-2">
+                class="w-full bg-[#D32F2F] hover:bg-[#b71c1c] text-white font-bold py-3 px-6 rounded-full transition-all transform hover:scale-[1.02] text-sm flex items-center justify-center gap-2">
           <i class="material-icons text-lg">logout</i>
           <span>Oui, me déconnecter</span>
         </button>
@@ -48,9 +54,9 @@
       </button>
 
       <!-- Info box -->
-      <div class="mt-6 p-3 rounded-lg bg-[#9933cc] bg-opacity-10 border border-[#9933cc] border-opacity-20">
+      <div class="mt-6 p-3 rounded-lg bg-[#800000] bg-opacity-10 border border-[#800000] border-opacity-20">
         <div class="flex items-start gap-2">
-          <i class="material-icons text-[#9933cc] text-sm mt-0.5">info</i>
+          <i class="material-icons text-[#800000] text-sm mt-0.5">info</i>
           <p class="text-xs text-gray-700">Vous serez redirigé vers la page d'accueil après la déconnexion.</p>
         </div>
       </div>
