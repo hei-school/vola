@@ -33,6 +33,7 @@
             th:if="${selectedApplication != null}"
             th:href="@{/payments/export/csv(
            applicationName=${selectedApplication},
+           scope=${selectedScope},
            startDate=${selectedStartDate},
            endDate=${selectedEndDate}
          )}"
@@ -130,6 +131,21 @@
           </div>
           <div class="w-44">
             <label
+              for="scope"
+              class="block text-xs font-semibold text-gray-700 mb-1"
+              >Scope</label
+            >
+            <input
+              type="text"
+              name="scope"
+              id="scope"
+              th:value="${selectedScope}"
+              placeholder="Filtrer par scope"
+              class="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs outline-none focus:ring-0 focus:border-gray-400 transition-all"
+            />
+          </div>
+          <div class="w-44">
+            <label
               for="startDate"
               class="block text-xs font-semibold text-gray-700 mb-1"
               >Du</label
@@ -165,7 +181,7 @@
               Filtrer
             </button>
             <a
-              th:if="${selectedApplication != null or selectedStartDate != null or selectedEndDate != null}"
+              th:if="${selectedApplication != null or selectedScope != null or selectedStartDate != null or selectedEndDate != null}"
               th:href="@{/payments}"
               class="bg-gray-200 hover:bg-gray-300 text-gray-700 text-xs font-medium py-2 px-4 rounded-lg transition-all flex items-center justify-center gap-1"
             >
@@ -195,6 +211,11 @@
                   class="px-2 sm:px-3 py-2 sm:py-3 text-left font-semibold text-xs"
                 >
                   Application
+                </th>
+                <th
+                  class="px-2 sm:px-3 py-2 sm:py-3 text-left font-semibold text-xs"
+                >
+                  Scope
                 </th>
                 <th
                   class="px-2 sm:px-3 py-2 sm:py-3 text-left font-semibold text-xs"
@@ -253,6 +274,13 @@
                     th:text="${p.application().name()}"
                     class="text-xs text-gray-700"
                     >App</span
+                  >
+                </td>
+                <td class="px-2 sm:px-3 py-2 sm:py-3">
+                  <span
+                    th:text="${p.scope()}"
+                    class="text-xs text-gray-500"
+                    >--</span
                   >
                 </td>
                 <td class="px-2 sm:px-3 py-2 sm:py-3">
@@ -324,7 +352,7 @@
                 </td>
               </tr>
               <tr th:if="${#lists.isEmpty(payments)}">
-                <td colspan="8" class="px-4 py-8 text-center text-gray-500">
+                <td colspan="9" class="px-4 py-8 text-center text-gray-500">
                   <div class="flex flex-col items-center justify-center w-full">
                     <span class="material-icons text-4xl text-gray-300 mb-2"
                       >inbox</span
@@ -350,7 +378,7 @@
 
       <div th:if="${totalPages > 1}" class="flex items-center justify-center gap-2 mt-6">
         <a th:if="${currentPage > 0}"
-           th:href="@{/payments(applicationName=${selectedApplication}, startDate=${selectedStartDate}, endDate=${selectedEndDate}, page=${currentPage - 1})}"
+           th:href="@{/payments(applicationName=${selectedApplication}, scope=${selectedScope}, startDate=${selectedStartDate}, endDate=${selectedEndDate}, page=${currentPage - 1})}"
            class="px-3 py-2 text-xs font-medium rounded-lg bg-white border border-gray-200 hover:bg-gray-50 transition-colors">
           <span class="material-icons text-sm align-middle">chevron_left</span>
           Précédent
@@ -358,7 +386,7 @@
         <span th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
               th:if="${i == currentPage or (i >= currentPage - 2 and i <= currentPage + 2)}">
           <a th:if="${i != currentPage}"
-             th:href="@{/payments(applicationName=${selectedApplication}, startDate=${selectedStartDate}, endDate=${selectedEndDate}, page=${i})}"
+             th:href="@{/payments(applicationName=${selectedApplication}, scope=${selectedScope}, startDate=${selectedStartDate}, endDate=${selectedEndDate}, page=${i})}"
              class="px-3 py-2 text-xs font-medium rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
              th:text="${i + 1}">1</a>
           <span th:unless="${i != currentPage}"
@@ -366,7 +394,7 @@
                 th:text="${i + 1}">1</span>
         </span>
         <a th:if="${currentPage < totalPages - 1}"
-           th:href="@{/payments(applicationName=${selectedApplication}, startDate=${selectedStartDate}, endDate=${selectedEndDate}, page=${currentPage + 1})}"
+           th:href="@{/payments(applicationName=${selectedApplication}, scope=${selectedScope}, startDate=${selectedStartDate}, endDate=${selectedEndDate}, page=${currentPage + 1})}"
            class="px-3 py-2 text-xs font-medium rounded-lg bg-white border border-gray-200 hover:bg-gray-50 transition-colors">
           Suivant
           <span class="material-icons text-sm align-middle">chevron_right</span>

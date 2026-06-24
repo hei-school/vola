@@ -73,7 +73,7 @@ class PaymentControllerIT extends FacadeIT {
     var pspType = ORANGE_MONEY;
     var pspPaymentId = ORANGE_REF_SUCCEEDED;
 
-    var createdPayment = subject.createPayment(apiKey, email, pspType, pspPaymentId);
+    var createdPayment = subject.createPayment(apiKey, email, pspType, pspPaymentId, null);
     assertNotNull(createdPayment.id());
     assertNull(createdPayment.pspPayment().amount());
     assertNull(createdPayment.lastPspVerificationInstant());
@@ -91,7 +91,7 @@ class PaymentControllerIT extends FacadeIT {
     var pspType = ORANGE_MONEY;
     var pspPaymentId = ORANGE_REF_SUCCEEDED;
 
-    var createdPayment = subject.createPayment(apiKey, email, pspType, pspPaymentId);
+    var createdPayment = subject.createPayment(apiKey, email, pspType, pspPaymentId, null);
     assertNotNull(createdPayment.id());
     assertNull(createdPayment.pspPayment().amount());
     assertNull(createdPayment.lastPspVerificationInstant());
@@ -127,7 +127,7 @@ class PaymentControllerIT extends FacadeIT {
       throw new RuntimeException("The error is ", e);
     }
 
-    var createdPayment = subject.createPayment(apiKey, email, pspType, pspPaymentId);
+    var createdPayment = subject.createPayment(apiKey, email, pspType, pspPaymentId, null);
     assertNotNull(createdPayment.id());
     assertNull(createdPayment.pspPayment().amount());
     assertNull(createdPayment.lastPspVerificationInstant());
@@ -160,7 +160,7 @@ class PaymentControllerIT extends FacadeIT {
     var pspType = ORANGE_MONEY;
     var pspPaymentId = "non-existing";
 
-    var createdPayment = subject.createPayment(apiKey, email, pspType, pspPaymentId);
+    var createdPayment = subject.createPayment(apiKey, email, pspType, pspPaymentId, null);
     assertNotNull(createdPayment.id());
     assertNull(createdPayment.pspPayment().amount());
     assertNull(createdPayment.lastPspVerificationInstant());
@@ -231,9 +231,9 @@ class PaymentControllerIT extends FacadeIT {
     var appName = app.getName();
     var email = randomEmail();
 
-    subject.createPayment(apiKey, email, ORANGE_MONEY, randomUUID().toString());
+    subject.createPayment(apiKey, email, ORANGE_MONEY, randomUUID().toString(), null);
 
-    var response = subject.exportPaymentsCsv(appName, null, null);
+    var response = subject.exportPaymentsCsv(appName, null, null, null);
 
     assertEquals(200, response.getStatusCodeValue());
     assertTrue(response.getHeaders().get(CONTENT_DISPOSITION).getFirst().contains("attachment"));
@@ -251,10 +251,11 @@ class PaymentControllerIT extends FacadeIT {
     var appName = app.getName();
     var email = randomEmail();
 
-    subject.createPayment(apiKey, email, ORANGE_MONEY, randomUUID().toString());
+    subject.createPayment(apiKey, email, ORANGE_MONEY, randomUUID().toString(), null);
 
     var response =
-        subject.exportPaymentsCsv(appName, LocalDate.of(2020, 1, 1), LocalDate.of(2099, 1, 1));
+        subject.exportPaymentsCsv(
+            appName, null, LocalDate.of(2020, 1, 1), LocalDate.of(2099, 1, 1));
 
     assertEquals(200, response.getStatusCodeValue());
     var body = new String(response.getBody());
@@ -267,10 +268,11 @@ class PaymentControllerIT extends FacadeIT {
     var apiKey = app.getApiKey();
     var appName = app.getName();
 
-    subject.createPayment(apiKey, randomEmail(), ORANGE_MONEY, randomUUID().toString());
+    subject.createPayment(apiKey, randomEmail(), ORANGE_MONEY, randomUUID().toString(), null);
 
     var response =
-        subject.exportPaymentsCsv(appName, LocalDate.of(2020, 1, 1), LocalDate.of(2020, 1, 2));
+        subject.exportPaymentsCsv(
+            appName, null, LocalDate.of(2020, 1, 1), LocalDate.of(2020, 1, 2));
 
     assertEquals(200, response.getStatusCodeValue());
     var body = new String(response.getBody());
@@ -284,9 +286,9 @@ class PaymentControllerIT extends FacadeIT {
     var apiKey = app.getApiKey();
     var appName = app.getName();
 
-    subject.createPayment(apiKey, randomEmail(), ORANGE_MONEY, randomUUID().toString());
+    subject.createPayment(apiKey, randomEmail(), ORANGE_MONEY, randomUUID().toString(), null);
 
-    var response = subject.exportPaymentsCsv(appName, null, null);
+    var response = subject.exportPaymentsCsv(appName, null, null, null);
 
     var disposition = response.getHeaders().get(CONTENT_DISPOSITION).getFirst();
     assertTrue(disposition.contains("payments_" + appName + ".csv"));
@@ -299,10 +301,10 @@ class PaymentControllerIT extends FacadeIT {
     var email1 = randomEmail();
     var email2 = randomEmail();
 
-    subject.createPayment(app1.getApiKey(), email1, ORANGE_MONEY, randomUUID().toString());
-    subject.createPayment(app2.getApiKey(), email2, ORANGE_MONEY, randomUUID().toString());
+    subject.createPayment(app1.getApiKey(), email1, ORANGE_MONEY, randomUUID().toString(), null);
+    subject.createPayment(app2.getApiKey(), email2, ORANGE_MONEY, randomUUID().toString(), null);
 
-    var response = subject.exportPaymentsCsv("all", null, null);
+    var response = subject.exportPaymentsCsv("all", null, null, null);
 
     assertEquals(200, response.getStatusCodeValue());
     var body = new String(response.getBody());
@@ -313,9 +315,10 @@ class PaymentControllerIT extends FacadeIT {
   @Test
   void exportPaymentsCsv_with_all_uses_all_in_filename() {
     var app = randomJApplication();
-    subject.createPayment(app.getApiKey(), randomEmail(), ORANGE_MONEY, randomUUID().toString());
+    subject.createPayment(
+        app.getApiKey(), randomEmail(), ORANGE_MONEY, randomUUID().toString(), null);
 
-    var response = subject.exportPaymentsCsv("all", null, null);
+    var response = subject.exportPaymentsCsv("all", null, null, null);
 
     var disposition = response.getHeaders().get(CONTENT_DISPOSITION).getFirst();
     assertTrue(disposition.contains("payments_all.csv"));

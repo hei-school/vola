@@ -40,8 +40,8 @@ public class PaymentService {
 
   @Transactional
   public Payment createPayment(
-      String apiKey, String payerEmail, PspType pspType, String pspPaymentId) {
-    var payment = paymentRepository.createPayment(apiKey, payerEmail, pspType, pspPaymentId);
+      String apiKey, String payerEmail, PspType pspType, String pspPaymentId, String scope) {
+    var payment = paymentRepository.createPayment(apiKey, payerEmail, pspType, pspPaymentId, scope);
 
     eventProducer.accept(List.of(new PaymentVerificationRequested(payment)));
     log.info("PaymentVerificationRequested event sent for payment={}", payment);
@@ -95,38 +95,46 @@ public class PaymentService {
   }
 
   public List<Payment> findPaymentsByApplicationNameAndDateRange(
-      String applicationName, Instant start, Instant end) {
+      String applicationName, String scope, Instant start, Instant end) {
     var effectiveApp = "all".equals(applicationName) ? null : applicationName;
-    return paymentRepository.findByApplicationNameAndDateRange(effectiveApp, start, end);
+    var effectiveScope = "all".equals(scope) ? null : scope;
+    return paymentRepository.findByApplicationNameAndDateRange(
+        effectiveApp, effectiveScope, start, end);
   }
 
   public Page<Payment> findFilteredPage(
-      String applicationName, Instant start, Instant end, Pageable pageable) {
+      String applicationName, String scope, Instant start, Instant end, Pageable pageable) {
     var effectiveApp = "all".equals(applicationName) ? null : applicationName;
-    return paymentRepository.findFilteredPage(effectiveApp, start, end, pageable);
+    var effectiveScope = "all".equals(scope) ? null : scope;
+    return paymentRepository.findFilteredPage(effectiveApp, effectiveScope, start, end, pageable);
   }
 
-  public long countFiltered(String applicationName, Instant start, Instant end) {
+  public long countFiltered(String applicationName, String scope, Instant start, Instant end) {
     var effectiveApp = "all".equals(applicationName) ? null : applicationName;
-    return paymentRepository.countFiltered(effectiveApp, start, end);
+    var effectiveScope = "all".equals(scope) ? null : scope;
+    return paymentRepository.countFiltered(effectiveApp, effectiveScope, start, end);
   }
 
-  public long sumAmountForSucceeded(String applicationName, Instant start, Instant end) {
+  public long sumAmountForSucceeded(
+      String applicationName, String scope, Instant start, Instant end) {
     var effectiveApp = "all".equals(applicationName) ? null : applicationName;
-    return paymentRepository.sumAmountForSucceeded(effectiveApp, start, end);
+    var effectiveScope = "all".equals(scope) ? null : scope;
+    return paymentRepository.sumAmountForSucceeded(effectiveApp, effectiveScope, start, end);
   }
 
-  public long countPending(String applicationName, Instant start, Instant end) {
+  public long countPending(String applicationName, String scope, Instant start, Instant end) {
     var effectiveApp = "all".equals(applicationName) ? null : applicationName;
-    return paymentRepository.countPending(effectiveApp, start, end);
+    var effectiveScope = "all".equals(scope) ? null : scope;
+    return paymentRepository.countPending(effectiveApp, effectiveScope, start, end);
   }
 
-  public String buildPaymentsCsv(String applicationName, Instant start, Instant end) {
-    List<Payment> payments = findPaymentsByApplicationNameAndDateRange(applicationName, start, end);
+  public String buildPaymentsCsv(String applicationName, String scope, Instant start, Instant end) {
+    List<Payment> payments =
+        findPaymentsByApplicationNameAndDateRange(applicationName, scope, start, end);
     var sb = new StringBuilder();
     sb.append(
         "Email payeur;PSP;Ref paiement;Montant (Ar);Statut;Date cr\u00e9ation;Derni\u00e8re"
-            + " v\u00e9rification;Application\n");
+            + " v\u00e9rification;Scope;Application\n");
     for (var p : payments) {
       var amount = p.pspPayment().amount();
       sb.append(escapeCsv(p.payer().email()))
@@ -145,6 +153,8 @@ public class PaymentService {
               p.lastPspVerificationInstant() != null
                   ? p.lastPspVerificationInstant().toString()
                   : "")
+          .append(';')
+          .append(escapeCsv(p.scope()))
           .append(';')
           .append(p.application().name())
           .append('\n');

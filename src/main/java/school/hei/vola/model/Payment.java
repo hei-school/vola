@@ -16,7 +16,8 @@ public record Payment(
     Instant lastPspVerificationInstant,
     int verificationAttemptNb,
     User payer,
-    Application application) {
+    Application application,
+    String scope) {
 
   private static final int MAX_VERIFICATION_ATTEMPT_NB = 5;
 

@@ -50,7 +50,7 @@ class PaymentServiceIT extends FacadeIT {
     var apiKey = randomJApplication().getApiKey();
     var pspPaymentId = randomUUID().toString();
 
-    var created = subject.createPayment(apiKey, email, ORANGE_MONEY, pspPaymentId);
+    var created = subject.createPayment(apiKey, email, ORANGE_MONEY, pspPaymentId, null);
     var retrieved =
         subject
             .findPaymentByPayerEmailAndPspTypeAndPspPaymentId(email, ORANGE_MONEY, pspPaymentId)
@@ -65,7 +65,7 @@ class PaymentServiceIT extends FacadeIT {
     var email = "lou@hei.school";
     var apiKey = randomJApplication().getApiKey();
     var pspPaymentId = "MP250729.1216.D77954";
-    subject.createPayment(apiKey, email, ORANGE_MONEY, pspPaymentId);
+    subject.createPayment(apiKey, email, ORANGE_MONEY, pspPaymentId, null);
 
     var existingPaymentInfo =
         PaymentInfo.builder()
@@ -218,14 +218,18 @@ class PaymentServiceIT extends FacadeIT {
     var apiKey = randomJApplication().getApiKey();
     var paymentInfo = randomPaymentInfo();
     subject.createPayment(
-        apiKey, paymentInfo.payerEmail(), paymentInfo.pspType(), paymentInfo.pspPaymentId());
+        apiKey, paymentInfo.payerEmail(), paymentInfo.pspType(), paymentInfo.pspPaymentId(), null);
 
     var exception =
         assertThrows(
             RuntimeException.class,
             () ->
                 subject.createPayment(
-                    apiKey, randomEmail(), paymentInfo.pspType(), paymentInfo.pspPaymentId()));
+                    apiKey,
+                    randomEmail(),
+                    paymentInfo.pspType(),
+                    paymentInfo.pspPaymentId(),
+                    null));
     assertInstanceOf(IllegalArgumentException.class, exception.getCause());
   }
 
@@ -234,7 +238,11 @@ class PaymentServiceIT extends FacadeIT {
     var apiKey = randomJApplication().getApiKey();
     var existingInfo = randomPaymentInfo();
     subject.createPayment(
-        apiKey, existingInfo.payerEmail(), existingInfo.pspType(), existingInfo.pspPaymentId());
+        apiKey,
+        existingInfo.payerEmail(),
+        existingInfo.pspType(),
+        existingInfo.pspPaymentId(),
+        null);
     reset(eventProducerMocked);
 
     var newInfo = randomPaymentInfo();
@@ -259,8 +267,8 @@ class PaymentServiceIT extends FacadeIT {
     var apiKey = app.getApiKey();
     var appName = app.getName();
 
-    subject.createPayment(apiKey, randomEmail(), ORANGE_MONEY, randomUUID().toString());
-    subject.createPayment(apiKey, randomEmail(), ORANGE_MONEY, randomUUID().toString());
+    subject.createPayment(apiKey, randomEmail(), ORANGE_MONEY, randomUUID().toString(), null);
+    subject.createPayment(apiKey, randomEmail(), ORANGE_MONEY, randomUUID().toString(), null);
 
     var result = subject.findPaymentsByApplicationName(appName);
 
@@ -281,12 +289,12 @@ class PaymentServiceIT extends FacadeIT {
     var apiKey = app.getApiKey();
     var appName = app.getName();
 
-    subject.createPayment(apiKey, randomEmail(), ORANGE_MONEY, randomUUID().toString());
-    subject.createPayment(apiKey, randomEmail(), ORANGE_MONEY, randomUUID().toString());
+    subject.createPayment(apiKey, randomEmail(), ORANGE_MONEY, randomUUID().toString(), null);
+    subject.createPayment(apiKey, randomEmail(), ORANGE_MONEY, randomUUID().toString(), null);
 
     var result =
         subject.findPaymentsByApplicationNameAndDateRange(
-            appName, Instant.EPOCH, Instant.parse("9999-12-31T23:59:59Z"));
+            appName, null, Instant.EPOCH, Instant.parse("9999-12-31T23:59:59Z"));
 
     assertEquals(2, result.size());
   }
@@ -297,11 +305,14 @@ class PaymentServiceIT extends FacadeIT {
     var apiKey = app.getApiKey();
     var appName = app.getName();
 
-    subject.createPayment(apiKey, randomEmail(), ORANGE_MONEY, randomUUID().toString());
+    subject.createPayment(apiKey, randomEmail(), ORANGE_MONEY, randomUUID().toString(), null);
 
     var result =
         subject.findPaymentsByApplicationNameAndDateRange(
-            appName, Instant.parse("2020-01-01T00:00:00Z"), Instant.parse("2020-01-02T00:00:00Z"));
+            appName,
+            null,
+            Instant.parse("2020-01-01T00:00:00Z"),
+            Instant.parse("2020-01-02T00:00:00Z"));
 
     assertTrue(result.isEmpty());
   }
@@ -313,12 +324,12 @@ class PaymentServiceIT extends FacadeIT {
     var email1 = randomEmail();
     var email2 = randomEmail();
 
-    subject.createPayment(app1.getApiKey(), email1, ORANGE_MONEY, randomUUID().toString());
-    subject.createPayment(app2.getApiKey(), email2, ORANGE_MONEY, randomUUID().toString());
+    subject.createPayment(app1.getApiKey(), email1, ORANGE_MONEY, randomUUID().toString(), null);
+    subject.createPayment(app2.getApiKey(), email2, ORANGE_MONEY, randomUUID().toString(), null);
 
     var result =
         subject.findPaymentsByApplicationNameAndDateRange(
-            "all", Instant.EPOCH, Instant.parse("9999-12-31T23:59:59Z"));
+            "all", null, Instant.EPOCH, Instant.parse("9999-12-31T23:59:59Z"));
 
     assertTrue(result.size() >= 2);
     assertTrue(result.stream().anyMatch(p -> p.payer().email().equals(email1)));
@@ -333,10 +344,11 @@ class PaymentServiceIT extends FacadeIT {
     var email = randomEmail();
     var pspPaymentId = randomUUID().toString();
 
-    subject.createPayment(apiKey, email, ORANGE_MONEY, pspPaymentId);
+    subject.createPayment(apiKey, email, ORANGE_MONEY, pspPaymentId, null);
 
     var csv =
-        subject.buildPaymentsCsv(appName, Instant.EPOCH, Instant.parse("9999-12-31T23:59:59Z"));
+        subject.buildPaymentsCsv(
+            appName, null, Instant.EPOCH, Instant.parse("9999-12-31T23:59:59Z"));
     var lines = csv.split("\n");
 
     assertEquals(2, lines.length);
@@ -354,7 +366,8 @@ class PaymentServiceIT extends FacadeIT {
     var appName = app.getName();
 
     var csv =
-        subject.buildPaymentsCsv(appName, Instant.EPOCH, Instant.parse("9999-12-31T23:59:59Z"));
+        subject.buildPaymentsCsv(
+            appName, null, Instant.EPOCH, Instant.parse("9999-12-31T23:59:59Z"));
     var lines = csv.split("\n");
 
     assertEquals(1, lines.length);
@@ -368,7 +381,7 @@ class PaymentServiceIT extends FacadeIT {
     var appName = app.getName();
     var email = randomEmail();
 
-    var created = subject.createPayment(apiKey, email, ORANGE_MONEY, randomUUID().toString());
+    var created = subject.createPayment(apiKey, email, ORANGE_MONEY, randomUUID().toString(), null);
     var succeeded =
         created.toBuilder()
             .pspPayment(created.pspPayment().toBuilder().amount(5000).build())
@@ -376,7 +389,8 @@ class PaymentServiceIT extends FacadeIT {
     paymentRepository.save(succeeded);
 
     var csv =
-        subject.buildPaymentsCsv(appName, Instant.EPOCH, Instant.parse("9999-12-31T23:59:59Z"));
+        subject.buildPaymentsCsv(
+            appName, null, Instant.EPOCH, Instant.parse("9999-12-31T23:59:59Z"));
 
     assertTrue(csv.contains("Succ\u00e8s"));
     assertTrue(csv.contains("5000"));
@@ -389,12 +403,13 @@ class PaymentServiceIT extends FacadeIT {
     var appName = app.getName();
     var email = randomEmail();
 
-    var created = subject.createPayment(apiKey, email, ORANGE_MONEY, randomUUID().toString());
+    var created = subject.createPayment(apiKey, email, ORANGE_MONEY, randomUUID().toString(), null);
     var failed = created.toBuilder().verificationAttemptNb(10).build();
     paymentRepository.save(failed);
 
     var csv =
-        subject.buildPaymentsCsv(appName, Instant.EPOCH, Instant.parse("9999-12-31T23:59:59Z"));
+        subject.buildPaymentsCsv(
+            appName, null, Instant.EPOCH, Instant.parse("9999-12-31T23:59:59Z"));
 
     assertTrue(csv.contains("\u00c9chou\u00e9"));
   }
@@ -406,10 +421,11 @@ class PaymentServiceIT extends FacadeIT {
     var appName = app.getName();
     var emailWithSemicolon = "test;special@cute.dev";
 
-    subject.createPayment(apiKey, emailWithSemicolon, ORANGE_MONEY, randomUUID().toString());
+    subject.createPayment(apiKey, emailWithSemicolon, ORANGE_MONEY, randomUUID().toString(), null);
 
     var csv =
-        subject.buildPaymentsCsv(appName, Instant.EPOCH, Instant.parse("9999-12-31T23:59:59Z"));
+        subject.buildPaymentsCsv(
+            appName, null, Instant.EPOCH, Instant.parse("9999-12-31T23:59:59Z"));
 
     assertTrue(csv.contains("\"test;special@cute.dev\""));
   }
@@ -421,10 +437,11 @@ class PaymentServiceIT extends FacadeIT {
     var appName = app.getName();
     var email = randomEmail();
 
-    subject.createPayment(apiKey, email, ORANGE_MONEY, randomUUID().toString());
+    subject.createPayment(apiKey, email, ORANGE_MONEY, randomUUID().toString(), null);
 
     var csv =
-        subject.buildPaymentsCsv(appName, Instant.EPOCH, Instant.parse("9999-12-31T23:59:59Z"));
+        subject.buildPaymentsCsv(
+            appName, null, Instant.EPOCH, Instant.parse("9999-12-31T23:59:59Z"));
     var lines = csv.split("\n");
     var columns = lines[1].split(";");
 
@@ -439,10 +456,11 @@ class PaymentServiceIT extends FacadeIT {
     var appName = app.getName();
     var email = randomEmail();
 
-    subject.createPayment(apiKey, email, ORANGE_MONEY, randomUUID().toString());
+    subject.createPayment(apiKey, email, ORANGE_MONEY, randomUUID().toString(), null);
 
     var csv =
-        subject.buildPaymentsCsv(appName, Instant.EPOCH, Instant.parse("9999-12-31T23:59:59Z"));
+        subject.buildPaymentsCsv(
+            appName, null, Instant.EPOCH, Instant.parse("9999-12-31T23:59:59Z"));
     var lines = csv.split("\n");
     var columns = lines[1].split(";");
 
@@ -452,7 +470,8 @@ class PaymentServiceIT extends FacadeIT {
   private void createPayments(String apiKey, List<PaymentInfo> paymentInfos) {
     paymentInfos.forEach(
         info ->
-            subject.createPayment(apiKey, info.payerEmail(), info.pspType(), info.pspPaymentId()));
+            subject.createPayment(
+                apiKey, info.payerEmail(), info.pspType(), info.pspPaymentId(), null));
   }
 
   private List<PaymentInfo> mergePaymentInfos(
