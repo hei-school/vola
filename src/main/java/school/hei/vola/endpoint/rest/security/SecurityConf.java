@@ -6,7 +6,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -23,6 +22,7 @@ public class SecurityConf {
     http.authorizeHttpRequests(
             auth ->
                 auth.requestMatchers(
+                        "/",
                         "/ping",
                         "/health/**",
                         "/error",
@@ -37,7 +37,7 @@ public class SecurityConf {
                     .anyRequest()
                     .denyAll())
         .oauth2Login(oauth2 -> oauth2.successHandler(authenticationSuccessHandler()))
-        .logout(LogoutConfigurer::permitAll)
+        .logout(logout -> logout.logoutSuccessUrl("/"))
         .csrf(csrf -> csrf.ignoringRequestMatchers("/payment", "/payments/search", "/orange/**"));
 
     return http.build();

@@ -149,6 +149,7 @@ implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 implementation 'org.flywaydb:flyway-core'
 testImplementation 'com.h2database:h2'
 testImplementation 'org.mockito:mockito-core:5.3.1'
+testImplementation 'org.springframework.security:spring-security-test'
 implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0'
 implementation 'org.postgresql:postgresql'
     implementation("org.apache.poi:poi:5.2.5")
