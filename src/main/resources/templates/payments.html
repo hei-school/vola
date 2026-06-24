@@ -18,14 +18,14 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="/css/style.css" />
   </head>
-  <body class="min-h-screen bg-[#F5F5F5] font-[Poppins] text-gray-700">
+  <body class="min-h-screen bg-[#F5EFE3] font-[Poppins] text-gray-700">
     <div th:replace="fragments/header :: header"></div>
 
     <div class="container mx-auto px-4 sm:px-6 pt-6 sm:pt-10 pb-10 sm:pb-14">
       <div
         class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-3"
       >
-        <h1 class="text-2xl sm:text-3xl font-bold text-[#3C3C3C]">
+        <h1 class="text-2xl sm:text-3xl font-bold text-[#530C08]">
           Historique des paiements
         </h1>
         <div class="flex items-center gap-2">
@@ -59,12 +59,12 @@
           class="bg-[#FDFDFD] rounded-lg shadow-sm p-4 hover:shadow transition flex flex-col justify-center items-center"
         >
           <h3
-            class="text-[#3C3C3C] font-semibold text-sm sm:text-base lg:text-lg text-center"
+            class="text-[#3D3D3C] font-semibold text-sm sm:text-base lg:text-lg text-center"
           >
             Total collecté
           </h3>
           <p
-            class="text-lg sm:text-xl font-extrabold text-[#800000] mt-1"
+            class="text-lg sm:text-xl font-extrabold text-[#530C08] mt-1"
             th:text="${totalCollected}"
           >
             0 Ar
@@ -74,12 +74,12 @@
           class="bg-[#FDFDFD] rounded-lg shadow-sm p-4 hover:shadow transition flex flex-col justify-center items-center"
         >
           <h3
-            class="text-[#3C3C3C] font-semibold text-sm sm:text-base lg:text-lg text-center"
+            class="text-[#3D3D3C] font-semibold text-sm sm:text-base lg:text-lg text-center"
           >
             Nombre de paiements
           </h3>
           <p
-            class="text-lg sm:text-xl font-extrabold text-[#3C3C3C] mt-1"
+            class="text-lg sm:text-xl font-extrabold text-[#530C08] mt-1"
             th:text="${totalCount}"
           >
             0
@@ -89,12 +89,12 @@
           class="bg-[#FDFDFD] rounded-lg shadow-sm p-4 hover:shadow transition flex flex-col justify-center items-center"
         >
           <h3
-            class="text-[#3C3C3C] font-semibold text-sm sm:text-base lg:text-lg text-center"
+            class="text-[#3D3D3C] font-semibold text-sm sm:text-base lg:text-lg text-center"
           >
             En attente
           </h3>
           <p
-            class="text-lg sm:text-xl font-extrabold text-orange-500 mt-1"
+            class="text-lg sm:text-xl font-extrabold text-[#530C08] mt-1"
             th:text="${pendingCount}"
           >
             0
@@ -111,7 +111,7 @@
           <div class="w-44">
             <label
               for="applicationName"
-              class="block text-xs font-semibold text-gray-700 mb-1"
+              class="block text-xs font-semibold text-[#530C08] mb-1"
               >Application</label
             >
             <select
@@ -131,7 +131,7 @@
           <div class="w-44">
             <label
               for="startDate"
-              class="block text-xs font-semibold text-gray-700 mb-1"
+              class="block text-xs font-semibold text-[#530C08] mb-1"
               >Du</label
             >
             <input
@@ -145,7 +145,7 @@
           <div class="w-44">
             <label
               for="endDate"
-              class="block text-xs font-semibold text-gray-700 mb-1"
+              class="block text-xs font-semibold text-[#530C08] mb-1"
               >Au</label
             >
             <input
