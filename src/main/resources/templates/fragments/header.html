@@ -57,46 +57,5 @@
     </div>
   </dialog>
 </header>
-
-<!-- Logout confirmation dialog -->
-<dialog id="logout-dialog"
-        class="fixed inset-0 z-50 m-auto p-0 bg-transparent border-none"
-        onclick="if (event.target === this) this.close()">
-  <div class="bg-white p-6 sm:p-8 rounded-xl shadow-2xl max-w-md w-full mx-4">
-    <!-- Icon -->
-    <div class="text-center mb-6">
-      <div class="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-[#16163f] bg-opacity-10 rounded-full mb-4">
-        <i class="material-icons text-[#16163f] text-4xl sm:text-5xl">logout</i>
-      </div>
-      <h2 class="text-2xl font-bold text-[#16163f] mb-2">Confirmer la déconnexion</h2>
-      <p class="text-sm text-gray-600">Voulez-vous vraiment vous déconnecter ?</p>
-    </div>
-
-    <!-- Logout form -->
-    <form th:action="@{/logout}" method="POST" class="space-y-3">
-      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-      <button type="submit"
-              class="w-full bg-[#16163f] hover:bg-opacity-90 text-white font-bold py-3 px-6 rounded-full transition-all transform hover:scale-[1.02] text-sm flex items-center justify-center gap-2">
-        <i class="material-icons text-lg">logout</i>
-        <span>Oui, me déconnecter</span>
-      </button>
-    </form>
-
-    <!-- Cancel button -->
-    <button type="button" onclick="document.getElementById('logout-dialog').close()"
-            class="mt-3 w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-6 rounded-full transition-all transform hover:scale-[1.02] text-sm flex items-center justify-center gap-2">
-      <i class="material-icons text-lg">arrow_back</i>
-      <span>Non, rester connecté</span>
-    </button>
-
-    <!-- Info box -->
-    <div class="mt-6 p-3 rounded-lg bg-[#9933cc] bg-opacity-10 border border-[#9933cc] border-opacity-20">
-      <div class="flex items-start gap-2">
-        <i class="material-icons text-[#9933cc] text-sm mt-0.5">info</i>
-        <p class="text-xs text-gray-700">Vous serez redirigé vers la page d'accueil après la déconnexion.</p>
-      </div>
-    </div>
-  </div>
-</dialog>
 </body>
 </html>
