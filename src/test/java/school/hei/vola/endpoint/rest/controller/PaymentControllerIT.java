@@ -292,6 +292,35 @@ class PaymentControllerIT extends FacadeIT {
     assertTrue(disposition.contains("payments_" + appName + ".csv"));
   }
 
+  @Test
+  void exportPaymentsCsv_with_all_returns_payments_from_all_apps() {
+    var app1 = randomJApplication();
+    var app2 = randomJApplication();
+    var email1 = randomEmail();
+    var email2 = randomEmail();
+
+    subject.createPayment(app1.getApiKey(), email1, ORANGE_MONEY, randomUUID().toString());
+    subject.createPayment(app2.getApiKey(), email2, ORANGE_MONEY, randomUUID().toString());
+
+    var response = subject.exportPaymentsCsv("all", null, null);
+
+    assertEquals(200, response.getStatusCodeValue());
+    var body = new String(response.getBody());
+    assertTrue(body.contains(email1));
+    assertTrue(body.contains(email2));
+  }
+
+  @Test
+  void exportPaymentsCsv_with_all_uses_all_in_filename() {
+    var app = randomJApplication();
+    subject.createPayment(app.getApiKey(), randomEmail(), ORANGE_MONEY, randomUUID().toString());
+
+    var response = subject.exportPaymentsCsv("all", null, null);
+
+    var disposition = response.getHeaders().get(CONTENT_DISPOSITION).getFirst();
+    assertTrue(disposition.contains("payments_all.csv"));
+  }
+
   private static String randomEmail() {
     return "lou+" + randomUUID() + "@cute.dev";
   }

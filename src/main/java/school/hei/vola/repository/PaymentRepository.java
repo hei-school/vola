@@ -11,6 +11,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import school.hei.vola.model.Payment;
 import school.hei.vola.model.PaymentInfo;
@@ -165,5 +167,24 @@ public class PaymentRepository {
         .stream()
         .map(jPaymentMapper::toDomain)
         .toList();
+  }
+
+  public Page<Payment> findFilteredPage(
+      String applicationName, Instant start, Instant end, Pageable pageable) {
+    return jPaymentRepository
+        .findFilteredPage(applicationName, start, end, pageable)
+        .map(jPaymentMapper::toDomain);
+  }
+
+  public long countFiltered(String applicationName, Instant start, Instant end) {
+    return jPaymentRepository.countFiltered(applicationName, start, end);
+  }
+
+  public long sumAmountForSucceeded(String applicationName, Instant start, Instant end) {
+    return jPaymentRepository.sumAmountForSucceeded(applicationName, start, end);
+  }
+
+  public long countPending(String applicationName, Instant start, Instant end) {
+    return jPaymentRepository.countPending(applicationName, start, end);
   }
 }
