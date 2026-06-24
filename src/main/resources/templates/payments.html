@@ -85,9 +85,9 @@
       <form
         th:action="@{/payments}"
         method="get"
-        class="bg-[#FDFDFD] rounded-lg shadow-sm p-4 sm:p-6 mb-6"
+        class="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-6 border border-[#E0D5CA]"
       >
-        <div class="flex flex-wrap justify-center gap-4 items-end">
+        <div class="flex w-full flex-wrap justify-center gap-4 items-end">
           <div class="flex-1">
             <label
               for="applicationName"
@@ -97,7 +97,7 @@
             <select
               name="applicationName"
               id="applicationName"
-              class="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs outline-none focus:ring-0 focus:border-gray-400 transition-all"
+              class="w-full bg-[#F0EDE8] border border-[#D4C5B5] rounded-lg px-3 py-2 text-xs outline-none focus:ring-0 focus:border-[#800000] transition-all"
             >
               <option value="all">Toutes les applications</option>
               <option
@@ -120,7 +120,7 @@
               id="scope"
               th:value="${selectedScope}"
               placeholder="Filtrer par scope"
-              class="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs outline-none focus:ring-0 focus:border-gray-400 transition-all"
+              class="w-full bg-[#F0EDE8] border border-[#D4C5B5] rounded-lg px-3 py-2 text-xs outline-none focus:ring-0 focus:border-[#800000] transition-all"
             />
           </div>
           <div class="flex-1">
@@ -134,7 +134,7 @@
               name="startDate"
               id="startDate"
               th:value="${selectedStartDate != null ? #temporals.format(selectedStartDate, 'yyyy-MM-dd') : ''}"
-              class="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs outline-none focus:ring-0 focus:border-gray-400 transition-all"
+              class="w-full bg-[#F0EDE8] border border-[#D4C5B5] rounded-lg px-3 py-2 text-xs outline-none focus:ring-0 focus:border-[#800000] transition-all"
             />
           </div>
           <div class="flex-1">
@@ -148,13 +148,13 @@
               name="endDate"
               id="endDate"
               th:value="${selectedEndDate != null ? #temporals.format(selectedEndDate, 'yyyy-MM-dd') : ''}"
-              class="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs outline-none focus:ring-0 focus:border-gray-400 transition-all"
+              class="w-full bg-[#F0EDE8] border border-[#D4C5B5] rounded-lg px-3 py-2 text-xs outline-none focus:ring-0 focus:border-[#800000] transition-all"
             />
           </div>
           <div class="flex items-end gap-2">
             <button
               type="submit"
-              class="bg-[#D32F2F] hover:bg-opacity-90 text-white text-xs font-medium py-2 px-4 rounded-lg transition-all flex items-center justify-center gap-1"
+              class="bg-[#D32F2F] hover:bg-[#b71c1c] text-white text-xs font-medium py-2 px-4 rounded-lg transition-all flex items-center justify-center gap-1"
             >
               <span class="material-icons text-sm">filter_list</span>
               Filtrer
@@ -162,7 +162,7 @@
             <a
               th:if="${selectedApplication != null or selectedScope != null or selectedStartDate != null or selectedEndDate != null}"
               th:href="@{/payments}"
-              class="bg-gray-200 hover:bg-gray-300 text-gray-700 text-xs font-medium py-2 px-4 rounded-lg transition-all flex items-center justify-center gap-1"
+              class="bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-medium py-2 px-4 rounded-lg transition-all flex items-center justify-center gap-1 border border-gray-200"
             >
               <span class="material-icons text-sm">refresh</span>
               Réinitialiser
@@ -171,7 +171,7 @@
         </div>
       </form>
 
-      <div class="bg-[#FDFDFD] rounded-lg shadow-sm overflow-hidden">
+      <div class="bg-white rounded-lg shadow-md overflow-hidden">
         <div class="overflow-x-auto">
           <table class="w-full table-auto min-w-[800px]">
             <thead class="bg-[#800000] text-white">
