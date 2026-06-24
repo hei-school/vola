@@ -2,9 +2,9 @@ package school.hei.vola.service.utils;
 
 import java.time.LocalDate;
 
-public class DateUtils {
+public class DateParser {
 
-  private DateUtils() {}
+  private DateParser() {}
 
   public static LocalDate parseDate(String dateStr) {
     if (dateStr == null || dateStr.isBlank()) {

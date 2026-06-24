@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import school.hei.vola.model.VerificationStatus;
 import school.hei.vola.repository.jpa.JApplicationRepository;
 import school.hei.vola.service.PaymentService;
-import school.hei.vola.service.utils.DateUtils;
+import school.hei.vola.service.utils.DateParser;
 
 @Controller
 @RequiredArgsConstructor
@@ -33,8 +33,8 @@ public class PaymentViewController {
       Model model) {
     model.addAttribute("applications", jApplicationRepository.findAll());
 
-    var parsedStartDate = DateUtils.parseDate(startDate);
-    var parsedEndDate = DateUtils.parseDate(endDate);
+    var parsedStartDate = DateParser.parseDate(startDate);
+    var parsedEndDate = DateParser.parseDate(endDate);
 
     var start =
         parsedStartDate != null
@@ -65,12 +65,5 @@ public class PaymentViewController {
     model.addAttribute("selectedStartDate", parsedStartDate);
     model.addAttribute("selectedEndDate", parsedEndDate);
     return "payments";
-  }
-
-  private static LocalDate parseDate(String dateStr) {
-    if (dateStr == null || dateStr.isBlank()) {
-      return null;
-    }
-    return LocalDate.parse(dateStr);
   }
 }
