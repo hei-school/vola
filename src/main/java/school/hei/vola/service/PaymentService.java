@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Optional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import school.hei.vola.endpoint.event.EventProducer;
 import school.hei.vola.endpoint.event.model.OrangeTransactionsImportRequested;
@@ -96,6 +98,27 @@ public class PaymentService {
       String applicationName, Instant start, Instant end) {
     var effectiveApp = "all".equals(applicationName) ? null : applicationName;
     return paymentRepository.findByApplicationNameAndDateRange(effectiveApp, start, end);
+  }
+
+  public Page<Payment> findFilteredPage(
+      String applicationName, Instant start, Instant end, Pageable pageable) {
+    var effectiveApp = "all".equals(applicationName) ? null : applicationName;
+    return paymentRepository.findFilteredPage(effectiveApp, start, end, pageable);
+  }
+
+  public long countFiltered(String applicationName, Instant start, Instant end) {
+    var effectiveApp = "all".equals(applicationName) ? null : applicationName;
+    return paymentRepository.countFiltered(effectiveApp, start, end);
+  }
+
+  public long sumAmountForSucceeded(String applicationName, Instant start, Instant end) {
+    var effectiveApp = "all".equals(applicationName) ? null : applicationName;
+    return paymentRepository.sumAmountForSucceeded(effectiveApp, start, end);
+  }
+
+  public long countPending(String applicationName, Instant start, Instant end) {
+    var effectiveApp = "all".equals(applicationName) ? null : applicationName;
+    return paymentRepository.countPending(effectiveApp, start, end);
   }
 
   public String buildPaymentsCsv(String applicationName, Instant start, Instant end) {

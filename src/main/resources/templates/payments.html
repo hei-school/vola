@@ -80,7 +80,7 @@
           </h3>
           <p
             class="text-lg sm:text-xl font-extrabold text-[#16163f] mt-1"
-            th:text="${#lists.size(payments)}"
+            th:text="${totalCount}"
           >
             0
           </p>
@@ -346,6 +346,31 @@
             Faites défiler horizontalement pour voir plus
           </p>
         </div>
+      </div>
+
+      <div th:if="${totalPages > 1}" class="flex items-center justify-center gap-2 mt-6">
+        <a th:if="${currentPage > 0}"
+           th:href="@{/payments(applicationName=${selectedApplication}, startDate=${selectedStartDate}, endDate=${selectedEndDate}, page=${currentPage - 1})}"
+           class="px-3 py-2 text-xs font-medium rounded-lg bg-white border border-gray-200 hover:bg-gray-50 transition-colors">
+          <span class="material-icons text-sm align-middle">chevron_left</span>
+          Précédent
+        </a>
+        <span th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+              th:if="${i == currentPage or (i >= currentPage - 2 and i <= currentPage + 2)}">
+          <a th:if="${i != currentPage}"
+             th:href="@{/payments(applicationName=${selectedApplication}, startDate=${selectedStartDate}, endDate=${selectedEndDate}, page=${i})}"
+             class="px-3 py-2 text-xs font-medium rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
+             th:text="${i + 1}">1</a>
+          <span th:unless="${i != currentPage}"
+                class="px-3 py-2 text-xs font-medium rounded-lg bg-[#16163f] text-white"
+                th:text="${i + 1}">1</span>
+        </span>
+        <a th:if="${currentPage < totalPages - 1}"
+           th:href="@{/payments(applicationName=${selectedApplication}, startDate=${selectedStartDate}, endDate=${selectedEndDate}, page=${currentPage + 1})}"
+           class="px-3 py-2 text-xs font-medium rounded-lg bg-white border border-gray-200 hover:bg-gray-50 transition-colors">
+          Suivant
+          <span class="material-icons text-sm align-middle">chevron_right</span>
+        </a>
       </div>
     </div>
   </body>
