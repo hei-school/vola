@@ -22,6 +22,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -83,6 +84,7 @@ class PaymentControllerIT extends FacadeIT {
     assertEquals(createdPayment, retrievedPayment);
   }
 
+  @Disabled("Requires real Orange API key")
   @DirtiesContext(methodMode = BEFORE_METHOD) // note(unique_pspPayment)
   @Test
   void can_create_payment_beforeOrangeDailyRetrieval_then_verify_it() {
@@ -111,6 +113,7 @@ class PaymentControllerIT extends FacadeIT {
     assertEquals(SUCCEEDED, retrievedPayment.getVerificationStatus());
   }
 
+  @Disabled("Requires real Orange API key")
   @DirtiesContext(methodMode = BEFORE_METHOD) // note(unique_pspPayment)
   @Test
   void can_create_payment_afterOrangeDailyRetrieval_then_verify_it() {
