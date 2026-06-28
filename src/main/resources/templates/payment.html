@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vola - Portail de Paiement</title>
+    <style>
+        :root {
+            --vola-main: #cc1d24;
+            --vola-hover: #a81419;
+            --vola-light: #fff5f5;
+            --vola-border: #feb2b2;
+            --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            --text-main: #2d3748;
+            --card-bg: #ffffff;
+        }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+        .payment-card {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 450px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            padding: 35px;
+            box-sizing: border-box;
+            border-top: 6px solid var(--vola-main);
+        }
+        .brand-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .brand-header h1 {
+            color: var(--vola-main);
+            margin: 0;
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+        }
+        .brand-header p {
+            color: #718096;
+            font-size: 14px;
+            margin: 5px 0 0 0;
+        }
+        .scope-info {
+            background-color: var(--vola-light);
+            border: 1px solid var(--vola-border);
+            color: #9b1c1c;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            line-height: 1.4;
+            margin-bottom: 25px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 700;
+            color: #4a5568;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px 14px;
+            font-size: 15px;
+            border: 1px solid #cbd5e0;
+            border-radius: 8px;
+            box-sizing: border-box;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+        .form-group input:focus {
+            border-color: var(--vola-main);
+            box-shadow: 0 0 0 3px rgba(204, 29, 36, 0.15);
+        }
+        .btn-primary {
+            display: block;
+            width: 100%;
+            background-color: var(--vola-main);
+            color: white;
+            border: none;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            box-shadow: 0 4px 12px rgba(204, 29, 36, 0.2);
+        }
+        .btn-primary:hover {
+            background-color: var(--vola-hover);
+        }
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: #a0aec0;
+            font-size: 12px;
+            margin: 25px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .divider:not(:empty)::before { margin-right: .55em; }
+        .divider:not(:empty)::after { margin-left: .55em; }
+        .btn-secondary {
+            display: block;
+            text-align: center;
+            text-decoration: none;
+            background-color: #f7fafc;
+            color: #4a5568;
+            border: 1px solid #e2e8f0;
+            padding: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+        .btn-secondary:hover {
+            background-color: #edf2f7;
+            color: #2d3748;
+        }
+    </style>
+</head>
+<body>
+<div class="payment-card">
+    <div class="brand-header">
+        <h1>VOLA SYSTEM</h1>
+        <p>Enregistrement & Suivi des Flux Émetteurs</p>
+    </div>
+    <div class="scope-info">
+        📌 <strong>Exigence Scope :</strong> Permet d'isoler l'origine du paiement (ex: <em>Club de Musique</em>, <em>Entraide</em>) pour le tri futur du fichier CSV.
+    </div>
+    <form th:action="@{/payment/initiate}" method="POST">
+        <div class="form-group">
+            <label for="amount">Montant du paiement (MGA)</label>
+            <input type="number" id="amount" name="amount" min="1" placeholder="Ex: 15000" required>
+        </div>
+        <div class="form-group">
+            <label for="scope">Scope associé (Optionnel)</label>
+            <input type="text" id="scope" name="scope" placeholder="Ex: Club de Musique (Klioba)">
+        </div>
+        <button type="submit" class="btn-primary">Confirmer et Envoyer</button>
+    </form>
+    <div class="divider">Actions d'administration</div>
+    <a th:href="@{/payment/export}" class="btn-secondary">
+        📊 Télécharger l'export général (CSV)
+    </a>
+</div>
+</body>
+</html>
