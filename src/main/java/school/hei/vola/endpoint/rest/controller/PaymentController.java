@@ -35,9 +35,13 @@ public class PaymentController {
 
   @PostMapping("/payment")
   public Payment createPayment(
-      String apiKey, String payerEmail, PspType pspType, String pspPaymentId) {
+      String apiKey,
+      String payerEmail,
+      PspType pspType,
+      String pspPaymentId,
+      @RequestParam(required = false) String scope) {
     applicationAuthorizer.accept(apiKey);
-    return paymentService.createPayment(apiKey, payerEmail, pspType, pspPaymentId);
+    return paymentService.createPayment(apiKey, payerEmail, pspType, pspPaymentId, scope);
   }
 
   @GetMapping("/payment")
@@ -55,6 +59,7 @@ public class PaymentController {
   @GetMapping("/payments/export/csv")
   public ResponseEntity<byte[]> exportPaymentsCsv(
       @RequestParam String applicationName,
+      @RequestParam(required = false) String scope,
       @RequestParam(required = false) @DateTimeFormat(iso = ISO.DATE) LocalDate startDate,
       @RequestParam(required = false) @DateTimeFormat(iso = ISO.DATE) LocalDate endDate) {
     Instant start =
@@ -64,7 +69,7 @@ public class PaymentController {
             ? endDate.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant()
             : Instant.parse("9999-12-31T23:59:59Z");
 
-    var csv = paymentService.buildPaymentsCsv(applicationName, start, end);
+    var csv = paymentService.buildPaymentsCsv(applicationName, scope, start, end);
     var filename = "payments_" + applicationName + ".csv";
 
     return ResponseEntity.ok()

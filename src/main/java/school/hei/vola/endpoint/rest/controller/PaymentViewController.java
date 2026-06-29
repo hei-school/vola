@@ -30,6 +30,7 @@ public class PaymentViewController {
   @GetMapping("/payments")
   public String paymentsPage(
       @RequestParam(required = false) String applicationName,
+      @RequestParam(required = false) String scope,
       @RequestParam(required = false) String startDate,
       @RequestParam(required = false) String endDate,
       @RequestParam(defaultValue = "0") int page,
@@ -40,6 +41,7 @@ public class PaymentViewController {
         (applicationName == null || applicationName.isBlank() || "all".equals(applicationName))
             ? null
             : applicationName;
+    var effectiveScope = (scope == null || scope.isBlank() || "all".equals(scope)) ? null : scope;
 
     var parsedStartDate = DateParser.parseDate(startDate);
     var parsedEndDate = DateParser.parseDate(endDate);
@@ -53,13 +55,15 @@ public class PaymentViewController {
             ? parsedEndDate.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant()
             : Instant.parse("9999-12-31T23:59:59Z");
 
-    var totalAmount = paymentService.sumAmountForSucceeded(effectiveApp, start, end);
-    var pendingCount = paymentService.countPending(effectiveApp, start, end);
-    var totalCount = paymentService.countFiltered(effectiveApp, start, end);
+    var totalAmount =
+        paymentService.sumAmountForSucceeded(effectiveApp, effectiveScope, start, end);
+    var pendingCount = paymentService.countPending(effectiveApp, effectiveScope, start, end);
+    var totalCount = paymentService.countFiltered(effectiveApp, effectiveScope, start, end);
 
     var paymentsPage =
         paymentService.findFilteredPage(
             effectiveApp,
+            effectiveScope,
             start,
             end,
             PageRequest.of(page, PAGE_SIZE, Sort.by(Sort.Direction.DESC, "creationInstant")));
@@ -72,6 +76,7 @@ public class PaymentViewController {
     model.addAttribute("totalPages", paymentsPage.getTotalPages());
     model.addAttribute("pageSize", PAGE_SIZE);
     model.addAttribute("selectedApplication", effectiveApp);
+    model.addAttribute("selectedScope", effectiveScope);
     model.addAttribute("selectedStartDate", parsedStartDate);
     model.addAttribute("selectedEndDate", parsedEndDate);
     return "payments";

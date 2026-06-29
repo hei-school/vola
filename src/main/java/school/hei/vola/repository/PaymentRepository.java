@@ -18,6 +18,7 @@ import school.hei.vola.model.Payment;
 import school.hei.vola.model.PaymentInfo;
 import school.hei.vola.model.psp.PspType;
 import school.hei.vola.repository.jpa.JApplicationRepository;
+import school.hei.vola.repository.jpa.JPaymentFilterRepository;
 import school.hei.vola.repository.jpa.JPaymentRepository;
 import school.hei.vola.repository.jpa.JPaymentRepositoryCustom;
 import school.hei.vola.repository.jpa.JUserRepository;
@@ -29,14 +30,16 @@ import school.hei.vola.repository.jpa.model.JUser;
 @Repository
 @AllArgsConstructor
 public class PaymentRepository {
+
   private final JPaymentRepositoryCustom jPaymentRepositoryCustom;
   private final JPaymentRepository jPaymentRepository;
+  private final JPaymentFilterRepository jPaymentFilterRepository;
   private final JPaymentMapper jPaymentMapper;
   private final JUserRepository jUserRepository;
   private final JApplicationRepository jApplicationRepository;
 
   public Payment createPayment(
-      String apiKey, String payerEmail, PspType pspType, String pspPaymentId) {
+      String apiKey, String payerEmail, PspType pspType, String pspPaymentId, String scope) {
     var existing = jPaymentRepository.findByPspTypeAndPspPaymentId(pspType, pspPaymentId);
     if (existing.isPresent()) {
       throw new IllegalArgumentException(
@@ -67,6 +70,7 @@ public class PaymentRepository {
             millisNow(),
             null,
             0,
+            scope,
             jUserSaved,
             jApplication);
     var savedJPayment = jPaymentRepository.save(toSaveJPayment);
@@ -112,6 +116,7 @@ public class PaymentRepository {
               millisNow(),
               null,
               0,
+              null,
               jUserSaved,
               jApplication);
       jPaymentsToSave.add(toSaveJPayment);
@@ -161,30 +166,31 @@ public class PaymentRepository {
   }
 
   public List<Payment> findByApplicationNameAndDateRange(
-      String applicationName, Instant start, Instant end) {
-    return jPaymentRepository
-        .findByApplicationNameAndCreationInstantBetween(applicationName, start, end)
+      String applicationName, String scope, Instant start, Instant end) {
+    return jPaymentFilterRepository
+        .findByApplicationNameAndCreationInstantBetween(applicationName, scope, start, end)
         .stream()
         .map(jPaymentMapper::toDomain)
         .toList();
   }
 
   public Page<Payment> findFilteredPage(
-      String applicationName, Instant start, Instant end, Pageable pageable) {
-    return jPaymentRepository
-        .findFilteredPage(applicationName, start, end, pageable)
+      String applicationName, String scope, Instant start, Instant end, Pageable pageable) {
+    return jPaymentFilterRepository
+        .findFilteredPage(applicationName, scope, start, end, pageable)
         .map(jPaymentMapper::toDomain);
   }
 
-  public long countFiltered(String applicationName, Instant start, Instant end) {
-    return jPaymentRepository.countFiltered(applicationName, start, end);
+  public long countFiltered(String applicationName, String scope, Instant start, Instant end) {
+    return jPaymentFilterRepository.countFiltered(applicationName, scope, start, end);
   }
 
-  public long sumAmountForSucceeded(String applicationName, Instant start, Instant end) {
-    return jPaymentRepository.sumAmountForSucceeded(applicationName, start, end);
+  public long sumAmountForSucceeded(
+      String applicationName, String scope, Instant start, Instant end) {
+    return jPaymentFilterRepository.sumAmountForSucceeded(applicationName, scope, start, end);
   }
 
-  public long countPending(String applicationName, Instant start, Instant end) {
-    return jPaymentRepository.countPending(applicationName, start, end);
+  public long countPending(String applicationName, String scope, Instant start, Instant end) {
+    return jPaymentFilterRepository.countPending(applicationName, scope, start, end);
   }
 }
