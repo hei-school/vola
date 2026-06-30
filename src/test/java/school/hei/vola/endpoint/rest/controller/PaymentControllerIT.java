@@ -124,7 +124,7 @@ class PaymentControllerIT extends FacadeIT {
           new OrangeDailyTransactionsRetrievalRequested(LocalDate.of(2026, 6, 18)));
 
     } catch (Exception e) {
-      throw new RuntimeException("The error is ", e);
+      throw new RuntimeException("The error is " + e.getMessage());
     }
 
     var createdPayment = subject.createPayment(apiKey, email, pspType, pspPaymentId, null);
