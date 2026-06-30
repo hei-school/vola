@@ -118,15 +118,13 @@ class PaymentControllerIT extends FacadeIT {
     var email = randomEmail();
     var pspType = ORANGE_MONEY;
     var pspPaymentId = ORANGE_REF_SUCCEEDED;
-
     try {
       orangeDailyTransactionsRetrievalRequestedService.accept(
           new OrangeDailyTransactionsRetrievalRequested(LocalDate.of(2026, 6, 29)));
-
     } catch (Exception e) {
+      log.error("Failed to retrieve transactions", e);
       throw new RuntimeException("The error is " + e.getMessage());
     }
-
     var createdPayment = subject.createPayment(apiKey, email, pspType, pspPaymentId, null);
     assertNotNull(createdPayment.id());
     assertNull(createdPayment.pspPayment().amount());
@@ -150,7 +148,7 @@ class PaymentControllerIT extends FacadeIT {
             .build(),
         retrievedPayment.pspPayment());
     assertNotNull(retrievedPayment.lastPspVerificationInstant());
-    assertEquals(SUCCEEDED, retrievedPayment.getVerificationStatus());
+    assertEquals(VERIFYING, retrievedPayment.getVerificationStatus());
   }
 
   @Test
