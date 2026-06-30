@@ -10,7 +10,7 @@ plugins {
 
     id 'jacoco'
 
-    
+
 }
 
 jacoco {
@@ -149,10 +149,15 @@ implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 implementation 'org.flywaydb:flyway-core'
 testImplementation 'com.h2database:h2'
 testImplementation 'org.mockito:mockito-core:5.3.1'
+testImplementation 'org.springframework.security:spring-security-test'
 implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0'
 implementation 'org.postgresql:postgresql'
     implementation("org.apache.poi:poi:5.2.5")
      implementation("org.apache.poi:poi-ooxml:5.2.5")
 
+implementation 'org.springframework.boot:spring-boot-starter-security'
+implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
 
 }

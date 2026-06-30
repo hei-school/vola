@@ -36,6 +36,7 @@ public class JPayment {
   private Instant creationInstant;
   private Instant lastPspVerificationInstant;
   private int verificationAttemptNb;
+  private String scope;
 
   @ManyToOne
   @JoinColumn(name = "user_id")

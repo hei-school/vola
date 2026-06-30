@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
 import static org.springframework.test.annotation.DirtiesContext.MethodMode.BEFORE_METHOD;
 import static school.hei.vola.conf.TestData.ORANGE_REF_SUCCEEDED;
 import static school.hei.vola.model.VerificationStatus.FAILED;
@@ -72,7 +73,7 @@ class PaymentControllerIT extends FacadeIT {
     var pspType = ORANGE_MONEY;
     var pspPaymentId = ORANGE_REF_SUCCEEDED;
 
-    var createdPayment = subject.createPayment(apiKey, email, pspType, pspPaymentId);
+    var createdPayment = subject.createPayment(apiKey, email, pspType, pspPaymentId, null);
     assertNotNull(createdPayment.id());
     assertNull(createdPayment.pspPayment().amount());
     assertNull(createdPayment.lastPspVerificationInstant());
@@ -90,20 +91,20 @@ class PaymentControllerIT extends FacadeIT {
     var pspType = ORANGE_MONEY;
     var pspPaymentId = ORANGE_REF_SUCCEEDED;
 
-    var createdPayment = subject.createPayment(apiKey, email, pspType, pspPaymentId);
+    var createdPayment = subject.createPayment(apiKey, email, pspType, pspPaymentId, null);
     assertNotNull(createdPayment.id());
     assertNull(createdPayment.pspPayment().amount());
     assertNull(createdPayment.lastPspVerificationInstant());
     assertEquals(VERIFYING, createdPayment.getVerificationStatus());
 
     orangeDailyTransactionsRetrievalRequestedService.accept(
-        new OrangeDailyTransactionsRetrievalRequested(LocalDate.of(2026, 5, 20)));
+        new OrangeDailyTransactionsRetrievalRequested(LocalDate.of(2026, 6, 29)));
 
     var retrievedPayment = subject.getPayment(apiKey, email, pspType, pspPaymentId);
     assertEquals(
         createdPayment.pspPayment().toBuilder()
             .amount(316800)
-            .creationInstant(Instant.parse("2026-05-20T06:31:26Z"))
+            .creationInstant(Instant.parse("2026-06-29T08:28:31Z"))
             .build(),
         retrievedPayment.pspPayment());
     assertNotNull(retrievedPayment.lastPspVerificationInstant());
@@ -117,16 +118,14 @@ class PaymentControllerIT extends FacadeIT {
     var email = randomEmail();
     var pspType = ORANGE_MONEY;
     var pspPaymentId = ORANGE_REF_SUCCEEDED;
-
     try {
       orangeDailyTransactionsRetrievalRequestedService.accept(
-          new OrangeDailyTransactionsRetrievalRequested(LocalDate.of(2026, 5, 20)));
-
+          new OrangeDailyTransactionsRetrievalRequested(LocalDate.of(2026, 6, 29)));
     } catch (Exception e) {
-      throw new RuntimeException("The error is ", e);
+      log.error("Failed to retrieve transactions, an error occured: ", e.getMessage());
+      throw new RuntimeException("The error is " + e.getMessage());
     }
-
-    var createdPayment = subject.createPayment(apiKey, email, pspType, pspPaymentId);
+    var createdPayment = subject.createPayment(apiKey, email, pspType, pspPaymentId, null);
     assertNotNull(createdPayment.id());
     assertNull(createdPayment.pspPayment().amount());
     assertNull(createdPayment.lastPspVerificationInstant());
@@ -145,7 +144,7 @@ class PaymentControllerIT extends FacadeIT {
     assertEquals(
         createdPayment.pspPayment().toBuilder()
             .amount(316800)
-            .creationInstant(Instant.parse("2026-05-20T06:31:26Z"))
+            .creationInstant(Instant.parse("2026-06-29T08:28:31Z"))
             .build(),
         retrievedPayment.pspPayment());
     assertNotNull(retrievedPayment.lastPspVerificationInstant());
@@ -159,7 +158,7 @@ class PaymentControllerIT extends FacadeIT {
     var pspType = ORANGE_MONEY;
     var pspPaymentId = "non-existing";
 
-    var createdPayment = subject.createPayment(apiKey, email, pspType, pspPaymentId);
+    var createdPayment = subject.createPayment(apiKey, email, pspType, pspPaymentId, null);
     assertNotNull(createdPayment.id());
     assertNull(createdPayment.pspPayment().amount());
     assertNull(createdPayment.lastPspVerificationInstant());
@@ -221,6 +220,106 @@ class PaymentControllerIT extends FacadeIT {
     var events = eventCaptor.getValue();
     assertEquals(1, events.size());
     assertTrue(events.getFirst().getBucketKey().contains(bucketKey));
+  }
+
+  @Test
+  void exportPaymentsCsv_returns_csv_with_correct_headers() {
+    var app = randomJApplication();
+    var apiKey = app.getApiKey();
+    var appName = app.getName();
+    var email = randomEmail();
+
+    subject.createPayment(apiKey, email, ORANGE_MONEY, randomUUID().toString(), null);
+
+    var response = subject.exportPaymentsCsv(appName, null, null, null);
+
+    assertEquals(200, response.getStatusCodeValue());
+    assertTrue(response.getHeaders().get(CONTENT_DISPOSITION).getFirst().contains("attachment"));
+    assertTrue(response.getHeaders().getContentType().toString().contains("text/csv"));
+    var body = new String(response.getBody());
+    assertTrue(body.contains("Email payeur"));
+    assertTrue(body.contains(email));
+    assertTrue(body.contains(appName));
+  }
+
+  @Test
+  void exportPaymentsCsv_filters_by_date_range() {
+    var app = randomJApplication();
+    var apiKey = app.getApiKey();
+    var appName = app.getName();
+    var email = randomEmail();
+
+    subject.createPayment(apiKey, email, ORANGE_MONEY, randomUUID().toString(), null);
+
+    var response =
+        subject.exportPaymentsCsv(
+            appName, null, LocalDate.of(2020, 1, 1), LocalDate.of(2099, 1, 1));
+
+    assertEquals(200, response.getStatusCodeValue());
+    var body = new String(response.getBody());
+    assertTrue(body.contains(email));
+  }
+
+  @Test
+  void exportPaymentsCsv_outside_date_range_returns_header_only() {
+    var app = randomJApplication();
+    var apiKey = app.getApiKey();
+    var appName = app.getName();
+
+    subject.createPayment(apiKey, randomEmail(), ORANGE_MONEY, randomUUID().toString(), null);
+
+    var response =
+        subject.exportPaymentsCsv(
+            appName, null, LocalDate.of(2020, 1, 1), LocalDate.of(2020, 1, 2));
+
+    assertEquals(200, response.getStatusCodeValue());
+    var body = new String(response.getBody());
+    var lines = body.split("\n");
+    assertEquals(1, lines.length);
+  }
+
+  @Test
+  void exportPaymentsCsv_filename_contains_application_name() {
+    var app = randomJApplication();
+    var apiKey = app.getApiKey();
+    var appName = app.getName();
+
+    subject.createPayment(apiKey, randomEmail(), ORANGE_MONEY, randomUUID().toString(), null);
+
+    var response = subject.exportPaymentsCsv(appName, null, null, null);
+
+    var disposition = response.getHeaders().get(CONTENT_DISPOSITION).getFirst();
+    assertTrue(disposition.contains("payments_" + appName + ".csv"));
+  }
+
+  @Test
+  void exportPaymentsCsv_with_all_returns_payments_from_all_apps() {
+    var app1 = randomJApplication();
+    var app2 = randomJApplication();
+    var email1 = randomEmail();
+    var email2 = randomEmail();
+
+    subject.createPayment(app1.getApiKey(), email1, ORANGE_MONEY, randomUUID().toString(), null);
+    subject.createPayment(app2.getApiKey(), email2, ORANGE_MONEY, randomUUID().toString(), null);
+
+    var response = subject.exportPaymentsCsv("all", null, null, null);
+
+    assertEquals(200, response.getStatusCodeValue());
+    var body = new String(response.getBody());
+    assertTrue(body.contains(email1));
+    assertTrue(body.contains(email2));
+  }
+
+  @Test
+  void exportPaymentsCsv_with_all_uses_all_in_filename() {
+    var app = randomJApplication();
+    subject.createPayment(
+        app.getApiKey(), randomEmail(), ORANGE_MONEY, randomUUID().toString(), null);
+
+    var response = subject.exportPaymentsCsv("all", null, null, null);
+
+    var disposition = response.getHeaders().get(CONTENT_DISPOSITION).getFirst();
+    assertTrue(disposition.contains("payments_all.csv"));
   }
 
   private static String randomEmail() {

@@ -1,0 +1,46 @@
+/* Table row status indicators */
+.border-left-succeeded {
+  border-left: 3px solid #22c55e;
+}
+.border-left-failed {
+  border-left: 3px solid #ef4444;
+}
+.border-left-verifying {
+  border-left: 3px solid #eab308;
+}
+
+/* Dialog base styles (can't be done with Tailwind classes alone) */
+dialog {
+  border: none;
+  padding: 0;
+  background: transparent;
+}
+dialog[open] {
+  animation: dialog-fade-in 0.2s ease-out;
+}
+dialog::backdrop {
+  background: rgba(0, 0, 0, 0.5);
+  animation: backdrop-fade-in 0.2s ease-out;
+}
+@keyframes dialog-fade-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes backdrop-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.stat-card {
+  background-image:
+    radial-gradient(rgba(255, 255, 255, 0.12) 1px, transparent 1px),
+    linear-gradient(135deg, #800000 0%, #530c08 100%);
+  background-size: 14px 14px, cover;
+}
+
+.app-header {
+  background-image:
+    radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(120deg, #8a0a0a 0%, #800000 45%, #530c08 100%);
+  background-size: 14px 14px, cover;
+}

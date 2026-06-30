@@ -265,6 +265,14 @@ public class ExcelParserTest {
   }
 
   @Test
+  void getCellAsString_formulaCell_returnsEmptyString() {
+    Workbook wb = new HSSFWorkbook();
+    Row row = wb.createSheet().createRow(0);
+    row.createCell(0).setCellFormula("A1+A2");
+    assertEquals("", parser.getCellAsString(row, 0));
+  }
+
+  @Test
   void parse_emptySheet_returnsEmptyLists() throws IOException {
     File file = createXls(new Object[][] {});
 
