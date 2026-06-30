@@ -15,7 +15,8 @@ import school.hei.vola.repository.jpa.model.JPayment;
 import school.hei.vola.repository.jpa.model.JUser;
 
 class JPaymentRepositoryIT extends FacadeIT {
-  @Autowired JPaymentRepository subject;
+  @Autowired JPaymentRepository jPaymentRepository;
+  @Autowired JPaymentFilterRepository jPaymentFilterRepository;
   @Autowired JApplicationRepository jApplicationRepository;
   @Autowired JUserRepository jUserRepository;
 
@@ -37,10 +38,10 @@ class JPaymentRepositoryIT extends FacadeIT {
   @Test
   void findByApplicationNameAndCreationInstantBetween_returns_matching_payments() {
     var now = Instant.now();
-    subject.save(paymentAt(app, user, now));
+    jPaymentRepository.save(paymentAt(app, user, now));
 
     var result =
-        subject.findByApplicationNameAndCreationInstantBetween(
+        jPaymentFilterRepository.findByApplicationNameAndCreationInstantBetween(
             app.getName(), null, Instant.EPOCH, Instant.parse("9999-12-31T23:59:59Z"));
 
     assertEquals(1, result.size());
@@ -48,10 +49,10 @@ class JPaymentRepositoryIT extends FacadeIT {
 
   @Test
   void findByApplicationNameAndCreationInstantBetween_excludes_outside_range() {
-    subject.save(paymentAt(app, user, Instant.parse("2024-01-15T10:00:00Z")));
+    jPaymentRepository.save(paymentAt(app, user, Instant.parse("2024-01-15T10:00:00Z")));
 
     var result =
-        subject.findByApplicationNameAndCreationInstantBetween(
+        jPaymentFilterRepository.findByApplicationNameAndCreationInstantBetween(
             app.getName(),
             null,
             Instant.parse("2025-01-01T00:00:00Z"),
@@ -68,10 +69,10 @@ class JPaymentRepositoryIT extends FacadeIT {
     otherApp.setApiKey(randomUUID().toString());
     jApplicationRepository.save(otherApp);
 
-    subject.save(paymentAt(otherApp, user, Instant.now()));
+    jPaymentRepository.save(paymentAt(otherApp, user, Instant.now()));
 
     var result =
-        subject.findByApplicationNameAndCreationInstantBetween(
+        jPaymentFilterRepository.findByApplicationNameAndCreationInstantBetween(
             app.getName(), null, Instant.EPOCH, Instant.parse("9999-12-31T23:59:59Z"));
 
     assertTrue(result.isEmpty());
@@ -80,10 +81,10 @@ class JPaymentRepositoryIT extends FacadeIT {
   @Test
   void findByApplicationNameAndCreationInstantBetween_start_is_inclusive() {
     var instant = Instant.parse("2025-06-01T00:00:00Z");
-    subject.save(paymentAt(app, user, instant));
+    jPaymentRepository.save(paymentAt(app, user, instant));
 
     var result =
-        subject.findByApplicationNameAndCreationInstantBetween(
+        jPaymentFilterRepository.findByApplicationNameAndCreationInstantBetween(
             app.getName(), null, instant, Instant.parse("9999-12-31T23:59:59Z"));
 
     assertEquals(1, result.size());
@@ -92,10 +93,10 @@ class JPaymentRepositoryIT extends FacadeIT {
   @Test
   void findByApplicationNameAndCreationInstantBetween_end_is_exclusive() {
     var instant = Instant.parse("2025-06-01T00:00:00Z");
-    subject.save(paymentAt(app, user, instant));
+    jPaymentRepository.save(paymentAt(app, user, instant));
 
     var result =
-        subject.findByApplicationNameAndCreationInstantBetween(
+        jPaymentFilterRepository.findByApplicationNameAndCreationInstantBetween(
             app.getName(), null, Instant.EPOCH, instant);
 
     assertTrue(result.isEmpty());
@@ -103,12 +104,12 @@ class JPaymentRepositoryIT extends FacadeIT {
 
   @Test
   void findByApplicationNameAndCreationInstantBetween_returns_multiple_payments() {
-    subject.save(paymentAt(app, user, Instant.parse("2025-01-01T00:00:00Z")));
-    subject.save(paymentAt(app, user, Instant.parse("2025-06-15T12:00:00Z")));
-    subject.save(paymentAt(app, user, Instant.parse("2025-12-31T23:59:59Z")));
+    jPaymentRepository.save(paymentAt(app, user, Instant.parse("2025-01-01T00:00:00Z")));
+    jPaymentRepository.save(paymentAt(app, user, Instant.parse("2025-06-15T12:00:00Z")));
+    jPaymentRepository.save(paymentAt(app, user, Instant.parse("2025-12-31T23:59:59Z")));
 
     var result =
-        subject.findByApplicationNameAndCreationInstantBetween(
+        jPaymentFilterRepository.findByApplicationNameAndCreationInstantBetween(
             app.getName(),
             null,
             Instant.parse("2025-01-01T00:00:00Z"),
