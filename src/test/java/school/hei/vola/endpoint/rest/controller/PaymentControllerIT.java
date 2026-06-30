@@ -148,7 +148,7 @@ class PaymentControllerIT extends FacadeIT {
             .build(),
         retrievedPayment.pspPayment());
     assertNotNull(retrievedPayment.lastPspVerificationInstant());
-    assertEquals(VERIFYING, retrievedPayment.getVerificationStatus());
+    assertEquals(SUCCEEDED, retrievedPayment.getVerificationStatus());
   }
 
   @Test
