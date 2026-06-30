@@ -122,7 +122,7 @@ class PaymentControllerIT extends FacadeIT {
       orangeDailyTransactionsRetrievalRequestedService.accept(
           new OrangeDailyTransactionsRetrievalRequested(LocalDate.of(2026, 6, 29)));
     } catch (Exception e) {
-      log.error("Failed to retrieve transactions", e);
+      log.error("Failed to retrieve transactions, an error occured: ", e.getMessage());
       throw new RuntimeException("The error is " + e.getMessage());
     }
     var createdPayment = subject.createPayment(apiKey, email, pspType, pspPaymentId, null);
