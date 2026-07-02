@@ -19,8 +19,10 @@
 
     scopeInput.addEventListener('focus', filterAndShowScope);
 
+    scopeDropdown.addEventListener('mousedown', e => e.preventDefault());
+
     scopeInput.addEventListener('blur', () =>
-        setTimeout(() => scopeDropdown.classList.add('hidden'), 200)
+        scopeDropdown.classList.add('hidden')
     );
 
     scopeInput.addEventListener('input', () => {
@@ -66,4 +68,18 @@
     );
 
     document.addEventListener('click', () => appDropdown.classList.add('hidden'));
+
+    const logoutDialog    = document.getElementById('logout-dialog');
+    const logoutBtn       = document.getElementById('logout-btn');
+    const logoutCancelBtn = document.getElementById('logout-cancel-btn');
+
+    if (logoutDialog && logoutBtn) {
+        logoutBtn.addEventListener('click', () => logoutDialog.showModal());
+
+        logoutCancelBtn?.addEventListener('click', () => logoutDialog.close());
+
+        logoutDialog.addEventListener('click', e => {
+            if (e.target === logoutDialog) logoutDialog.close();
+        });
+    }
 })();
