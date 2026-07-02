@@ -294,7 +294,7 @@ class PaymentServiceIT extends FacadeIT {
 
     var result =
         subject.findPaymentsByApplicationNameAndDateRange(
-            appName, null, Instant.EPOCH, Instant.parse("9999-12-31T23:59:59Z"));
+            appName, null, Instant.EPOCH, Instant.now());
 
     assertEquals(2, result.size());
   }
@@ -329,7 +329,7 @@ class PaymentServiceIT extends FacadeIT {
 
     var result =
         subject.findPaymentsByApplicationNameAndDateRange(
-            "all", null, Instant.EPOCH, Instant.parse("9999-12-31T23:59:59Z"));
+            "all", null, Instant.EPOCH, Instant.now());
 
     assertTrue(result.size() >= 2);
     assertTrue(result.stream().anyMatch(p -> p.payer().email().equals(email1)));
@@ -348,7 +348,7 @@ class PaymentServiceIT extends FacadeIT {
 
     var csv =
         subject.buildPaymentsCsv(
-            appName, null, Instant.EPOCH, Instant.parse("9999-12-31T23:59:59Z"));
+            appName, null, Instant.EPOCH, Instant.now());
     var lines = csv.split("\n");
 
     assertEquals(2, lines.length);
@@ -367,7 +367,7 @@ class PaymentServiceIT extends FacadeIT {
 
     var csv =
         subject.buildPaymentsCsv(
-            appName, null, Instant.EPOCH, Instant.parse("9999-12-31T23:59:59Z"));
+            appName, null, Instant.EPOCH, Instant.now());
     var lines = csv.split("\n");
 
     assertEquals(1, lines.length);
@@ -390,7 +390,7 @@ class PaymentServiceIT extends FacadeIT {
 
     var csv =
         subject.buildPaymentsCsv(
-            appName, null, Instant.EPOCH, Instant.parse("9999-12-31T23:59:59Z"));
+            appName, null, Instant.EPOCH, Instant.now());
 
     assertTrue(csv.contains("Succ\u00e8s"));
     assertTrue(csv.contains("5000"));
@@ -409,7 +409,7 @@ class PaymentServiceIT extends FacadeIT {
 
     var csv =
         subject.buildPaymentsCsv(
-            appName, null, Instant.EPOCH, Instant.parse("9999-12-31T23:59:59Z"));
+            appName, null, Instant.EPOCH, Instant.now());
 
     assertTrue(csv.contains("\u00c9chou\u00e9"));
   }
@@ -425,7 +425,7 @@ class PaymentServiceIT extends FacadeIT {
 
     var csv =
         subject.buildPaymentsCsv(
-            appName, null, Instant.EPOCH, Instant.parse("9999-12-31T23:59:59Z"));
+            appName, null, Instant.EPOCH, Instant.now());
 
     assertTrue(csv.contains("\"test;special@cute.dev\""));
   }
@@ -441,7 +441,7 @@ class PaymentServiceIT extends FacadeIT {
 
     var csv =
         subject.buildPaymentsCsv(
-            appName, null, Instant.EPOCH, Instant.parse("9999-12-31T23:59:59Z"));
+            appName, null, Instant.EPOCH, Instant.now());
     var lines = csv.split("\n");
     var columns = lines[1].split(";");
 
@@ -460,7 +460,7 @@ class PaymentServiceIT extends FacadeIT {
 
     var csv =
         subject.buildPaymentsCsv(
-            appName, null, Instant.EPOCH, Instant.parse("9999-12-31T23:59:59Z"));
+            appName, null, Instant.EPOCH, Instant.now());
     var lines = csv.split("\n");
     var columns = lines[1].split(";");
 
