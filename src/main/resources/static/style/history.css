@@ -1,4 +1,3 @@
-/* Table row status indicators */
 .border-left-succeeded {
   border-left: 3px solid #22c55e;
 }
@@ -9,7 +8,6 @@
   border-left: 3px solid #eab308;
 }
 
-/* Dialog base styles (can't be done with Tailwind classes alone) */
 dialog {
   border: none;
   padding: 0;

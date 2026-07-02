@@ -16,7 +16,7 @@
       href="https://fonts.googleapis.com/icon?family=Material+Icons"
     />
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/style/history.css" />
   </head>
   <body class="min-h-screen bg-[#F4EFE3] font-[Poppins] text-gray-700">
     <div th:replace="fragments/header :: header"></div>
@@ -409,94 +409,6 @@
         </a>
       </div>
     </div>
-    <script>
-      (function() {
-        var scopeInput = document.getElementById('scope');
-        var scopeDropdown = document.getElementById('scope-dropdown');
-        var scopeOptions = scopeDropdown.querySelectorAll('.scope-option');
-        var scopeClear = document.getElementById('scope-clear');
-
-        function toggleClear() {
-          if (scopeInput.value) {
-            scopeClear.classList.remove('hidden');
-          } else {
-            scopeClear.classList.add('hidden');
-          }
-        }
-
-        scopeInput.addEventListener('focus', function() {
-          filterAndShow();
-        });
-
-        scopeInput.addEventListener('blur', function() {
-          setTimeout(function() { scopeDropdown.classList.add('hidden'); }, 200);
-        });
-
-        scopeInput.addEventListener('input', function() {
-          filterAndShow();
-          toggleClear();
-        });
-
-        scopeClear.addEventListener('click', function() {
-          scopeInput.value = '';
-          scopeInput.form.submit();
-        });
-
-        scopeOptions.forEach(function(opt) {
-          opt.addEventListener('click', function() {
-            scopeInput.value = this.getAttribute('data-value');
-            scopeDropdown.classList.add('hidden');
-            toggleClear();
-            scopeInput.form.submit();
-          });
-        });
-
-        toggleClear();
-
-        function filterAndShow() {
-          var query = scopeInput.value.toLowerCase();
-          var hasVisible = false;
-          scopeOptions.forEach(function(opt) {
-            var text = opt.textContent.toLowerCase();
-            if (text.indexOf(query) !== -1) {
-              opt.classList.remove('hidden');
-              hasVisible = true;
-            } else {
-              opt.classList.add('hidden');
-            }
-          });
-          if (hasVisible) {
-            scopeDropdown.classList.remove('hidden');
-          } else {
-            scopeDropdown.classList.add('hidden');
-          }
-        }
-
-        var appHidden = document.getElementById('applicationName');
-        var appDisplay = document.getElementById('app-display');
-        var appTrigger = document.getElementById('app-trigger');
-        var appDropdown = document.getElementById('app-dropdown');
-        var appOptions = appDropdown.querySelectorAll('.app-option');
-
-        appTrigger.addEventListener('click', function(e) {
-          e.stopPropagation();
-          appDropdown.classList.toggle('hidden');
-        });
-
-        appOptions.forEach(function(opt) {
-          opt.addEventListener('click', function() {
-            var val = this.getAttribute('data-value');
-            appHidden.value = val;
-            appDisplay.textContent = val === 'all' ? 'Toutes les applications' : val;
-            appDropdown.classList.add('hidden');
-            appHidden.form.submit();
-          });
-        });
-
-        document.addEventListener('click', function() {
-          appDropdown.classList.add('hidden');
-        });
-      })();
-    </script>
+    <script src="/script/filters.js"></script>
   </body>
 </html>

@@ -32,7 +32,13 @@ public class SecurityConf {
                         "/payments/search",
                         "/orange/**")
                     .permitAll()
-                    .requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico")
+                    .requestMatchers(
+                        "/css/**",
+                        "/js/**",
+                        "/script/**",
+                        "/style/**",
+                        "/images/**",
+                        "/favicon.ico")
                     .permitAll()
                     .requestMatchers("/payments/**")
                     .authenticated()
