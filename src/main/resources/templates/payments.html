@@ -286,14 +286,9 @@
                 </td>
                 <td class="px-2 sm:px-3 py-2 sm:py-3">
                   <span
-                    th:if="${p.scope() != null}"
-                    th:text="${p.scope()}"
-                    class="text-xs text-gray-500"
-                    >--</span
-                  >
-                  <span
-                    th:unless="${p.scope() != null}"
-                    class="text-xs text-gray-400"
+                    th:text="${p.scope() != null ? p.scope() : '--'}"
+                    class="text-xs"
+                    th:classappend="${p.scope() != null ? 'text-gray-500' : 'text-gray-400'}"
                     >--</span
                   >
                 </td>
@@ -306,15 +301,10 @@
                 </td>
                 <td class="px-2 sm:px-3 py-2 sm:py-3 text-right">
                   <span
-                    th:if="${p.pspPayment().amount() != null}"
-                    th:text="${#numbers.formatInteger(p.pspPayment().amount(), 0, 'COMMA') + ' Ar'}"
-                    class="text-xs font-semibold whitespace-nowrap text-green-600"
+                    th:text="${p.pspPayment().amount() != null ? #numbers.formatInteger(p.pspPayment().amount(), 0, 'COMMA') + ' Ar' : '--'}"
+                    class="text-xs font-semibold whitespace-nowrap"
+                    th:classappend="${p.pspPayment().amount() != null ? 'text-green-600' : 'text-gray-400'}"
                     >0 Ar</span
-                  >
-                  <span
-                    th:unless="${p.pspPayment().amount() != null}"
-                    class="text-xs text-gray-400"
-                    >--</span
                   >
                 </td>
                 <td class="px-2 sm:px-3 py-2 sm:py-3 text-center">
@@ -338,18 +328,18 @@
                   </span>
                 </td>
                 <td class="px-2 sm:px-3 py-2 sm:py-3 text-xs">
-                  <span
-                    th:if="${p.lastPspVerificationInstant() != null}"
-                    th:text="${#temporals.format(p.lastPspVerificationInstant(), 'yyyy-MM-dd')}"
-                    class="text-gray-700 font-medium block whitespace-nowrap"
-                    >2025-01-01</span
-                  >
-                  <span
-                    th:if="${p.lastPspVerificationInstant() != null}"
-                    th:text="${#temporals.format(p.lastPspVerificationInstant(), 'HH:mm:ss')}"
-                    class="text-gray-500 text-xs whitespace-nowrap"
-                    >12:00:00</span
-                  >
+                  <th:block th:if="${p.lastPspVerificationInstant() != null}">
+                    <span
+                      th:text="${#temporals.format(p.lastPspVerificationInstant(), 'yyyy-MM-dd')}"
+                      class="text-gray-700 font-medium block whitespace-nowrap"
+                      >2025-01-01</span
+                    >
+                    <span
+                      th:text="${#temporals.format(p.lastPspVerificationInstant(), 'HH:mm:ss')}"
+                      class="text-gray-500 text-xs whitespace-nowrap"
+                      >12:00:00</span
+                    >
+                  </th:block>
                   <span
                     th:unless="${p.lastPspVerificationInstant() != null}"
                     class="text-gray-400"
@@ -390,30 +380,7 @@
         </div>
       </div>
 
-      <div th:if="${totalPages > 1}" class="flex items-center justify-center gap-2 mt-6">
-        <a th:if="${currentPage > 0}"
-           th:href="@{/payments(applicationName=${selectedApplication}, scope=${selectedScope}, startDate=${selectedStartDate}, endDate=${selectedEndDate}, page=${currentPage - 1})}"
-           class="px-3 py-2 text-xs font-medium rounded-lg bg-white border border-gray-200 hover:bg-gray-50 transition-colors">
-          <span class="material-icons text-sm align-middle">chevron_left</span>
-          Précédent
-        </a>
-        <span th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
-              th:if="${i == currentPage or (i >= currentPage - 2 and i <= currentPage + 2)}">
-          <a th:if="${i != currentPage}"
-             th:href="@{/payments(applicationName=${selectedApplication}, scope=${selectedScope}, startDate=${selectedStartDate}, endDate=${selectedEndDate}, page=${i})}"
-             class="px-3 py-2 text-xs font-medium rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
-             th:text="${i + 1}">1</a>
-          <span th:unless="${i != currentPage}"
-                class="px-3 py-2 text-xs font-medium rounded-lg bg-[#800000] text-white"
-                th:text="${i + 1}">1</span>
-        </span>
-        <a th:if="${currentPage < totalPages - 1}"
-           th:href="@{/payments(applicationName=${selectedApplication}, scope=${selectedScope}, startDate=${selectedStartDate}, endDate=${selectedEndDate}, page=${currentPage + 1})}"
-           class="px-3 py-2 text-xs font-medium rounded-lg bg-white border border-gray-200 hover:bg-gray-50 transition-colors">
-          Suivant
-          <span class="material-icons text-sm align-middle">chevron_right</span>
-        </a>
-      </div>
+      <div th:replace="fragments/pagination :: pagination(applicationName=${selectedApplication}, scope=${selectedScope}, startDate=${selectedStartDate}, endDate=${selectedEndDate}, currentPage=${currentPage}, totalPages=${totalPages})"></div>
     </div>
     <script src="/script/filters.js"></script>
   </body>
