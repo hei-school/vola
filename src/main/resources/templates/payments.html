@@ -19,7 +19,7 @@
     <link rel="stylesheet" href="/style/history.css" />
   </head>
   <body class="min-h-screen bg-[var(--color-page-bg)] font-[Poppins] text-gray-700">
-    <div th:replace="fragments/header :: header"></div>
+    <div th:replace="~{fragments/header :: header}"></div>
 
     <div class="container mx-auto px-4 sm:px-6 pt-6 sm:pt-10 pb-10 sm:pb-14">
       <div
@@ -380,7 +380,7 @@
         </div>
       </div>
 
-      <div th:replace="fragments/pagination :: pagination(applicationName=${selectedApplication}, scope=${selectedScope}, startDate=${selectedStartDate}, endDate=${selectedEndDate}, currentPage=${currentPage}, totalPages=${totalPages})"></div>
+      <div th:replace="~{fragments/pagination :: pagination(applicationName=${selectedApplication}, scope=${selectedScope}, startDate=${selectedStartDate}, endDate=${selectedEndDate}, currentPage=${currentPage}, totalPages=${totalPages})"></div>
     </div>
     <script src="/script/filters.js"></script>
   </body>
