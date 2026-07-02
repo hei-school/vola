@@ -286,8 +286,14 @@
                 </td>
                 <td class="px-2 sm:px-3 py-2 sm:py-3">
                   <span
+                    th:if="${p.scope() != null}"
                     th:text="${p.scope()}"
                     class="text-xs text-gray-500"
+                    >--</span
+                  >
+                  <span
+                    th:unless="${p.scope() != null}"
+                    class="text-xs text-gray-400"
                     >--</span
                   >
                 </td>
