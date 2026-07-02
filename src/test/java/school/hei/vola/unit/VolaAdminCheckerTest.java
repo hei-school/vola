@@ -1,5 +1,8 @@
 package school.hei.vola.unit;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.junit.jupiter.api.Test;
 
 class VolaAdminCheckerTest {
@@ -8,7 +11,7 @@ class VolaAdminCheckerTest {
     var checker =
         new school.hei.vola.endpoint.rest.security.VolaAdminChecker(
             "admin@hei.school, bob@hei.school");
-    assert checker.isAdmin("admin@hei.school");
+    assertTrue(checker.isAdmin("admin@hei.school"));
   }
 
   @Test
@@ -16,7 +19,7 @@ class VolaAdminCheckerTest {
     var checker =
         new school.hei.vola.endpoint.rest.security.VolaAdminChecker(
             "admin@hei.school,bob@hei.school");
-    assert checker.isAdmin("bob@Hei.School");
+    assertTrue(checker.isAdmin("bob@Hei.School"));
   }
 
   @Test
@@ -24,7 +27,7 @@ class VolaAdminCheckerTest {
     var checker =
         new school.hei.vola.endpoint.rest.security.VolaAdminChecker(
             "admin@hei.school,bob@hei.school");
-    assert !checker.isAdmin("other@hei.school");
+    assertFalse(checker.isAdmin("other@hei.school"));
   }
 
   @Test
@@ -32,7 +35,7 @@ class VolaAdminCheckerTest {
     var checker =
         new school.hei.vola.endpoint.rest.security.VolaAdminChecker(
             "admin@hei.school, valisoa@hei.school");
-    assert !checker.isAdmin(null);
+    assertFalse(checker.isAdmin(null));
   }
 
   @Test
@@ -40,6 +43,6 @@ class VolaAdminCheckerTest {
     var checker =
         new school.hei.vola.endpoint.rest.security.VolaAdminChecker(
             "admin@hei.school,valisoa@hei.school");
-    assert checker.isAdmin("valisoa@hei.school");
+    assertTrue(checker.isAdmin("valisoa@hei.school"));
   }
 }
