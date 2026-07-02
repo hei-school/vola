@@ -30,9 +30,8 @@
         </h1>
         <div class="flex items-center gap-2">
           <a
-            th:if="${selectedApplication != null}"
             th:href="@{/payments/export/csv(
-           applicationName=${selectedApplication},
+           applicationName=${selectedApplication != null ? selectedApplication : 'all'},
            scope=${selectedScope},
            startDate=${selectedStartDate},
            endDate=${selectedEndDate}
@@ -42,14 +41,6 @@
             <span class="material-icons text-sm">download</span>
             Exporter
           </a>
-          <span
-            th:unless="${selectedApplication != null}"
-            class="bg-red-100 text-red-400 text-xs font-medium py-2 px-4 rounded-lg inline-flex items-center gap-1 cursor-not-allowed"
-            title="Sélectionnez une application pour exporter"
-          >
-            <span class="material-icons text-sm">download</span>
-            Exporter
-          </span>
         </div>
       </div>
 
