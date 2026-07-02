@@ -448,9 +448,7 @@
 
         scopeClear.addEventListener('click', function() {
           scopeInput.value = '';
-          scopeInput.focus();
-          toggleClear();
-          filterAndShow();
+          scopeInput.form.submit();
         });
 
         scopeOptions.forEach(function(opt) {
@@ -458,6 +456,7 @@
             scopeInput.value = this.getAttribute('data-value');
             scopeDropdown.classList.add('hidden');
             toggleClear();
+            scopeInput.form.submit();
           });
         });
 
