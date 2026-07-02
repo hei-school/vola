@@ -16,7 +16,6 @@ import school.hei.vola.repository.jpa.model.JUser;
 
 class JPaymentRepositoryIT extends FacadeIT {
   @Autowired JPaymentRepository jPaymentRepository;
-  @Autowired JPaymentFilterRepository jPaymentFilterRepository;
   @Autowired JApplicationRepository jApplicationRepository;
   @Autowired JUserRepository jUserRepository;
 
@@ -41,7 +40,7 @@ class JPaymentRepositoryIT extends FacadeIT {
     jPaymentRepository.save(paymentAt(app, user, now));
 
     var result =
-        jPaymentFilterRepository.findByApplicationNameAndCreationInstantBetween(
+        jPaymentRepository.findByApplicationNameAndCreationInstantBetween(
             app.getName(), null, Instant.EPOCH, Instant.now());
 
     assertEquals(1, result.size());
@@ -52,7 +51,7 @@ class JPaymentRepositoryIT extends FacadeIT {
     jPaymentRepository.save(paymentAt(app, user, Instant.parse("2024-01-15T10:00:00Z")));
 
     var result =
-        jPaymentFilterRepository.findByApplicationNameAndCreationInstantBetween(
+        jPaymentRepository.findByApplicationNameAndCreationInstantBetween(
             app.getName(),
             null,
             Instant.parse("2025-01-01T00:00:00Z"),
@@ -72,7 +71,7 @@ class JPaymentRepositoryIT extends FacadeIT {
     jPaymentRepository.save(paymentAt(otherApp, user, Instant.now()));
 
     var result =
-        jPaymentFilterRepository.findByApplicationNameAndCreationInstantBetween(
+        jPaymentRepository.findByApplicationNameAndCreationInstantBetween(
             app.getName(), null, Instant.EPOCH, Instant.now());
 
     assertTrue(result.isEmpty());
@@ -84,7 +83,7 @@ class JPaymentRepositoryIT extends FacadeIT {
     jPaymentRepository.save(paymentAt(app, user, instant));
 
     var result =
-        jPaymentFilterRepository.findByApplicationNameAndCreationInstantBetween(
+        jPaymentRepository.findByApplicationNameAndCreationInstantBetween(
             app.getName(), null, instant, Instant.now());
 
     assertEquals(1, result.size());
@@ -96,7 +95,7 @@ class JPaymentRepositoryIT extends FacadeIT {
     jPaymentRepository.save(paymentAt(app, user, instant));
 
     var result =
-        jPaymentFilterRepository.findByApplicationNameAndCreationInstantBetween(
+        jPaymentRepository.findByApplicationNameAndCreationInstantBetween(
             app.getName(), null, Instant.EPOCH, instant);
 
     assertTrue(result.isEmpty());
@@ -109,7 +108,7 @@ class JPaymentRepositoryIT extends FacadeIT {
     jPaymentRepository.save(paymentAt(app, user, Instant.parse("2025-12-31T23:59:59Z")));
 
     var result =
-        jPaymentFilterRepository.findByApplicationNameAndCreationInstantBetween(
+        jPaymentRepository.findByApplicationNameAndCreationInstantBetween(
             app.getName(),
             null,
             Instant.parse("2025-01-01T00:00:00Z"),

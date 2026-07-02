@@ -18,7 +18,6 @@ import school.hei.vola.model.Payment;
 import school.hei.vola.model.PaymentInfo;
 import school.hei.vola.model.psp.PspType;
 import school.hei.vola.repository.jpa.JApplicationRepository;
-import school.hei.vola.repository.jpa.JPaymentFilterRepository;
 import school.hei.vola.repository.jpa.JPaymentRepository;
 import school.hei.vola.repository.jpa.JPaymentRepositoryCustom;
 import school.hei.vola.repository.jpa.JUserRepository;
@@ -33,7 +32,6 @@ public class PaymentRepository {
 
   private final JPaymentRepositoryCustom jPaymentRepositoryCustom;
   private final JPaymentRepository jPaymentRepository;
-  private final JPaymentFilterRepository jPaymentFilterRepository;
   private final JPaymentMapper jPaymentMapper;
   private final JUserRepository jUserRepository;
   private final JApplicationRepository jApplicationRepository;
@@ -167,7 +165,7 @@ public class PaymentRepository {
 
   public List<Payment> findByApplicationNameAndDateRange(
       String applicationName, String scope, Instant start, Instant end) {
-    return jPaymentFilterRepository
+    return jPaymentRepository
         .findByApplicationNameAndCreationInstantBetween(applicationName, scope, start, end)
         .stream()
         .map(jPaymentMapper::toDomain)
@@ -176,21 +174,25 @@ public class PaymentRepository {
 
   public Page<Payment> findFilteredPage(
       String applicationName, String scope, Instant start, Instant end, Pageable pageable) {
-    return jPaymentFilterRepository
+    return jPaymentRepository
         .findFilteredPage(applicationName, scope, start, end, pageable)
         .map(jPaymentMapper::toDomain);
   }
 
   public long countFiltered(String applicationName, String scope, Instant start, Instant end) {
-    return jPaymentFilterRepository.countFiltered(applicationName, scope, start, end);
+    return jPaymentRepository.countFiltered(applicationName, scope, start, end);
   }
 
   public long sumAmountForSucceeded(
       String applicationName, String scope, Instant start, Instant end) {
-    return jPaymentFilterRepository.sumAmountForSucceeded(applicationName, scope, start, end);
+    return jPaymentRepository.sumAmountForSucceeded(applicationName, scope, start, end);
   }
 
   public long countPending(String applicationName, String scope, Instant start, Instant end) {
-    return jPaymentFilterRepository.countPending(applicationName, scope, start, end);
+    return jPaymentRepository.countPending(applicationName, scope, start, end);
+  }
+
+  public List<String> findDistinctScopes(String applicationName) {
+    return jPaymentRepository.findDistinctScopes(applicationName);
   }
 }

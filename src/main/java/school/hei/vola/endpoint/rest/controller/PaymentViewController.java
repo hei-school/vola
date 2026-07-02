@@ -75,6 +75,8 @@ public class PaymentViewController {
     model.addAttribute("currentPage", page);
     model.addAttribute("totalPages", paymentsPage.getTotalPages());
     model.addAttribute("pageSize", PAGE_SIZE);
+    var scopes = paymentService.findDistinctScopes(effectiveApp);
+    model.addAttribute("scopes", scopes);
     model.addAttribute("selectedApplication", effectiveApp);
     model.addAttribute("selectedScope", effectiveScope);
     model.addAttribute("selectedStartDate", parsedStartDate);

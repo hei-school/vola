@@ -128,6 +128,11 @@ public class PaymentService {
     return paymentRepository.countPending(effectiveApp, effectiveScope, start, end);
   }
 
+  public List<String> findDistinctScopes(String applicationName) {
+    var effectiveApp = "all".equals(applicationName) ? null : applicationName;
+    return paymentRepository.findDistinctScopes(effectiveApp);
+  }
+
   public String buildPaymentsCsv(String applicationName, String scope, Instant start, Instant end) {
     List<Payment> payments =
         findPaymentsByApplicationNameAndDateRange(applicationName, scope, start, end);
