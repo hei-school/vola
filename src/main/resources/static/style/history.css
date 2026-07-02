@@ -1,11 +1,23 @@
+:root {
+  --color-primary: #800000;
+  --color-primary-dark: #530c08;
+  --color-primary-light: #8a0a0a;
+  --color-success: #22c55e;
+  --color-error: #ef4444;
+  --color-warning: #eab308;
+  --dot-white: rgba(255, 255, 255, 0.12);
+  --dot-white-dim: rgba(255, 255, 255, 0.08);
+  --dot-size: 14px;
+}
+
 .border-left-succeeded {
-  border-left: 3px solid #22c55e;
+  border-left: 3px solid var(--color-success);
 }
 .border-left-failed {
-  border-left: 3px solid #ef4444;
+  border-left: 3px solid var(--color-error);
 }
 .border-left-verifying {
-  border-left: 3px solid #eab308;
+  border-left: 3px solid var(--color-warning);
 }
 
 dialog {
@@ -31,14 +43,14 @@ dialog::backdrop {
 
 .stat-card {
   background-image:
-    radial-gradient(rgba(255, 255, 255, 0.12) 1px, transparent 1px),
-    linear-gradient(135deg, #800000 0%, #530c08 100%);
-  background-size: 14px 14px, cover;
+    radial-gradient(var(--dot-white) 1px, transparent 1px),
+    linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  background-size: var(--dot-size) var(--dot-size), cover;
 }
 
 .app-header {
   background-image:
-    radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px),
-    linear-gradient(120deg, #8a0a0a 0%, #800000 45%, #530c08 100%);
-  background-size: 14px 14px, cover;
+    radial-gradient(var(--dot-white-dim) 1px, transparent 1px),
+    linear-gradient(120deg, var(--color-primary-light) 0%, var(--color-primary) 45%, var(--color-primary-dark) 100%);
+  background-size: var(--dot-size) var(--dot-size), cover;
 }
