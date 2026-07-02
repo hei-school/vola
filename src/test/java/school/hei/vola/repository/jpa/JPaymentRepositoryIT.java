@@ -42,7 +42,7 @@ class JPaymentRepositoryIT extends FacadeIT {
 
     var result =
         jPaymentFilterRepository.findByApplicationNameAndCreationInstantBetween(
-            app.getName(), null, Instant.EPOCH, Instant.parse("9999-12-31T23:59:59Z"));
+            app.getName(), null, Instant.EPOCH, Instant.now());
 
     assertEquals(1, result.size());
   }
@@ -73,7 +73,7 @@ class JPaymentRepositoryIT extends FacadeIT {
 
     var result =
         jPaymentFilterRepository.findByApplicationNameAndCreationInstantBetween(
-            app.getName(), null, Instant.EPOCH, Instant.parse("9999-12-31T23:59:59Z"));
+            app.getName(), null, Instant.EPOCH, Instant.now());
 
     assertTrue(result.isEmpty());
   }
@@ -85,7 +85,7 @@ class JPaymentRepositoryIT extends FacadeIT {
 
     var result =
         jPaymentFilterRepository.findByApplicationNameAndCreationInstantBetween(
-            app.getName(), null, instant, Instant.parse("9999-12-31T23:59:59Z"));
+            app.getName(), null, instant, Instant.now());
 
     assertEquals(1, result.size());
   }
