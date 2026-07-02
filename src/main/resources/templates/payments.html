@@ -18,14 +18,14 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="/style/history.css" />
   </head>
-  <body class="min-h-screen bg-[#F4EFE3] font-[Poppins] text-gray-700">
+  <body class="min-h-screen bg-[var(--color-page-bg)] font-[Poppins] text-gray-700">
     <div th:replace="fragments/header :: header"></div>
 
     <div class="container mx-auto px-4 sm:px-6 pt-6 sm:pt-10 pb-10 sm:pb-14">
       <div
         class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-3"
       >
-        <h1 class="text-2xl sm:text-3xl font-bold text-[#530C08]">
+        <h1 class="text-2xl sm:text-3xl font-bold text-[var(--color-primary-dark)]">
           Historique des paiements
         </h1>
         <div class="flex items-center gap-2">
@@ -36,7 +36,7 @@
            startDate=${selectedStartDate},
            endDate=${selectedEndDate}
          )}"
-            class="bg-[#D32F2F] hover:bg-red-700 text-white text-xs font-medium py-2 px-4 rounded-lg transition-all inline-flex items-center gap-1"
+            class="bg-[var(--color-accent)] hover:bg-red-700 text-white text-xs font-medium py-2 px-4 rounded-lg transition-all inline-flex items-center gap-1"
           >
             <span class="material-icons text-sm">download</span>
             Exporter
@@ -47,7 +47,7 @@
         <div
                 class="mx-auto grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6 max-w-4xl"
         >
-            <div class="stat-card relative overflow-hidden rounded-xl p-5 pb-6 border-t-4 border-[#D32F2F] shadow-[0_4px_10px_rgba(83,12,8,0.25)]">
+            <div class="stat-card relative overflow-hidden rounded-xl p-5 pb-6 border-t-4 border-[var(--color-accent)] shadow-[0_4px_10px_rgba(83,12,8,0.25)]">
                 <div class="flex items-center justify-between gap-2 mb-7">
                     <span class="material-icons text-white text-[1.75rem] opacity-90">payments</span>
                     <h3 class="text-white font-semibold text-sm text-right">Total collecté</h3>
@@ -55,7 +55,7 @@
                 <p class="text-white font-extrabold text-3xl leading-none mb-1" th:text="${totalCollected}">0 Ar</p>
                 <p class="text-white/75 text-xs">Au total</p>
             </div>
-            <div class="stat-card relative overflow-hidden rounded-xl p-5 pb-6 border-t-4 border-[#D32F2F] shadow-[0_4px_10px_rgba(83,12,8,0.25)]">
+            <div class="stat-card relative overflow-hidden rounded-xl p-5 pb-6 border-t-4 border-[var(--color-accent)] shadow-[0_4px_10px_rgba(83,12,8,0.25)]">
                 <div class="flex items-center justify-between gap-2 mb-7">
                     <span class="material-icons text-white text-[1.75rem] opacity-90">confirmation_number</span>
                     <h3 class="text-white font-semibold text-sm text-right">Nombre de paiements</h3>
@@ -63,7 +63,7 @@
                 <p class="text-white font-extrabold text-3xl leading-none mb-1" th:text="${totalCount}">0</p>
                 <p class="text-white/75 text-xs">Au total</p>
             </div>
-            <div class="stat-card relative overflow-hidden rounded-xl p-5 pb-6 border-t-4 border-[#D32F2F] shadow-[0_4px_10px_rgba(83,12,8,0.25)]">
+            <div class="stat-card relative overflow-hidden rounded-xl p-5 pb-6 border-t-4 border-[var(--color-accent)] shadow-[0_4px_10px_rgba(83,12,8,0.25)]">
                 <div class="flex items-center justify-between gap-2 mb-7">
                     <span class="material-icons text-white text-[1.75rem] opacity-90">av_timer</span>
                     <h3 class="text-white font-semibold text-sm text-right">En attente</h3>
@@ -76,38 +76,38 @@
       <form
         th:action="@{/payments}"
         method="get"
-        class="bg-white rounded-lg shadow-md p-4 sm:p-6 mb-6 border border-[#E0D5CA]"
+        class="bg-white rounded-lg shadow-md p-4 sm:p-6 mb-6 border border-[var(--color-border-light)]"
       >
         <div class="flex w-full flex-wrap justify-center gap-4 items-end">
           <div class="flex-1 relative">
             <label
-              class="block text-xs font-semibold text-[#530C08] mb-1"
+              class="block text-xs font-semibold text-[var(--color-primary-dark)] mb-1"
               >Application</label
             >
             <input type="hidden" name="applicationName" id="applicationName" th:value="${selectedApplication}" />
             <div class="relative cursor-pointer" id="app-trigger">
               <div
                 id="app-display"
-                class="w-full bg-[#F0EDE8] border border-[#D4C5B5] rounded-lg pl-3 pr-8 py-2 text-xs outline-none text-gray-700 truncate"
+                class="w-full bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg pl-3 pr-8 py-2 text-xs outline-none text-gray-700 truncate"
                 th:text="${selectedApplication != null ? selectedApplication : 'Toutes les applications'}"
               >Toutes les applications</div>
               <span
                 id="app-arrow"
-                class="absolute right-2 top-1/2 -translate-y-1/2 text-[#800000] pointer-events-none text-lg leading-none material-icons"
+                class="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--color-primary)] pointer-events-none text-lg leading-none material-icons"
                 >arrow_drop_down</span
               >
             </div>
             <div
               id="app-dropdown"
-              class="absolute z-20 w-full mt-1 bg-[#F0EDE8] border border-[#D4C5B5] rounded-lg shadow-lg max-h-48 overflow-y-auto hidden"
+              class="absolute z-20 w-full mt-1 bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg shadow-lg max-h-48 overflow-y-auto hidden"
             >
               <div
-                class="app-option px-3 py-2 text-xs cursor-pointer text-gray-700 hover:bg-[#D4C5B5] hover:text-[#530C08] transition-colors"
+                class="app-option px-3 py-2 text-xs cursor-pointer text-gray-700 hover:bg-[var(--color-border)] hover:text-[var(--color-primary-dark)] transition-colors"
                 data-value="all"
               >Toutes les applications</div>
               <div
                 th:each="app : ${applications}"
-                class="app-option px-3 py-2 text-xs cursor-pointer text-gray-700 hover:bg-[#D4C5B5] hover:text-[#530C08] transition-colors"
+                class="app-option px-3 py-2 text-xs cursor-pointer text-gray-700 hover:bg-[var(--color-border)] hover:text-[var(--color-primary-dark)] transition-colors"
                 th:data-value="${app.name}"
                 th:text="${app.name}"
               ></div>
@@ -116,7 +116,7 @@
           <div class="flex-1 relative">
             <label
               for="scope"
-              class="block text-xs font-semibold text-[#530C08] mb-1"
+              class="block text-xs font-semibold text-[var(--color-primary-dark)] mb-1"
               >Scope</label
             >
             <div class="relative">
@@ -127,26 +127,26 @@
                 autocomplete="off"
                 th:value="${selectedScope}"
                 placeholder="Sélectionner un scope"
-                class="w-full bg-[#F0EDE8] border border-[#D4C5B5] rounded-lg pl-3 pr-8 py-2 text-xs outline-none focus:ring-0 focus:border-[#800000] transition-all"
+                class="w-full bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg pl-3 pr-8 py-2 text-xs outline-none focus:ring-0 focus:border-[var(--color-primary)] transition-all"
               />
               <span
                 id="scope-clear"
-                class="absolute right-6 top-1/2 -translate-y-1/2 text-[#800000] cursor-pointer hover:text-[#530C08] hidden text-sm leading-none font-bold"
+                class="absolute right-6 top-1/2 -translate-y-1/2 text-[var(--color-primary)] cursor-pointer hover:text-[var(--color-primary-dark)] hidden text-sm leading-none font-bold"
                 >&times;</span
               >
               <span
                 id="scope-arrow"
-                class="absolute right-2 top-1/2 -translate-y-1/2 text-[#800000] pointer-events-none text-lg leading-none material-icons"
+                class="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--color-primary)] pointer-events-none text-lg leading-none material-icons"
                 >arrow_drop_down</span
               >
             </div>
             <div
               id="scope-dropdown"
-              class="absolute z-10 w-full mt-1 bg-[#F0EDE8] border border-[#D4C5B5] rounded-lg shadow-lg max-h-48 overflow-y-auto hidden"
+              class="absolute z-10 w-full mt-1 bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg shadow-lg max-h-48 overflow-y-auto hidden"
             >
               <div
                 th:each="s : ${scopes}"
-                class="scope-option px-3 py-2 text-xs cursor-pointer text-gray-700 hover:bg-[#D4C5B5] hover:text-[#530C08] transition-colors"
+                class="scope-option px-3 py-2 text-xs cursor-pointer text-gray-700 hover:bg-[var(--color-border)] hover:text-[var(--color-primary-dark)] transition-colors"
                 th:data-value="${s}"
                 th:text="${s}"
               ></div>
@@ -155,7 +155,7 @@
           <div class="flex-1">
             <label
               for="startDate"
-              class="block text-xs font-semibold text-[#530C08] mb-1"
+              class="block text-xs font-semibold text-[var(--color-primary-dark)] mb-1"
               >Du</label
             >
             <input
@@ -163,13 +163,13 @@
               name="startDate"
               id="startDate"
               th:value="${selectedStartDate != null ? #temporals.format(selectedStartDate, 'yyyy-MM-dd') : ''}"
-              class="w-full bg-[#F0EDE8] border border-[#D4C5B5] rounded-lg px-3 py-2 text-xs outline-none focus:ring-0 focus:border-[#800000] transition-all"
+              class="w-full bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2 text-xs outline-none focus:ring-0 focus:border-[var(--color-primary)] transition-all"
             />
           </div>
           <div class="flex-1">
             <label
               for="endDate"
-              class="block text-xs font-semibold text-[#530C08] mb-1"
+              class="block text-xs font-semibold text-[var(--color-primary-dark)] mb-1"
               >Au</label
             >
             <input
@@ -177,13 +177,13 @@
               name="endDate"
               id="endDate"
               th:value="${selectedEndDate != null ? #temporals.format(selectedEndDate, 'yyyy-MM-dd') : ''}"
-              class="w-full bg-[#F0EDE8] border border-[#D4C5B5] rounded-lg px-3 py-2 text-xs outline-none focus:ring-0 focus:border-[#800000] transition-all"
+              class="w-full bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2 text-xs outline-none focus:ring-0 focus:border-[var(--color-primary)] transition-all"
             />
           </div>
           <div class="flex items-end gap-2">
             <button
               type="submit"
-              class="bg-[#D32F2F] hover:bg-[#b71c1c] text-white text-xs font-medium py-2 px-4 rounded-lg transition-all flex items-center justify-center gap-1"
+              class="bg-[var(--color-accent)] hover:bg-[var(--color-accent-dark)] text-white text-xs font-medium py-2 px-4 rounded-lg transition-all flex items-center justify-center gap-1"
             >
               <span class="material-icons text-sm">filter_list</span>
               Filtrer
@@ -203,7 +203,7 @@
       <div class="bg-white rounded-lg shadow-md overflow-hidden">
         <div class="overflow-x-auto">
           <table class="w-full table-auto min-w-[800px]">
-            <thead class="bg-[#800000] text-white">
+            <thead class="bg-[var(--color-primary)] text-white">
               <tr>
                 <th
                   class="px-2 sm:px-3 py-2 sm:py-3 text-left font-semibold text-xs whitespace-nowrap"

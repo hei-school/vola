@@ -2,9 +2,16 @@
   --color-primary: #800000;
   --color-primary-dark: #530c08;
   --color-primary-light: #8a0a0a;
+  --color-accent: #D32F2F;
+  --color-accent-dark: #b71c1c;
   --color-success: #22c55e;
   --color-error: #ef4444;
   --color-warning: #eab308;
+  --color-page-bg: #F4EFE3;
+  --color-input-bg: #F0EDE8;
+  --color-border: #D4C5B5;
+  --color-border-light: #E0D5CA;
+  --color-text-dark: #3C3C3C;
   --dot-white: rgba(255, 255, 255, 0.12);
   --dot-white-dim: rgba(255, 255, 255, 0.08);
   --dot-size: 14px;
