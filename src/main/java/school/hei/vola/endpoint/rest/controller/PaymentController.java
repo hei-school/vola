@@ -67,7 +67,7 @@ public class PaymentController {
     Instant end =
         endDate != null
             ? endDate.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant()
-            : Instant.parse("9999-12-31T23:59:59Z");
+            : Instant.now();
 
     var csv = paymentService.buildPaymentsCsv(applicationName, scope, start, end);
     var filename = "payments_" + applicationName + ".csv";

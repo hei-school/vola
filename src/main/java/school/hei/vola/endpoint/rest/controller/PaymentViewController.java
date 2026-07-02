@@ -53,7 +53,7 @@ public class PaymentViewController {
     var end =
         parsedEndDate != null
             ? parsedEndDate.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant()
-            : Instant.parse("9999-12-31T23:59:59Z");
+            : Instant.now();
 
     var totalAmount =
         paymentService.sumAmountForSucceeded(effectiveApp, effectiveScope, start, end);
