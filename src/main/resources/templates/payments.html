@@ -380,7 +380,7 @@
         </div>
       </div>
 
-      <div th:replace="~{fragments/pagination :: pagination(applicationName=${selectedApplication}, scope=${selectedScope}, startDate=${selectedStartDate}, endDate=${selectedEndDate}, currentPage=${currentPage}, totalPages=${totalPages})"></div>
+      <div th:replace="fragments/pagination :: pagination(applicationName=${selectedApplication}, scope=${selectedScope}, startDate=${selectedStartDate}, endDate=${selectedEndDate}, currentPage=${currentPage}, totalPages=${totalPages})"></div>
     </div>
     <script src="/script/filters.js"></script>
   </body>

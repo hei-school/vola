@@ -1,10 +1,55 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="en">
-<head>
+<!doctype html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+>
+  <head>
     <title>Vola - Erreur</title>
-</head>
-<body>
-<h2>Loza! Oops...</h2>
-<p th:text="${errorMessage}"></p>
-</body>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/style/history.css" />
+  </head>
+  <body class="min-h-screen bg-[var(--color-page-bg)] font-[Poppins] text-gray-700">
+
+    <div class="container mx-auto px-4 sm:px-6 pt-6 sm:pt-10 pb-10 sm:pb-14">
+      <div class="max-w-lg mx-auto">
+        <div class="bg-white rounded-xl shadow-[0_4px_16px_rgba(0,0,0,0.08)] border border-[var(--color-border)] p-8 sm:p-10 text-center">
+        <div class="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-[#800000] bg-opacity-10 rounded-full mb-4">
+            <span class="material-icons text-[var(--color-primary)] text-4xl sm:text-5xl">error_outline</span>
+        </div>
+
+          <h2 class="text-3xl font-bold text-[var(--color-primary)] mb-2">Loza! Oops...</h2>
+
+          <div th:if="${status}" class="mb-4">
+            <span class="inline-block bg-[#800000] bg-opacity-10 text-[var(--color-primary-dark)] font-semibold text-sm px-4 py-1.5 rounded-full">
+              Erreur <span th:text="${status}"></span> - <span th:text="${error}"></span>
+            </span>
+          </div>
+
+          <div th:if="${message}" class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
+            <p class="text-sm text-gray-600 break-words" th:text="${message}"></p>
+          </div>
+
+          <div th:if="${errorMessage}" class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
+            <p class="text-sm text-gray-600 break-words" th:text="${errorMessage}"></p>
+          </div>
+
+          <a href="/"
+             class="inline-flex items-center gap-2 bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-white font-semibold py-3 px-8 rounded-full transition-all transform hover:scale-[1.02] text-sm">
+            <span class="material-icons text-base">arrow_back</span>
+            <span>Retour à l'accueil</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </body>
 </html>

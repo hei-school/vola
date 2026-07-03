@@ -1,11 +1,12 @@
 package school.hei.vola.endpoint.rest.security;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -57,7 +58,10 @@ public class SecurityConf {
       var oidcUser = (OidcUser) authentication.getPrincipal();
       String email = oidcUser.getEmail();
       if (!volaAdminChecker.isAdmin(email)) {
-        throw new AccessDeniedException("You're not a Vola Administrator");
+        SecurityContextHolder.clearContext();
+        request.getSession().invalidate();
+        response.sendError(HttpServletResponse.SC_FORBIDDEN, "You're not a Vola Administrator");
+        return;
       }
       response.sendRedirect("/payments");
     };
