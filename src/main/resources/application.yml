@@ -16,5 +16,10 @@ spring:
             jwk-set-uri: ${CASDOOR_ISSUER_URI}/.well-known/jwks
             user-info-uri: ${CASDOOR_ISSUER_URI}/api/userinfo
             user-name-attribute: sub
+server:
+  error:
+    include-exception: true
+    include-message: always
+
 vola:
   admins: ${VOLA_ADMINS}
