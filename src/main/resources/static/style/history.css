@@ -7,6 +7,8 @@
   --color-success: #22c55e;
   --color-error: #ef4444;
   --color-warning: #eab308;
+  --color-psp-bg: #DBEAFE;
+  --color-psp-text: #1E40AF;
   --color-page-bg: #F4EFE3;
   --color-input-bg: #F0EDE8;
   --color-border: #D4C5B5;
@@ -15,6 +17,11 @@
   --dot-white: rgba(255, 255, 255, 0.12);
   --dot-white-dim: rgba(255, 255, 255, 0.08);
   --dot-size: 14px;
+}
+
+.psp-badge {
+  background-color: var(--color-psp-bg);
+  color: var(--color-psp-text);
 }
 
 .border-left-succeeded {
