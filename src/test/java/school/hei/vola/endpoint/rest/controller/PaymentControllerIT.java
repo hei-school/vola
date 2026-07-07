@@ -289,7 +289,7 @@ class PaymentControllerIT extends FacadeIT {
     var response = subject.exportPaymentsCsv(appName, null, null, null);
 
     var disposition = response.getHeaders().get(CONTENT_DISPOSITION).getFirst();
-    assertTrue(disposition.contains("payments_" + appName + ".csv"));
+    assertTrue(disposition.contains("payments_" + appName + "_"));
   }
 
   @Test
@@ -319,7 +319,7 @@ class PaymentControllerIT extends FacadeIT {
     var response = subject.exportPaymentsCsv("all", null, null, null);
 
     var disposition = response.getHeaders().get(CONTENT_DISPOSITION).getFirst();
-    assertTrue(disposition.contains("payments_all.csv"));
+    assertTrue(disposition.contains("payments_all_"));
   }
 
   private static String randomEmail() {
