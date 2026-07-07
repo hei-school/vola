@@ -70,7 +70,7 @@ public class PaymentController {
             : Instant.now();
 
     var csv = paymentService.buildPaymentsCsv(applicationName, scope, start, end);
-    var filename = "payments_" + applicationName + ".csv";
+    var filename = "payments_" + applicationName + "_" + System.currentTimeMillis() + ".csv";
 
     return ResponseEntity.ok()
         .header(CONTENT_DISPOSITION, "attachment; filename=" + filename)

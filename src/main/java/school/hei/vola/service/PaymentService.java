@@ -34,7 +34,7 @@ public class PaymentService {
   private static final String TRANSACTIONS_XLS_IMPORT_BUCKET_KEY = "/TRANSACTIONS_XLS_IMPORT/";
 
   private static String nullIfAll(String value) {
-    return "all".equals(value) ? null : value;
+    return (value == null || value.isBlank() || "all".equals(value)) ? null : value;
   }
 
   private final PaymentRepository paymentRepository;
