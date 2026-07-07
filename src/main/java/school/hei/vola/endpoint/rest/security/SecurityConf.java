@@ -60,7 +60,8 @@ public class SecurityConf {
       if (!volaAdminChecker.isAdmin(email)) {
         SecurityContextHolder.clearContext();
         request.getSession().invalidate();
-        response.sendError(HttpServletResponse.SC_FORBIDDEN, "You're not a Vola Administrator");
+        response.sendError(
+            HttpServletResponse.SC_FORBIDDEN, "Vous n'etes pas un administrateur de Vola");
         return;
       }
       response.sendRedirect("/payments");
