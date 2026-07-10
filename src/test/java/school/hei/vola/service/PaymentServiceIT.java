@@ -27,6 +27,7 @@ import school.hei.vola.conf.FacadeIT;
 import school.hei.vola.endpoint.event.EventProducer;
 import school.hei.vola.endpoint.event.model.PaymentVerificationRequested;
 import school.hei.vola.model.PaymentInfo;
+import school.hei.vola.repository.PaymentRepository;
 import school.hei.vola.repository.jpa.JApplicationRepository;
 import school.hei.vola.repository.jpa.model.JApplication;
 
@@ -35,6 +36,7 @@ class PaymentServiceIT extends FacadeIT {
   @Autowired PaymentService subject;
   @MockBean EventProducer eventProducerMocked;
   @Autowired JApplicationRepository jApplicationRepository;
+  @Autowired PaymentRepository paymentRepository;
 
   @Captor ArgumentCaptor<List<PaymentVerificationRequested>> eventCaptor;
 
@@ -405,6 +407,123 @@ class PaymentServiceIT extends FacadeIT {
     var pending = subject.countPending(appName, null, Instant.EPOCH, Instant.now());
 
     assertEquals(2, pending);
+  }
+
+  @Test
+  void buildPaymentsCsv_returns_header_and_data_rows() {
+    var app = randomJApplication();
+    var apiKey = app.getApiKey();
+    var appName = app.getName();
+    var email = randomEmail();
+    var pspPaymentId = randomUUID().toString();
+
+    subject.createPayment(apiKey, email, ORANGE_MONEY, pspPaymentId, null);
+
+    var csv = subject.buildPaymentsCsv(appName, null, Instant.EPOCH, Instant.now());
+    var lines = csv.split("\n");
+
+    assertEquals(2, lines.length);
+    assertTrue(lines[0].contains("Email payeur"));
+    assertTrue(lines[1].contains(email));
+    assertTrue(lines[1].contains(ORANGE_MONEY.name()));
+    assertTrue(lines[1].contains(pspPaymentId));
+    assertTrue(lines[1].contains(appName));
+    assertTrue(lines[1].contains("En vérification"));
+  }
+
+  @Test
+  void buildPaymentsCsv_no_payments_returns_header_only() {
+    var app = randomJApplication();
+    var appName = app.getName();
+
+    var csv = subject.buildPaymentsCsv(appName, null, Instant.EPOCH, Instant.now());
+    var lines = csv.split("\n");
+
+    assertEquals(1, lines.length);
+    assertTrue(lines[0].contains("Email payeur"));
+  }
+
+  @Test
+  void buildPaymentsCsv_succeeded_status_label() {
+    var app = randomJApplication();
+    var apiKey = app.getApiKey();
+    var appName = app.getName();
+    var email = randomEmail();
+
+    var created = subject.createPayment(apiKey, email, ORANGE_MONEY, randomUUID().toString(), null);
+    var succeeded =
+        created.toBuilder()
+            .pspPayment(created.pspPayment().toBuilder().amount(5000).build())
+            .build();
+    paymentRepository.save(succeeded);
+
+    var csv = subject.buildPaymentsCsv(appName, null, Instant.EPOCH, Instant.now());
+
+    assertTrue(csv.contains("Succ\u00e8s"));
+    assertTrue(csv.contains("5000"));
+  }
+
+  @Test
+  void buildPaymentsCsv_failed_status_label() {
+    var app = randomJApplication();
+    var apiKey = app.getApiKey();
+    var appName = app.getName();
+    var email = randomEmail();
+
+    var created = subject.createPayment(apiKey, email, ORANGE_MONEY, randomUUID().toString(), null);
+    var failed = created.toBuilder().verificationAttemptNb(10).build();
+    paymentRepository.save(failed);
+
+    var csv = subject.buildPaymentsCsv(appName, null, Instant.EPOCH, Instant.now());
+
+    assertTrue(csv.contains("\u00c9chou\u00e9"));
+  }
+
+  @Test
+  void buildPaymentsCsv_escapes_semicolons_in_email() {
+    var app = randomJApplication();
+    var apiKey = app.getApiKey();
+    var appName = app.getName();
+    var emailWithSemicolon = "test;special@cute.dev";
+
+    subject.createPayment(apiKey, emailWithSemicolon, ORANGE_MONEY, randomUUID().toString(), null);
+
+    var csv = subject.buildPaymentsCsv(appName, null, Instant.EPOCH, Instant.now());
+
+    assertTrue(csv.contains("\"test;special@cute.dev\""));
+  }
+
+  @Test
+  void buildPaymentsCsv_empty_amount_and_dates_for_new_payment() {
+    var app = randomJApplication();
+    var apiKey = app.getApiKey();
+    var appName = app.getName();
+    var email = randomEmail();
+
+    subject.createPayment(apiKey, email, ORANGE_MONEY, randomUUID().toString(), null);
+
+    var csv = subject.buildPaymentsCsv(appName, null, Instant.EPOCH, Instant.now());
+    var lines = csv.split("\n");
+    var columns = lines[1].split(";");
+
+    assertEquals("", columns[3]);
+    assertEquals("", columns[6]);
+  }
+
+  @Test
+  void buildPaymentsCsv_creation_instant_is_present() {
+    var app = randomJApplication();
+    var apiKey = app.getApiKey();
+    var appName = app.getName();
+    var email = randomEmail();
+
+    subject.createPayment(apiKey, email, ORANGE_MONEY, randomUUID().toString(), null);
+
+    var csv = subject.buildPaymentsCsv(appName, null, Instant.EPOCH, Instant.now());
+    var lines = csv.split("\n");
+    var columns = lines[1].split(";");
+
+    assertTrue(columns[5].length() > 0);
   }
 
   private void createPayments(String apiKey, List<PaymentInfo> paymentInfos) {
