@@ -326,6 +326,81 @@ class PaymentServiceIT extends FacadeIT {
     assertTrue(scopes.contains("scope1"));
   }
 
+  @Test
+  void findPaymentsByApplicationName_returns_matching_payments() {
+    var app = randomJApplication();
+    var apiKey = app.getApiKey();
+    var appName = app.getName();
+
+    subject.createPayment(apiKey, randomEmail(), ORANGE_MONEY, randomUUID().toString(), null);
+    subject.createPayment(apiKey, randomEmail(), ORANGE_MONEY, randomUUID().toString(), null);
+
+    var result = subject.findPaymentsByApplicationName(appName);
+
+    assertEquals(2, result.size());
+    assertTrue(result.stream().allMatch(p -> p.application().name().equals(appName)));
+  }
+
+  @Test
+  void findPaymentsByApplicationName_returns_empty_for_unknown_name() {
+    var result = subject.findPaymentsByApplicationName("non-existent-" + randomUUID());
+
+    assertTrue(result.isEmpty());
+  }
+
+  @Test
+  void findPaymentsByApplicationNameAndDateRange_returns_payments_in_range() {
+    var app = randomJApplication();
+    var apiKey = app.getApiKey();
+    var appName = app.getName();
+
+    subject.createPayment(apiKey, randomEmail(), ORANGE_MONEY, randomUUID().toString(), null);
+    subject.createPayment(apiKey, randomEmail(), ORANGE_MONEY, randomUUID().toString(), null);
+
+    var result =
+        subject.findPaymentsByApplicationNameAndDateRange(
+            appName, null, Instant.EPOCH, Instant.now());
+
+    assertEquals(2, result.size());
+  }
+
+  @Test
+  void findPaymentsByApplicationNameAndDateRange_returns_empty_outside_range() {
+    var app = randomJApplication();
+    var apiKey = app.getApiKey();
+    var appName = app.getName();
+
+    subject.createPayment(apiKey, randomEmail(), ORANGE_MONEY, randomUUID().toString(), null);
+
+    var result =
+        subject.findPaymentsByApplicationNameAndDateRange(
+            appName,
+            null,
+            Instant.parse("2020-01-01T00:00:00Z"),
+            Instant.parse("2020-01-02T00:00:00Z"));
+
+    assertTrue(result.isEmpty());
+  }
+
+  @Test
+  void findAll_with_all_appName_returns_payments_from_all_apps() {
+    var app1 = randomJApplication();
+    var app2 = randomJApplication();
+    var email1 = randomEmail();
+    var email2 = randomEmail();
+
+    subject.createPayment(app1.getApiKey(), email1, ORANGE_MONEY, randomUUID().toString(), null);
+    subject.createPayment(app2.getApiKey(), email2, ORANGE_MONEY, randomUUID().toString(), null);
+
+    var result =
+        subject.findPaymentsByApplicationNameAndDateRange(
+            "all", null, Instant.EPOCH, Instant.now());
+
+    assertTrue(result.size() >= 2);
+    assertTrue(result.stream().anyMatch(p -> p.payer().email().equals(email1)));
+    assertTrue(result.stream().anyMatch(p -> p.payer().email().equals(email2)));
+  }
+
   private void createPayments(String apiKey, List<PaymentInfo> paymentInfos) {
     paymentInfos.forEach(
         info ->
