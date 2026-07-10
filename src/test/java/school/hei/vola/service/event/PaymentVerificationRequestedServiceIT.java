@@ -58,7 +58,8 @@ class PaymentVerificationRequestedServiceIT extends FacadeIT {
             null,
             0,
             randomLou,
-            randomApplication());
+            randomApplication(),
+            "STD");
     var savedPayment = paymentRepository.save(payment);
 
     assertNull(savedPayment.pspPayment().amount());
