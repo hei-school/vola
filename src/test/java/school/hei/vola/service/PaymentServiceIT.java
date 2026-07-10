@@ -48,7 +48,7 @@ class PaymentServiceIT extends FacadeIT {
     var apiKey = randomJApplication().getApiKey();
     var pspPaymentId = randomUUID().toString();
 
-    var created = subject.createPayment(apiKey, email, ORANGE_MONEY, pspPaymentId, "any");
+    var created = subject.createPayment(apiKey, email, ORANGE_MONEY, pspPaymentId, null);
     var retrieved =
         subject
             .findPaymentByPayerEmailAndPspTypeAndPspPaymentId(email, ORANGE_MONEY, pspPaymentId)
@@ -63,7 +63,7 @@ class PaymentServiceIT extends FacadeIT {
     var email = "lou@hei.school";
     var apiKey = randomJApplication().getApiKey();
     var pspPaymentId = "MP250729.1216.D77954";
-    subject.createPayment(apiKey, email, ORANGE_MONEY, pspPaymentId, "any");
+    subject.createPayment(apiKey, email, ORANGE_MONEY, pspPaymentId, null);
 
     var existingPaymentInfo =
         PaymentInfo.builder()
@@ -216,7 +216,7 @@ class PaymentServiceIT extends FacadeIT {
     var apiKey = randomJApplication().getApiKey();
     var paymentInfo = randomPaymentInfo();
     subject.createPayment(
-        apiKey, paymentInfo.payerEmail(), paymentInfo.pspType(), paymentInfo.pspPaymentId(), "any");
+        apiKey, paymentInfo.payerEmail(), paymentInfo.pspType(), paymentInfo.pspPaymentId(), null);
 
     var exception =
         assertThrows(
@@ -227,7 +227,7 @@ class PaymentServiceIT extends FacadeIT {
                     randomEmail(),
                     paymentInfo.pspType(),
                     paymentInfo.pspPaymentId(),
-                    "any"));
+                    null));
     assertInstanceOf(IllegalArgumentException.class, exception.getCause());
   }
 
@@ -240,7 +240,7 @@ class PaymentServiceIT extends FacadeIT {
         existingInfo.payerEmail(),
         existingInfo.pspType(),
         existingInfo.pspPaymentId(),
-        "any");
+        null);
     reset(eventProducerMocked);
 
     var newInfo = randomPaymentInfo();
@@ -330,7 +330,7 @@ class PaymentServiceIT extends FacadeIT {
     paymentInfos.forEach(
         info ->
             subject.createPayment(
-                apiKey, info.payerEmail(), info.pspType(), info.pspPaymentId(), "any"));
+                apiKey, info.payerEmail(), info.pspType(), info.pspPaymentId(), null));
   }
 
   private List<PaymentInfo> mergePaymentInfos(

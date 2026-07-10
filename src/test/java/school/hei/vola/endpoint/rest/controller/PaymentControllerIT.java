@@ -72,7 +72,7 @@ class PaymentControllerIT extends FacadeIT {
     var pspType = ORANGE_MONEY;
     var pspPaymentId = ORANGE_REF_SUCCEEDED;
 
-    var createdPayment = subject.createPayment(apiKey, email, pspType, pspPaymentId, "any");
+    var createdPayment = subject.createPayment(apiKey, email, pspType, pspPaymentId, null);
     assertNotNull(createdPayment.id());
     assertNull(createdPayment.pspPayment().amount());
     assertNull(createdPayment.lastPspVerificationInstant());
@@ -90,7 +90,7 @@ class PaymentControllerIT extends FacadeIT {
     var pspType = ORANGE_MONEY;
     var pspPaymentId = ORANGE_REF_SUCCEEDED;
 
-    var createdPayment = subject.createPayment(apiKey, email, pspType, pspPaymentId, "any");
+    var createdPayment = subject.createPayment(apiKey, email, pspType, pspPaymentId, null);
     assertNotNull(createdPayment.id());
     assertNull(createdPayment.pspPayment().amount());
     assertNull(createdPayment.lastPspVerificationInstant());
@@ -126,7 +126,7 @@ class PaymentControllerIT extends FacadeIT {
       throw new RuntimeException("The error is ", e);
     }
 
-    var createdPayment = subject.createPayment(apiKey, email, pspType, pspPaymentId, "any");
+    var createdPayment = subject.createPayment(apiKey, email, pspType, pspPaymentId, null);
     assertNotNull(createdPayment.id());
     assertNull(createdPayment.pspPayment().amount());
     assertNull(createdPayment.lastPspVerificationInstant());
@@ -159,7 +159,7 @@ class PaymentControllerIT extends FacadeIT {
     var pspType = ORANGE_MONEY;
     var pspPaymentId = "non-existing";
 
-    var createdPayment = subject.createPayment(apiKey, email, pspType, pspPaymentId, "any");
+    var createdPayment = subject.createPayment(apiKey, email, pspType, pspPaymentId, null);
     assertNotNull(createdPayment.id());
     assertNull(createdPayment.pspPayment().amount());
     assertNull(createdPayment.lastPspVerificationInstant());
