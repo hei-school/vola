@@ -53,7 +53,7 @@ public class JPaymentRepositoryCustomImpl implements JPaymentRepositoryCustom {
     return """
            SELECT p.id, p.user_id, p.psp_type, p.psp_payment_id, p.psp_creation_instant,
                   p.amount, p.creation_instant, p.last_psp_verification_instant,
-                  p.application_id, p.verification_attempt_nb
+                  p.application_id, p.verification_attempt_nb, p.scope
            FROM payment p
            INNER JOIN "user" u ON p.user_id = u.id
            WHERE """
