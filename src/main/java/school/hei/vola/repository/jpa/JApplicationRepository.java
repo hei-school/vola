@@ -9,6 +9,4 @@ import school.hei.vola.repository.jpa.model.JApplication;
 @Repository
 public interface JApplicationRepository extends JpaRepository<JApplication, String> {
   Optional<JApplication> findByApiKey(String apiKey);
-
-  List<JApplication> findAll();
 }
