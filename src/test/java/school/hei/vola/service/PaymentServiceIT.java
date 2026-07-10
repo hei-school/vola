@@ -401,6 +401,48 @@ class PaymentServiceIT extends FacadeIT {
     assertTrue(result.stream().anyMatch(p -> p.payer().email().equals(email2)));
   }
 
+  @Test
+  void findAllPayments_returns_all_payments() {
+    var app = randomJApplication();
+    var apiKey = app.getApiKey();
+    var email = randomEmail();
+
+    var pspPaymentId = randomUUID().toString();
+    subject.createPayment(apiKey, email, ORANGE_MONEY, pspPaymentId, null);
+
+    var all = subject.findAllPayments();
+
+    assertTrue(all.stream().anyMatch(p -> p.payer().email().equals(email)));
+  }
+
+  @Test
+  void sumAmountForSucceeded_returns_zero_when_no_succeeded() {
+    var app = randomJApplication();
+    var apiKey = app.getApiKey();
+    var appName = app.getName();
+
+    subject.createPayment(apiKey, randomEmail(), ORANGE_MONEY, randomUUID().toString(), null);
+    subject.createPayment(apiKey, randomEmail(), ORANGE_MONEY, randomUUID().toString(), null);
+
+    var total = subject.sumAmountForSucceeded(appName, null, Instant.EPOCH, Instant.now());
+
+    assertEquals(0, total);
+  }
+
+  @Test
+  void countPending_returns_all_for_new_payments() {
+    var app = randomJApplication();
+    var apiKey = app.getApiKey();
+    var appName = app.getName();
+
+    subject.createPayment(apiKey, randomEmail(), ORANGE_MONEY, randomUUID().toString(), null);
+    subject.createPayment(apiKey, randomEmail(), ORANGE_MONEY, randomUUID().toString(), null);
+
+    var pending = subject.countPending(appName, null, Instant.EPOCH, Instant.now());
+
+    assertEquals(2, pending);
+  }
+
   private void createPayments(String apiKey, List<PaymentInfo> paymentInfos) {
     paymentInfos.forEach(
         info ->
