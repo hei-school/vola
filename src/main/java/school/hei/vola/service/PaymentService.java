@@ -123,7 +123,12 @@ public class PaymentService {
       String applicationName, String scope, Instant start, Instant end) {
     var effectiveApp = nullIfAll(applicationName);
     var effectiveScope = nullIfAll(scope);
-    return paymentRepository.sumAmountForSucceeded(effectiveApp, effectiveScope, start, end);
+    return paymentRepository
+        .findByApplicationNameAndDateRange(effectiveApp, effectiveScope, start, end)
+        .stream()
+        .filter(payment -> payment.pspPayment().amount() != null)
+        .mapToLong(payment -> payment.pspPayment().amount())
+        .sum();
   }
 
   public long countPending(String applicationName, String scope, Instant start, Instant end) {

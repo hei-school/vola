@@ -55,17 +55,6 @@ public interface JPaymentRepository extends JpaRepository<JPayment, String> {
       @Param("end") Instant end);
 
   @Query(
-      "SELECT COALESCE(SUM(p.amount), 0) FROM JPayment p WHERE (:applicationName IS NULL OR"
-          + " p.application.name = :applicationName) AND (:scope IS NULL OR p.scope = :scope)"
-          + " AND p.creationInstant >= :start AND p.creationInstant < :end AND p.amount IS NOT"
-          + " NULL")
-  long sumAmountForSucceeded(
-      @Param("applicationName") String applicationName,
-      @Param("scope") String scope,
-      @Param("start") Instant start,
-      @Param("end") Instant end);
-
-  @Query(
       "SELECT COUNT(p) FROM JPayment p WHERE (:applicationName IS NULL OR p.application.name ="
           + " :applicationName) AND (:scope IS NULL OR p.scope = :scope) AND p.creationInstant"
           + " >= :start AND p.creationInstant < :end AND p.amount IS NULL AND"
