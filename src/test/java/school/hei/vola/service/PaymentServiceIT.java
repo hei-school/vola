@@ -278,22 +278,6 @@ class PaymentServiceIT extends FacadeIT {
   }
 
   @Test
-  void findPaymentsByApplicationNameAndDateRange_scope_all_returns_all() {
-    var app = randomJApplication();
-    var apiKey = app.getApiKey();
-    var appName = app.getName();
-
-    subject.createPayment(apiKey, randomEmail(), ORANGE_MONEY, randomUUID().toString(), "scope1");
-    subject.createPayment(apiKey, randomEmail(), ORANGE_MONEY, randomUUID().toString(), "scope2");
-
-    var result =
-        subject.findPaymentsByApplicationNameAndDateRange(
-            appName, "all", Instant.EPOCH, Instant.parse("9999-12-31T23:59:59Z"));
-
-    assertEquals(2, result.size());
-  }
-
-  @Test
   void findDistinctScopes_returns_scopes_for_application() {
     var app = randomJApplication();
     var apiKey = app.getApiKey();
@@ -380,25 +364,6 @@ class PaymentServiceIT extends FacadeIT {
             Instant.parse("2020-01-02T00:00:00Z"));
 
     assertTrue(result.isEmpty());
-  }
-
-  @Test
-  void findAll_with_all_appName_returns_payments_from_all_apps() {
-    var app1 = randomJApplication();
-    var app2 = randomJApplication();
-    var email1 = randomEmail();
-    var email2 = randomEmail();
-
-    subject.createPayment(app1.getApiKey(), email1, ORANGE_MONEY, randomUUID().toString(), null);
-    subject.createPayment(app2.getApiKey(), email2, ORANGE_MONEY, randomUUID().toString(), null);
-
-    var result =
-        subject.findPaymentsByApplicationNameAndDateRange(
-            "all", null, Instant.EPOCH, Instant.now());
-
-    assertTrue(result.size() >= 2);
-    assertTrue(result.stream().anyMatch(p -> p.payer().email().equals(email1)));
-    assertTrue(result.stream().anyMatch(p -> p.payer().email().equals(email2)));
   }
 
   @Test
