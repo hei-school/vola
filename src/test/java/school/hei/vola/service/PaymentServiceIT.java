@@ -355,7 +355,6 @@ class PaymentServiceIT extends FacadeIT {
     var appName = app.getName();
 
     subject.createPayment(apiKey, randomEmail(), ORANGE_MONEY, randomUUID().toString(), null);
-
     var result =
         subject.findPaymentsByApplicationNameAndDateRange(
             appName,
