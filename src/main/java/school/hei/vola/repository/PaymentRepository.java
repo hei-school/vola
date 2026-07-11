@@ -152,8 +152,8 @@ public class PaymentRepository {
         .toList();
   }
 
-  public List<Payment> findAll() {
-    return jPaymentRepository.findAll().stream().map(jPaymentMapper::toDomain).toList();
+  public List<Payment> findAll(Pageable pageable) {
+    return jPaymentRepository.findAll(pageable).stream().map(jPaymentMapper::toDomain).toList();
   }
 
   public List<Payment> findByApplicationName(String applicationName) {

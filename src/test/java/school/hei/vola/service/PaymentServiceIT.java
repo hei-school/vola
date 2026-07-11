@@ -22,6 +22,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageRequest;
 import school.hei.vola.conf.FacadeIT;
 import school.hei.vola.endpoint.event.EventProducer;
 import school.hei.vola.endpoint.event.model.PaymentVerificationRequested;
@@ -373,8 +374,7 @@ class PaymentServiceIT extends FacadeIT {
 
     var pspPaymentId = randomUUID().toString();
     subject.createPayment(apiKey, email, ORANGE_MONEY, pspPaymentId, null);
-
-    var all = subject.findAllPayments();
+    var all = subject.findAllPayments(PageRequest.of(0, 100));
 
     assertTrue(all.stream().anyMatch(p -> p.payer().email().equals(email)));
   }

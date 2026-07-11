@@ -86,8 +86,8 @@ public class PaymentService {
     return foundPayments;
   }
 
-  public List<Payment> findAllPayments() {
-    return paymentRepository.findAll();
+  public List<Payment> findAllPayments(Pageable pageable) {
+    return paymentRepository.findAll(pageable);
   }
 
   public List<Payment> findPaymentsByApplicationName(String applicationName) {
