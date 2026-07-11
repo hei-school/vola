@@ -32,10 +32,6 @@ public class PaymentService {
 
   private static final String TRANSACTIONS_XLS_IMPORT_BUCKET_KEY = "/TRANSACTIONS_XLS_IMPORT/";
 
-  private static String nullIfAll(String value) {
-    return (value == null || value.isBlank() || "all".equals(value)) ? null : value;
-  }
-
   private final PaymentRepository paymentRepository;
   private final EventProducer eventProducer;
   private final OrangePaymentRepository orangePaymentRepository;
@@ -100,31 +96,26 @@ public class PaymentService {
 
   public List<Payment> findPaymentsByApplicationNameAndDateRange(
       String applicationName, String scope, Instant start, Instant end) {
-    var effectiveApp = nullIfAll(applicationName);
-    var effectiveScope = nullIfAll(scope);
-    return paymentRepository.findByApplicationNameAndDateRange(
-        effectiveApp, effectiveScope, start, end);
+
+    return paymentRepository.findByApplicationNameAndDateRange(applicationName, scope, start, end);
   }
 
   public Page<Payment> findFilteredPage(
       String applicationName, String scope, Instant start, Instant end, Pageable pageable) {
-    var effectiveApp = nullIfAll(applicationName);
-    var effectiveScope = nullIfAll(scope);
-    return paymentRepository.findFilteredPage(effectiveApp, effectiveScope, start, end, pageable);
+
+    return paymentRepository.findFilteredPage(applicationName, scope, start, end, pageable);
   }
 
   public long countFiltered(String applicationName, String scope, Instant start, Instant end) {
-    var effectiveApp = nullIfAll(applicationName);
-    var effectiveScope = nullIfAll(scope);
-    return paymentRepository.countFiltered(effectiveApp, effectiveScope, start, end);
+
+    return paymentRepository.countFiltered(applicationName, scope, start, end);
   }
 
   public long sumAmountForSucceeded(
       String applicationName, String scope, Instant start, Instant end) {
-    var effectiveApp = nullIfAll(applicationName);
-    var effectiveScope = nullIfAll(scope);
+
     return paymentRepository
-        .findByApplicationNameAndDateRange(effectiveApp, effectiveScope, start, end)
+        .findByApplicationNameAndDateRange(applicationName, scope, start, end)
         .stream()
         .filter(payment -> payment.pspPayment().amount() != null)
         .mapToLong(payment -> payment.pspPayment().amount())
@@ -132,14 +123,12 @@ public class PaymentService {
   }
 
   public long countPending(String applicationName, String scope, Instant start, Instant end) {
-    var effectiveApp = nullIfAll(applicationName);
-    var effectiveScope = nullIfAll(scope);
-    return paymentRepository.countPending(effectiveApp, effectiveScope, start, end);
+
+    return paymentRepository.countPending(applicationName, scope, start, end);
   }
 
   public List<String> findDistinctScopes(String applicationName) {
-    var effectiveApp = nullIfAll(applicationName);
-    return paymentRepository.findDistinctScopes(effectiveApp);
+    return paymentRepository.findDistinctScopes(applicationName);
   }
 
   public ImportedTransactionDetails saveTransactionFromExcel(File excel) {
