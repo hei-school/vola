@@ -96,24 +96,20 @@ public class PaymentService {
 
   public List<Payment> findPaymentsByApplicationNameAndDateRange(
       String applicationName, String scope, Instant start, Instant end) {
-
     return paymentRepository.findByApplicationNameAndDateRange(applicationName, scope, start, end);
   }
 
   public Page<Payment> findFilteredPage(
       String applicationName, String scope, Instant start, Instant end, Pageable pageable) {
-
     return paymentRepository.findFilteredPage(applicationName, scope, start, end, pageable);
   }
 
   public long countFiltered(String applicationName, String scope, Instant start, Instant end) {
-
     return paymentRepository.countFiltered(applicationName, scope, start, end);
   }
 
   public long sumAmountForSucceeded(
       String applicationName, String scope, Instant start, Instant end) {
-
     return paymentRepository
         .findByApplicationNameAndDateRange(applicationName, scope, start, end)
         .stream()
@@ -123,7 +119,6 @@ public class PaymentService {
   }
 
   public long countPending(String applicationName, String scope, Instant start, Instant end) {
-
     return paymentRepository.countPending(applicationName, scope, start, end);
   }
 
