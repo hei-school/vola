@@ -110,12 +110,7 @@ public class PaymentService {
 
   public long sumAmountForSucceeded(
       String applicationName, String scope, Instant start, Instant end) {
-    return paymentRepository
-        .findByApplicationNameAndDateRange(applicationName, scope, start, end)
-        .stream()
-        .filter(payment -> payment.pspPayment().amount() != null)
-        .mapToLong(payment -> payment.pspPayment().amount())
-        .sum();
+    return paymentRepository.sumAmountForSucceeded(applicationName, scope, start, end);
   }
 
   public long countPending(String applicationName, String scope, Instant start, Instant end) {

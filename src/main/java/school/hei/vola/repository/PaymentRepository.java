@@ -182,6 +182,11 @@ public class PaymentRepository {
     return jPaymentRepository.countFiltered(applicationName, scope, start, end);
   }
 
+  public long sumAmountForSucceeded(
+      String applicationName, String scope, Instant start, Instant end) {
+    return jPaymentRepository.sumAmountForSucceeded(applicationName, scope, start, end);
+  }
+
   public long countPending(String applicationName, String scope, Instant start, Instant end) {
     return jPaymentRepository.countPending(applicationName, scope, start, end);
   }
