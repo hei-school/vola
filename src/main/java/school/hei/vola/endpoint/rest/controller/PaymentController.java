@@ -64,7 +64,7 @@ public class PaymentController {
 
   @GetMapping("/payments/export/csv")
   public ResponseEntity<byte[]> exportPaymentsCsv(
-      @RequestParam String applicationName,
+      @RequestParam(required = false) String applicationName,
       @RequestParam(required = false) String scope,
       @RequestParam(required = false) @DateTimeFormat(iso = ISO.DATE) LocalDate startDate,
       @RequestParam(required = false) @DateTimeFormat(iso = ISO.DATE) LocalDate endDate) {
@@ -76,7 +76,8 @@ public class PaymentController {
             : Instant.now();
 
     var csv = paymentService.buildPaymentsCsv(applicationName, scope, start, end);
-    var filename = "payments_" + applicationName + "_" + System.currentTimeMillis() + ".csv";
+    var displayName = applicationName != null ? applicationName : "all";
+    var filename = "payments_" + displayName + "_" + System.currentTimeMillis() + ".csv";
 
     return ResponseEntity.ok()
         .header(CONTENT_DISPOSITION, "attachment; filename=" + filename)
