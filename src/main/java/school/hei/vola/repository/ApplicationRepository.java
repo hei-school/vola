@@ -1,7 +1,9 @@
 package school.hei.vola.repository;
 
+import java.util.List;
 import java.util.Optional;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import school.hei.vola.model.Application;
 import school.hei.vola.repository.jpa.JApplicationRepository;
@@ -15,5 +17,11 @@ public class ApplicationRepository {
 
   public Optional<Application> findByApiKey(String apiKey) {
     return jApplicationRepository.findByApiKey(apiKey).map(jApplicationMapper::toDomain);
+  }
+
+  public List<Application> findAll(Pageable pageable) {
+    return jApplicationRepository.findAll(pageable).stream()
+        .map(jApplicationMapper::toDomain)
+        .toList();
   }
 }

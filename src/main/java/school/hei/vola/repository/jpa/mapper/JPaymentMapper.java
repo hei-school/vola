@@ -33,7 +33,8 @@ public class JPaymentMapper {
         jPayment.getLastPspVerificationInstant(),
         jPayment.getVerificationAttemptNb(),
         payer,
-        application);
+        application,
+        jPayment.getScope());
   }
 
   public JPayment toEntity(Payment payment) {
@@ -49,6 +50,7 @@ public class JPaymentMapper {
         payment.creationInstant(),
         payment.lastPspVerificationInstant(),
         payment.verificationAttemptNb(),
+        payment.scope(),
         jPayer,
         jApplication);
   }
