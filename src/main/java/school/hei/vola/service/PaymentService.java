@@ -4,11 +4,14 @@ import static java.time.Instant.now;
 
 import jakarta.transaction.Transactional;
 import java.io.File;
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import school.hei.vola.endpoint.event.EventProducer;
 import school.hei.vola.endpoint.event.model.OrangeTransactionsImportRequested;
@@ -28,6 +31,7 @@ import school.hei.vola.service.utils.ExcelParser;
 public class PaymentService {
 
   private static final String TRANSACTIONS_XLS_IMPORT_BUCKET_KEY = "/TRANSACTIONS_XLS_IMPORT/";
+
   private final PaymentRepository paymentRepository;
   private final EventProducer eventProducer;
   private final OrangePaymentRepository orangePaymentRepository;
@@ -36,8 +40,8 @@ public class PaymentService {
 
   @Transactional
   public Payment createPayment(
-      String apiKey, String payerEmail, PspType pspType, String pspPaymentId) {
-    var payment = paymentRepository.createPayment(apiKey, payerEmail, pspType, pspPaymentId);
+      String apiKey, String payerEmail, PspType pspType, String pspPaymentId, String scope) {
+    var payment = paymentRepository.createPayment(apiKey, payerEmail, pspType, pspPaymentId, scope);
 
     eventProducer.accept(List.of(new PaymentVerificationRequested(payment)));
     log.info("PaymentVerificationRequested event sent for payment={}", payment);
@@ -80,6 +84,41 @@ public class PaymentService {
       createPayments(apiKey, missingPaymentInfos);
     }
     return foundPayments;
+  }
+
+  public List<Payment> findAllPayments(Pageable pageable) {
+    return paymentRepository.findAll(pageable);
+  }
+
+  public List<Payment> findPaymentsByApplicationName(String applicationName) {
+    return paymentRepository.findByApplicationName(applicationName);
+  }
+
+  public List<Payment> findPaymentsByApplicationNameAndDateRange(
+      String applicationName, String scope, Instant start, Instant end) {
+    return paymentRepository.findByApplicationNameAndDateRange(applicationName, scope, start, end);
+  }
+
+  public Page<Payment> findFilteredPage(
+      String applicationName, String scope, Instant start, Instant end, Pageable pageable) {
+    return paymentRepository.findFilteredPage(applicationName, scope, start, end, pageable);
+  }
+
+  public long countFiltered(String applicationName, String scope, Instant start, Instant end) {
+    return paymentRepository.countFiltered(applicationName, scope, start, end);
+  }
+
+  public long sumAmountForSucceeded(
+      String applicationName, String scope, Instant start, Instant end) {
+    return paymentRepository.sumAmountForSucceeded(applicationName, scope, start, end);
+  }
+
+  public long countPending(String applicationName, String scope, Instant start, Instant end) {
+    return paymentRepository.countPending(applicationName, scope, start, end);
+  }
+
+  public List<String> findDistinctScopes(String applicationName) {
+    return paymentRepository.findDistinctScopes(applicationName);
   }
 
   public ImportedTransactionDetails saveTransactionFromExcel(File excel) {

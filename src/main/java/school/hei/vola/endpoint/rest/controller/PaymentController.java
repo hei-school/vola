@@ -37,9 +37,13 @@ public class PaymentController {
 
   @PostMapping("/payment")
   public Payment createPayment(
-      String apiKey, String payerEmail, PspType pspType, String pspPaymentId) {
+      String apiKey,
+      String payerEmail,
+      PspType pspType,
+      String pspPaymentId,
+      @RequestParam(required = false) String scope) {
     applicationAuthorizer.accept(apiKey);
-    return paymentService.createPayment(apiKey, payerEmail, pspType, pspPaymentId);
+    return paymentService.createPayment(apiKey, payerEmail, pspType, pspPaymentId, scope);
   }
 
   @GetMapping("/payment")

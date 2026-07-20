@@ -3,6 +3,7 @@ package school.hei.vola.repository;
 import static java.util.UUID.randomUUID;
 import static school.hei.vola.model.Time.millisNow;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -10,6 +11,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import school.hei.vola.model.Payment;
 import school.hei.vola.model.PaymentInfo;
@@ -33,7 +36,7 @@ public class PaymentRepository {
   private final JApplicationRepository jApplicationRepository;
 
   public Payment createPayment(
-      String apiKey, String payerEmail, PspType pspType, String pspPaymentId) {
+      String apiKey, String payerEmail, PspType pspType, String pspPaymentId, String scope) {
     var existing = jPaymentRepository.findByPspTypeAndPspPaymentId(pspType, pspPaymentId);
     if (existing.isPresent()) {
       throw new IllegalArgumentException(
@@ -64,6 +67,7 @@ public class PaymentRepository {
             millisNow(),
             null,
             0,
+            scope,
             jUserSaved,
             jApplication);
     var savedJPayment = jPaymentRepository.save(toSaveJPayment);
@@ -109,6 +113,7 @@ public class PaymentRepository {
               millisNow(),
               null,
               0,
+              null,
               jUserSaved,
               jApplication);
       jPaymentsToSave.add(toSaveJPayment);
@@ -145,5 +150,48 @@ public class PaymentRepository {
     return jPaymentRepositoryCustom.findByPaymentInfos(paymentInfos).stream()
         .map(jPaymentMapper::toDomain)
         .toList();
+  }
+
+  public List<Payment> findAll(Pageable pageable) {
+    return jPaymentRepository.findAll(pageable).stream().map(jPaymentMapper::toDomain).toList();
+  }
+
+  public List<Payment> findByApplicationName(String applicationName) {
+    return jPaymentRepository.findByApplication_Name(applicationName).stream()
+        .map(jPaymentMapper::toDomain)
+        .toList();
+  }
+
+  public List<Payment> findByApplicationNameAndDateRange(
+      String applicationName, String scope, Instant start, Instant end) {
+    return jPaymentRepository
+        .findByApplicationNameAndCreationInstantBetween(applicationName, scope, start, end)
+        .stream()
+        .map(jPaymentMapper::toDomain)
+        .toList();
+  }
+
+  public Page<Payment> findFilteredPage(
+      String applicationName, String scope, Instant start, Instant end, Pageable pageable) {
+    return jPaymentRepository
+        .findFilteredPage(applicationName, scope, start, end, pageable)
+        .map(jPaymentMapper::toDomain);
+  }
+
+  public long countFiltered(String applicationName, String scope, Instant start, Instant end) {
+    return jPaymentRepository.countFiltered(applicationName, scope, start, end);
+  }
+
+  public long sumAmountForSucceeded(
+      String applicationName, String scope, Instant start, Instant end) {
+    return jPaymentRepository.sumAmountForSucceeded(applicationName, scope, start, end);
+  }
+
+  public long countPending(String applicationName, String scope, Instant start, Instant end) {
+    return jPaymentRepository.countPending(applicationName, scope, start, end);
+  }
+
+  public List<String> findDistinctScopes(String applicationName) {
+    return jPaymentRepository.findDistinctScopes(applicationName);
   }
 }
