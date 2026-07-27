@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<form th:fragment="filter-form(selectedApplication, selectedScope, selectedStartDate, selectedEndDate)"
+      th:action="@{/payments}" method="get"
+      class="bg-white rounded-lg shadow-md p-4 sm:p-6 mb-6 border border-[var(--color-border-light)]">
+  <div class="flex w-full flex-wrap justify-center gap-4 items-end">
+    <!-- Application dropdown -->
+    <div class="flex-1 relative">
+      <label class="block text-xs font-semibold text-[var(--color-primary-dark)] mb-1">Application</label>
+      <input type="hidden" name="applicationName" id="applicationName" th:value="${selectedApplication}" />
+      <div class="relative cursor-pointer" id="app-trigger">
+        <div id="app-display"
+             class="w-full bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg pl-3 pr-8 py-2 text-xs outline-none text-gray-700 truncate"
+             th:text="${selectedApplication != null ? selectedApplication : 'Toutes les applications'}">Toutes les applications</div>
+        <span id="app-arrow"
+              class="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--color-primary)] pointer-events-none text-lg leading-none material-icons">arrow_drop_down</span>
+      </div>
+      <div id="app-dropdown"
+           class="absolute z-20 w-full mt-1 bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg shadow-lg max-h-48 overflow-y-auto hidden">
+        <div class="app-option px-3 py-2 text-xs cursor-pointer text-gray-700 hover:bg-[var(--color-border)] hover:text-[var(--color-primary-dark)] transition-colors"
+             data-value="all">Toutes les applications</div>
+        <div th:each="app : ${applications}"
+             class="app-option px-3 py-2 text-xs cursor-pointer text-gray-700 hover:bg-[var(--color-border)] hover:text-[var(--color-primary-dark)] transition-colors"
+             th:data-value="${app.name}" th:text="${app.name}"></div>
+      </div>
+    </div>
+
+    <!-- Scope input with search -->
+    <div class="flex-1 relative">
+      <label for="scope" class="block text-xs font-semibold text-[var(--color-primary-dark)] mb-1">Scope</label>
+      <div class="relative">
+        <input type="text" name="scope" id="scope" autocomplete="off" th:value="${selectedScope}"
+               placeholder="Sélectionner un scope"
+               class="w-full bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg pl-3 pr-8 py-2 text-xs outline-none focus:ring-0 focus:border-[var(--color-primary)] transition-all" />
+        <span id="scope-clear"
+              class="absolute right-6 top-1/2 -translate-y-1/2 text-[var(--color-primary)] cursor-pointer hover:text-[var(--color-primary-dark)] hidden text-sm leading-none font-bold">&times;</span>
+        <span id="scope-arrow"
+              class="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--color-primary)] pointer-events-none text-lg leading-none material-icons">arrow_drop_down</span>
+      </div>
+      <div id="scope-dropdown"
+           class="absolute z-10 w-full mt-1 bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg shadow-lg max-h-48 overflow-y-auto hidden">
+        <div th:each="s : ${scopes}"
+             class="scope-option px-3 py-2 text-xs cursor-pointer text-gray-700 hover:bg-[var(--color-border)] hover:text-[var(--color-primary-dark)] transition-colors"
+             th:data-value="${s}" th:text="${s}"></div>
+      </div>
+    </div>
+
+    <!-- Date inputs -->
+    <div class="flex-1">
+      <label for="startDate" class="block text-xs font-semibold text-[var(--color-primary-dark)] mb-1">Du</label>
+      <input type="date" name="startDate" id="startDate"
+             th:value="${selectedStartDate != null ? #temporals.format(selectedStartDate, 'yyyy-MM-dd') : ''}"
+             class="w-full bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2 text-xs outline-none focus:ring-0 focus:border-[var(--color-primary)] transition-all" />
+    </div>
+    <div class="flex-1">
+      <label for="endDate" class="block text-xs font-semibold text-[var(--color-primary-dark)] mb-1">Au</label>
+      <input type="date" name="endDate" id="endDate"
+             th:value="${selectedEndDate != null ? #temporals.format(selectedEndDate, 'yyyy-MM-dd') : ''}"
+             class="w-full bg-[var(--color-input-bg)] border border-[var(--color-border)] rounded-lg px-3 py-2 text-xs outline-none focus:ring-0 focus:border-[var(--color-primary)] transition-all" />
+    </div>
+
+    <!-- Buttons -->
+    <div class="flex items-end gap-2">
+      <button type="submit"
+              class="bg-[var(--color-accent)] hover:bg-[var(--color-accent-dark)] text-white text-xs font-medium py-2 px-4 rounded-lg transition-all flex items-center justify-center gap-1">
+        <span class="material-icons text-sm">filter_list</span>
+        Filtrer
+      </button>
+      <a th:if="${selectedApplication != null or selectedScope != null or selectedStartDate != null or selectedEndDate != null}"
+         th:href="@{/payments}"
+         class="bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-medium py-2 px-4 rounded-lg transition-all flex items-center justify-center gap-1 border border-gray-200">
+        <span class="material-icons text-sm">refresh</span>
+        Réinitialiser
+      </a>
+    </div>
+  </div>
+</form>
+</body>
+</html>
