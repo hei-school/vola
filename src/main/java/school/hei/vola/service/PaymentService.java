@@ -125,35 +125,33 @@ public class PaymentService {
   public String buildPaymentsCsv(String applicationName, String scope, Instant start, Instant end) {
     List<Payment> payments =
         findPaymentsByApplicationNameAndDateRange(applicationName, scope, start, end);
-    var sb = new StringBuilder();
-    sb.append(
+
+    var header =
         "Email payeur;PSP;Ref paiement;Montant (Ar);Statut;Date cr\u00e9ation;Derni\u00e8re"
-            + " v\u00e9rification;Scope;Application\n");
+            + " v\u00e9rification;Scope;Application\n";
+    var builder = new StringBuilder(header);
+
+    var format = "%s;%s;%s;%s;%s;%s;%s;%s;%s\n";
+
     for (var p : payments) {
       var amount = p.pspPayment().amount();
-      sb.append(escapeCsv(p.payer().email()))
-          .append(';')
-          .append(p.pspPayment().pspType())
-          .append(';')
-          .append(escapeCsv(p.pspPayment().id()))
-          .append(';')
-          .append(amount != null ? amount : "")
-          .append(';')
-          .append(statusLabel(p.getVerificationStatus()))
-          .append(';')
-          .append(p.creationInstant() != null ? p.creationInstant().toString() : "")
-          .append(';')
-          .append(
+      var line =
+          String.format(
+              format,
+              escapeCsv(p.payer().email()),
+              p.pspPayment().pspType(),
+              escapeCsv(p.pspPayment().id()),
+              amount != null ? amount : "",
+              statusLabel(p.getVerificationStatus()),
+              p.creationInstant() != null ? p.creationInstant().toString() : "",
               p.lastPspVerificationInstant() != null
                   ? p.lastPspVerificationInstant().toString()
-                  : "")
-          .append(';')
-          .append(escapeCsv(p.scope()))
-          .append(';')
-          .append(p.application().name())
-          .append('\n');
+                  : "",
+              escapeCsv(p.scope()),
+              p.application().name());
+      builder.append(line);
     }
-    return sb.toString();
+    return builder.toString();
   }
 
   private String escapeCsv(String value) {
