@@ -1,17 +1,17 @@
 package school.hei.vola.endpoint.rest.controller;
 
 import static java.lang.System.currentTimeMillis;
-import static org.springframework.format.annotation.DateTimeFormat.ISO;
+import static java.time.ZoneOffset.UTC;
 import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
 import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
 
 import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneOffset;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -69,12 +69,8 @@ public class PaymentController {
       @RequestParam(required = false) String scope,
       @RequestParam(required = false) @DateTimeFormat(iso = ISO.DATE) LocalDate startDate,
       @RequestParam(required = false) @DateTimeFormat(iso = ISO.DATE) LocalDate endDate) {
-    Instant start =
-        startDate != null ? startDate.atStartOfDay(ZoneOffset.UTC).toInstant() : Instant.EPOCH;
-    Instant end =
-        endDate != null
-            ? endDate.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant()
-            : Instant.now();
+    var start = startDate != null ? startDate.atStartOfDay(UTC).toInstant() : Instant.EPOCH;
+    var end = endDate != null ? endDate.plusDays(1).atStartOfDay(UTC).toInstant() : Instant.now();
 
     var csv = paymentService.buildPaymentsCsv(applicationName, scope, start, end);
     var displayName = applicationName != null ? applicationName : "all";
