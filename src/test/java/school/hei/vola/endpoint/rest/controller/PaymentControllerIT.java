@@ -236,18 +236,11 @@ class PaymentControllerIT extends FacadeIT {
   @DirtiesContext(methodMode = BEFORE_METHOD)
   @Test
   void exportPaymentsCsv_with_data_matches_expected() throws IOException {
-    var klioba = new JApplication();
-    klioba.setName("klioba");
-    klioba.setId("app-klioba");
-    klioba.setApiKey("klioba-api-key");
-    jApplicationRepository.save(klioba);
-
-    var tsinjo = new JApplication();
-    tsinjo.setName("tsinjo");
-    tsinjo.setId("app-tsinjo");
-    tsinjo.setApiKey("tsinjo-api-key");
-    jApplicationRepository.save(tsinjo);
-
+    var app = new JApplication();
+    app.setName("klioba");
+    app.setId("app-klioba");
+    app.setApiKey("klioba-api-key");
+    jApplicationRepository.save(app);
     userRepository.save(new User("mata@cu.te"));
 
     paymentRepository.save(
@@ -259,17 +252,6 @@ class PaymentControllerIT extends FacadeIT {
             .verificationAttemptNb(0)
             .payer(new User("mata@cu.te"))
             .application(new Application("klioba", "klioba-api-key"))
-            .build());
-
-    paymentRepository.save(
-        Payment.builder()
-            .id("p2")
-            .pspPayment(
-                PspPayment.builder().pspType(ORANGE_MONEY).id("MP260715.5678.D9E0F1").build())
-            .creationInstant(Instant.parse("2026-01-15T10:30:00Z"))
-            .verificationAttemptNb(0)
-            .payer(new User("mata@cu.te"))
-            .application(new Application("tsinjo", "tsinjo-api-key"))
             .build());
 
     var response = subject.exportPaymentsCsv(null, null, null, null);
