@@ -1,5 +1,6 @@
 package school.hei.vola.endpoint.rest.controller;
 
+import static java.lang.System.currentTimeMillis;
 import static org.springframework.format.annotation.DateTimeFormat.ISO;
 import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
 import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
@@ -77,7 +78,7 @@ public class PaymentController {
 
     var csv = paymentService.buildPaymentsCsv(applicationName, scope, start, end);
     var displayName = applicationName != null ? applicationName : "all";
-    var filename = "payments_" + displayName + "_" + System.currentTimeMillis() + ".csv";
+    var filename = "payments_" + displayName + "_" + currentTimeMillis() + ".csv";
 
     return ResponseEntity.ok()
         .header(CONTENT_DISPOSITION, "attachment; filename=" + filename)
