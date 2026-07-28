@@ -127,8 +127,8 @@ public class PaymentService {
         findPaymentsByApplicationNameAndDateRange(applicationName, scope, start, end);
 
     var header =
-        "Email payeur;PSP;Ref paiement;Montant (Ar);Statut;Date cr\u00e9ation;Derni\u00e8re"
-            + " v\u00e9rification;Scope;Application\n";
+        "Payer email;PSP;Payment ref;Amount (Ar);Status;Creation date;Last"
+            + " verification;Scope;Application\n";
     var builder = new StringBuilder(header);
 
     var format = "%s;%s;%s;%s;%s;%s;%s;%s;%s\n";
@@ -164,9 +164,9 @@ public class PaymentService {
 
   private String statusLabel(VerificationStatus status) {
     return switch (status) {
-      case VERIFYING -> "En vérification";
-      case SUCCEEDED -> "Succès";
-      case FAILED -> "Échoué";
+      case VERIFYING -> "Verifying";
+      case SUCCEEDED -> "Succeeded";
+      case FAILED -> "Failed";
     };
   }
 
