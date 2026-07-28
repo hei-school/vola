@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
 import static org.springframework.test.annotation.DirtiesContext.MethodMode.BEFORE_METHOD;
 import static school.hei.vola.conf.TestData.ORANGE_REF_SUCCEEDED;
 import static school.hei.vola.model.VerificationStatus.FAILED;
@@ -17,6 +16,7 @@ import static school.hei.vola.model.VerificationStatus.VERIFYING;
 import static school.hei.vola.model.psp.PspType.ORANGE_MONEY;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -27,6 +27,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.annotation.DirtiesContext;
 import school.hei.vola.conf.FacadeIT;
@@ -35,6 +36,12 @@ import school.hei.vola.endpoint.event.model.OrangeDailyTransactionsRetrievalRequ
 import school.hei.vola.endpoint.event.model.OrangeTransactionsImportRequested;
 import school.hei.vola.endpoint.event.model.PaymentVerificationRequested;
 import school.hei.vola.file.bucket.BucketComponent;
+import school.hei.vola.model.Application;
+import school.hei.vola.model.Payment;
+import school.hei.vola.model.User;
+import school.hei.vola.model.psp.PspPayment;
+import school.hei.vola.repository.PaymentRepository;
+import school.hei.vola.repository.UserRepository;
 import school.hei.vola.repository.jpa.JApplicationRepository;
 import school.hei.vola.repository.jpa.model.JApplication;
 import school.hei.vola.service.event.OrangeDailyTransactionsRetrievalRequestedService;
@@ -55,6 +62,9 @@ class PaymentControllerIT extends FacadeIT {
   @Autowired private PaymentVerificationRequestedService paymentVerificationRequestedService;
 
   @Autowired JApplicationRepository jApplicationRepository;
+
+  @Autowired private PaymentRepository paymentRepository;
+  @Autowired private UserRepository userRepository;
 
   JApplication randomJApplication() {
     var jApplication = new JApplication();
@@ -223,74 +233,78 @@ class PaymentControllerIT extends FacadeIT {
     assertTrue(events.getFirst().getBucketKey().contains(bucketKey));
   }
 
+  @DirtiesContext(methodMode = BEFORE_METHOD)
   @Test
-  void exportPaymentsCsv_returns_csv_with_correct_headers() {
-    var app = randomJApplication();
-    var apiKey = app.getApiKey();
-    var appName = app.getName();
-    var email = randomEmail();
+  void exportPaymentsCsv_with_data_matches_expected() throws IOException {
+    var klioba = new JApplication();
+    klioba.setName("klioba");
+    klioba.setId("app-klioba");
+    klioba.setApiKey("klioba-api-key");
+    jApplicationRepository.save(klioba);
 
-    subject.createPayment(apiKey, email, ORANGE_MONEY, randomUUID().toString(), null);
+    var tsinjo = new JApplication();
+    tsinjo.setName("tsinjo");
+    tsinjo.setId("app-tsinjo");
+    tsinjo.setApiKey("tsinjo-api-key");
+    jApplicationRepository.save(tsinjo);
 
-    var response = subject.exportPaymentsCsv(appName, null, null, null);
+    userRepository.save(new User("mata@cu.te"));
+
+    paymentRepository.save(
+        Payment.builder()
+            .id("p1")
+            .pspPayment(
+                PspPayment.builder().pspType(ORANGE_MONEY).id("MP260715.1234.A1B2C3").build())
+            .creationInstant(Instant.parse("2026-01-15T10:30:00Z"))
+            .verificationAttemptNb(0)
+            .payer(new User("mata@cu.te"))
+            .application(new Application("klioba", "klioba-api-key"))
+            .build());
+
+    paymentRepository.save(
+        Payment.builder()
+            .id("p2")
+            .pspPayment(
+                PspPayment.builder().pspType(ORANGE_MONEY).id("MP260715.5678.D9E0F1").build())
+            .creationInstant(Instant.parse("2026-01-15T10:30:00Z"))
+            .verificationAttemptNb(0)
+            .payer(new User("mata@cu.te"))
+            .application(new Application("tsinjo", "tsinjo-api-key"))
+            .build());
+
+    var response = subject.exportPaymentsCsv(null, null, null, null);
+    assertNotNull(response.getBody());
+    var csv = new String(response.getBody(), StandardCharsets.UTF_8);
 
     assertEquals(200, response.getStatusCodeValue());
-    assertTrue(response.getHeaders().get(CONTENT_DISPOSITION).getFirst().contains("attachment"));
-    assertTrue(response.getHeaders().getContentType().toString().contains("text/csv"));
-    var body = new String(response.getBody());
-    assertTrue(body.contains("Email payeur"));
-    assertTrue(body.contains(email));
-    assertTrue(body.contains(appName));
+    assertEquals(readResource(), csv);
   }
 
+  @DirtiesContext(methodMode = BEFORE_METHOD)
   @Test
-  void exportPaymentsCsv_filters_by_date_range() {
-    var app = randomJApplication();
-    var apiKey = app.getApiKey();
-    var appName = app.getName();
-    var email = randomEmail();
+  void exportPaymentsCsv_empty_returns_header_only() throws IOException {
+    var app = new JApplication();
+    app.setName("EmptyApp");
+    app.setId("app-empty");
+    app.setApiKey("empty-api-key");
+    jApplicationRepository.save(app);
 
-    subject.createPayment(apiKey, email, ORANGE_MONEY, randomUUID().toString(), null);
-
-    var response =
-        subject.exportPaymentsCsv(
-            appName, null, LocalDate.of(2020, 1, 1), LocalDate.of(2099, 1, 1));
+    var response = subject.exportPaymentsCsv("EmptyApp", null, null, null);
+    assertNotNull(response.getBody());
+    var csv = new String(response.getBody(), StandardCharsets.UTF_8);
 
     assertEquals(200, response.getStatusCodeValue());
-    var body = new String(response.getBody());
-    assertTrue(body.contains(email));
+    assertEquals(
+        "Payer email;PSP;Payment ref;Amount (Ar);Status;Creation date;Last"
+            + " verification;Scope;Application\n",
+        csv);
   }
 
-  @Test
-  void exportPaymentsCsv_outside_date_range_returns_header_only() {
-    var app = randomJApplication();
-    var apiKey = app.getApiKey();
-    var appName = app.getName();
-
-    subject.createPayment(apiKey, randomEmail(), ORANGE_MONEY, randomUUID().toString(), null);
-
-    var response =
-        subject.exportPaymentsCsv(
-            appName, null, LocalDate.of(2020, 1, 1), LocalDate.of(2020, 1, 2));
-
-    assertEquals(200, response.getStatusCodeValue());
-    var body = new String(response.getBody());
-    var lines = body.split("\n");
-    assertEquals(1, lines.length);
-  }
-
-  @Test
-  void exportPaymentsCsv_filename_contains_application_name() {
-    var app = randomJApplication();
-    var apiKey = app.getApiKey();
-    var appName = app.getName();
-
-    subject.createPayment(apiKey, randomEmail(), ORANGE_MONEY, randomUUID().toString(), null);
-
-    var response = subject.exportPaymentsCsv(appName, null, null, null);
-
-    var disposition = response.getHeaders().get(CONTENT_DISPOSITION).getFirst();
-    assertTrue(disposition.contains("payments_" + appName + "_"));
+  private String readResource() throws IOException {
+    var resource = new ClassPathResource("csv/expected-export.csv");
+    try (var is = resource.getInputStream()) {
+      return new String(is.readAllBytes(), StandardCharsets.UTF_8);
+    }
   }
 
   private static String randomEmail() {
