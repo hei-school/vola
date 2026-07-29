@@ -254,7 +254,7 @@ class PaymentControllerIT extends FacadeIT {
             .application(new Application("klioba", "klioba-api-key"))
             .build());
 
-    var response = subject.exportPaymentsCsv(null, null, null, null);
+    var response = subject.exportPaymentsCsv("klioba-api-key", null, null, null);
     assertNotNull(response.getBody());
     var csv = new String(response.getBody(), StandardCharsets.UTF_8);
 
@@ -271,7 +271,7 @@ class PaymentControllerIT extends FacadeIT {
     app.setApiKey("empty-api-key");
     jApplicationRepository.save(app);
 
-    var response = subject.exportPaymentsCsv("EmptyApp", null, null, null);
+    var response = subject.exportPaymentsCsv("empty-api-key", null, null, null);
     assertNotNull(response.getBody());
     var csv = new String(response.getBody(), StandardCharsets.UTF_8);
 

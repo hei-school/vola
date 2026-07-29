@@ -22,6 +22,7 @@ import school.hei.vola.model.Payment;
 import school.hei.vola.model.PaymentInfo;
 import school.hei.vola.model.VerificationStatus;
 import school.hei.vola.model.psp.PspType;
+import school.hei.vola.repository.ApplicationRepository;
 import school.hei.vola.repository.OrangePaymentRepository;
 import school.hei.vola.repository.PaymentRepository;
 import school.hei.vola.service.utils.ExcelParser;
@@ -34,6 +35,7 @@ public class PaymentService {
   private static final String TRANSACTIONS_XLS_IMPORT_BUCKET_KEY = "/TRANSACTIONS_XLS_IMPORT/";
 
   private final PaymentRepository paymentRepository;
+  private final ApplicationRepository applicationRepository;
   private final EventProducer eventProducer;
   private final OrangePaymentRepository orangePaymentRepository;
   private final ExcelParser excelParser;
@@ -122,9 +124,10 @@ public class PaymentService {
     return paymentRepository.findDistinctScopes(applicationName);
   }
 
-  public String buildPaymentsCsv(String applicationName, String scope, Instant start, Instant end) {
+  public String buildPaymentsCsv(String apiKey, String scope, Instant start, Instant end) {
+    var app = applicationRepository.findByApiKey(apiKey).orElseThrow();
     List<Payment> payments =
-        findPaymentsByApplicationNameAndDateRange(applicationName, scope, start, end);
+        findPaymentsByApplicationNameAndDateRange(app.name(), scope, start, end);
 
     var header =
         "Payer email;PSP;Payment ref;Amount (Ar);Status;Creation date;Last"
