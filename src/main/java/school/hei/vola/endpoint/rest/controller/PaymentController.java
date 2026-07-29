@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import school.hei.vola.endpoint.rest.security.AdminAuthorizer;
 import school.hei.vola.endpoint.rest.security.ApplicationAuthorizer;
 import school.hei.vola.model.ImportedTransactionDetails;
 import school.hei.vola.model.Payment;
@@ -37,6 +38,7 @@ public class PaymentController {
 
   private final PaymentService paymentService;
   private final ApplicationAuthorizer applicationAuthorizer;
+  private final AdminAuthorizer adminAuthorizer;
   private final OrangeSyncService recoveryService;
   private final MultipartFileConverter multipartFileConverter;
 
@@ -66,15 +68,16 @@ public class PaymentController {
   @GetMapping("/payments/export/csv")
   public ResponseEntity<byte[]> exportPaymentsCsv(
       @RequestParam String apiKey,
+      @RequestParam String applicationName,
       @RequestParam(required = false) String scope,
       @RequestParam(required = false) @DateTimeFormat(iso = ISO.DATE) LocalDate startDate,
       @RequestParam(required = false) @DateTimeFormat(iso = ISO.DATE) LocalDate endDate) {
-    applicationAuthorizer.accept(apiKey);
+    adminAuthorizer.accept(apiKey);
     var start = startDate != null ? startDate.atStartOfDay(UTC).toInstant() : Instant.EPOCH;
     var end = endDate != null ? endDate.plusDays(1).atStartOfDay(UTC).toInstant() : Instant.now();
 
-    var csv = paymentService.buildPaymentsCsv(apiKey, scope, start, end);
-    var filename = "payments_export_" + currentTimeMillis() + ".csv";
+    var csv = paymentService.buildPaymentsCsv(applicationName, scope, start, end);
+    var filename = "payments_" + applicationName + "_" + currentTimeMillis() + ".csv";
 
     return ResponseEntity.ok()
         .header(CONTENT_DISPOSITION, "attachment; filename=" + filename)

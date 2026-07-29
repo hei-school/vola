@@ -5,6 +5,7 @@ import static java.util.UUID.randomUUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -35,6 +36,7 @@ import school.hei.vola.endpoint.event.EventProducer;
 import school.hei.vola.endpoint.event.model.OrangeDailyTransactionsRetrievalRequested;
 import school.hei.vola.endpoint.event.model.OrangeTransactionsImportRequested;
 import school.hei.vola.endpoint.event.model.PaymentVerificationRequested;
+import school.hei.vola.endpoint.rest.security.UnauthorizedException;
 import school.hei.vola.file.bucket.BucketComponent;
 import school.hei.vola.model.Application;
 import school.hei.vola.model.Payment;
@@ -236,6 +238,12 @@ class PaymentControllerIT extends FacadeIT {
   @DirtiesContext(methodMode = BEFORE_METHOD)
   @Test
   void exportPaymentsCsv_with_data_matches_expected() throws IOException {
+    var admin = new JApplication();
+    admin.setName("ADMIN");
+    admin.setId("admin-app");
+    admin.setApiKey("admin-api-key");
+    jApplicationRepository.save(admin);
+
     var app = new JApplication();
     app.setName("klioba");
     app.setId("app-klioba");
@@ -254,7 +262,7 @@ class PaymentControllerIT extends FacadeIT {
             .application(new Application("klioba", "klioba-api-key"))
             .build());
 
-    var response = subject.exportPaymentsCsv("klioba-api-key", null, null, null);
+    var response = subject.exportPaymentsCsv("admin-api-key", "klioba", null, null, null);
     assertNotNull(response.getBody());
     var csv = new String(response.getBody(), StandardCharsets.UTF_8);
 
@@ -265,13 +273,19 @@ class PaymentControllerIT extends FacadeIT {
   @DirtiesContext(methodMode = BEFORE_METHOD)
   @Test
   void exportPaymentsCsv_empty_returns_header_only() throws IOException {
+    var admin = new JApplication();
+    admin.setName("ADMIN");
+    admin.setId("admin-app");
+    admin.setApiKey("admin-api-key");
+    jApplicationRepository.save(admin);
+
     var app = new JApplication();
     app.setName("EmptyApp");
     app.setId("app-empty");
     app.setApiKey("empty-api-key");
     jApplicationRepository.save(app);
 
-    var response = subject.exportPaymentsCsv("empty-api-key", null, null, null);
+    var response = subject.exportPaymentsCsv("admin-api-key", "EmptyApp", null, null, null);
     assertNotNull(response.getBody());
     var csv = new String(response.getBody(), StandardCharsets.UTF_8);
 
@@ -280,6 +294,26 @@ class PaymentControllerIT extends FacadeIT {
         "Payer email;PSP;Payment ref;Amount (Ar);Status;Creation date;Last"
             + " verification;Scope;Application\n",
         csv);
+  }
+
+  @Test
+  void exportPaymentsCsv_invalid_apiKey_throws_401() {
+    assertThrows(
+        UnauthorizedException.class,
+        () -> subject.exportPaymentsCsv("non-existent-key", "klioba", null, null, null));
+  }
+
+  @Test
+  void exportPaymentsCsv_app_apiKey_rejected() {
+    var app = new JApplication();
+    app.setName("klioba");
+    app.setId("app-klioba");
+    app.setApiKey("klioba-api-key");
+    jApplicationRepository.save(app);
+
+    assertThrows(
+        UnauthorizedException.class,
+        () -> subject.exportPaymentsCsv("klioba-api-key", "klioba", null, null, null));
   }
 
   private String readResource() throws IOException {
