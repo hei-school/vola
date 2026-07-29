@@ -67,12 +67,12 @@ public class PaymentController {
 
   @GetMapping("/payments/export/csv")
   public ResponseEntity<byte[]> exportPaymentsCsv(
-      @RequestParam String apiKey,
+      @RequestParam String adminKey,
       @RequestParam String applicationName,
       @RequestParam(required = false) String scope,
       @RequestParam(required = false) @DateTimeFormat(iso = ISO.DATE) LocalDate startDate,
       @RequestParam(required = false) @DateTimeFormat(iso = ISO.DATE) LocalDate endDate) {
-    adminAuthorizer.accept(apiKey);
+    adminAuthorizer.accept(adminKey);
     var start = startDate != null ? startDate.atStartOfDay(UTC).toInstant() : Instant.EPOCH;
     var end = endDate != null ? endDate.plusDays(1).atStartOfDay(UTC).toInstant() : Instant.now();
 

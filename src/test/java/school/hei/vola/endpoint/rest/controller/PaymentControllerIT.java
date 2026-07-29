@@ -238,12 +238,6 @@ class PaymentControllerIT extends FacadeIT {
   @DirtiesContext(methodMode = BEFORE_METHOD)
   @Test
   void exportPaymentsCsv_with_data_matches_expected() throws IOException {
-    var admin = new JApplication();
-    admin.setName("ADMIN");
-    admin.setId("admin-app");
-    admin.setApiKey("admin-api-key");
-    jApplicationRepository.save(admin);
-
     var app = new JApplication();
     app.setName("klioba");
     app.setId("app-klioba");
@@ -273,12 +267,6 @@ class PaymentControllerIT extends FacadeIT {
   @DirtiesContext(methodMode = BEFORE_METHOD)
   @Test
   void exportPaymentsCsv_empty_returns_header_only() throws IOException {
-    var admin = new JApplication();
-    admin.setName("ADMIN");
-    admin.setId("admin-app");
-    admin.setApiKey("admin-api-key");
-    jApplicationRepository.save(admin);
-
     var app = new JApplication();
     app.setName("EmptyApp");
     app.setId("app-empty");
@@ -305,12 +293,6 @@ class PaymentControllerIT extends FacadeIT {
 
   @Test
   void exportPaymentsCsv_app_apiKey_rejected() {
-    var app = new JApplication();
-    app.setName("klioba");
-    app.setId("app-klioba");
-    app.setApiKey("klioba-api-key");
-    jApplicationRepository.save(app);
-
     assertThrows(
         UnauthorizedException.class,
         () -> subject.exportPaymentsCsv("klioba-api-key", "klioba", null, null, null));

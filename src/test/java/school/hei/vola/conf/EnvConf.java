@@ -11,5 +11,6 @@ public class EnvConf {
     registry.add("spring.datasource.driverClassName", () -> "org.h2.Driver");
     registry.add("spring.jpa.database-platform", () -> "org.hibernate.dialect.H2Dialect");
     registry.add("orange.api.url", () -> apiUrl);
+    registry.add("ADMIN_API_KEY", () -> "admin-api-key");
   }
 }
