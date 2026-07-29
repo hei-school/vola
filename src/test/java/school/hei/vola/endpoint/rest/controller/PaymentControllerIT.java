@@ -5,6 +5,7 @@ import static java.util.UUID.randomUUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -16,6 +17,7 @@ import static school.hei.vola.model.VerificationStatus.VERIFYING;
 import static school.hei.vola.model.psp.PspType.ORANGE_MONEY;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -26,6 +28,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.annotation.DirtiesContext;
 import school.hei.vola.conf.FacadeIT;
@@ -33,7 +36,14 @@ import school.hei.vola.endpoint.event.EventProducer;
 import school.hei.vola.endpoint.event.model.OrangeDailyTransactionsRetrievalRequested;
 import school.hei.vola.endpoint.event.model.OrangeTransactionsImportRequested;
 import school.hei.vola.endpoint.event.model.PaymentVerificationRequested;
+import school.hei.vola.endpoint.rest.security.UnauthorizedException;
 import school.hei.vola.file.bucket.BucketComponent;
+import school.hei.vola.model.Application;
+import school.hei.vola.model.Payment;
+import school.hei.vola.model.User;
+import school.hei.vola.model.psp.PspPayment;
+import school.hei.vola.repository.PaymentRepository;
+import school.hei.vola.repository.UserRepository;
 import school.hei.vola.repository.jpa.JApplicationRepository;
 import school.hei.vola.repository.jpa.model.JApplication;
 import school.hei.vola.service.event.OrangeDailyTransactionsRetrievalRequestedService;
@@ -54,6 +64,9 @@ class PaymentControllerIT extends FacadeIT {
   @Autowired private PaymentVerificationRequestedService paymentVerificationRequestedService;
 
   @Autowired JApplicationRepository jApplicationRepository;
+
+  @Autowired private PaymentRepository paymentRepository;
+  @Autowired private UserRepository userRepository;
 
   JApplication randomJApplication() {
     var jApplication = new JApplication();
@@ -220,6 +233,76 @@ class PaymentControllerIT extends FacadeIT {
     var events = eventCaptor.getValue();
     assertEquals(1, events.size());
     assertTrue(events.getFirst().getBucketKey().contains(bucketKey));
+  }
+
+  @DirtiesContext(methodMode = BEFORE_METHOD)
+  @Test
+  void exportPaymentsCsv_with_data_matches_expected() throws IOException {
+    var app = new JApplication();
+    app.setName("klioba");
+    app.setId("app-klioba");
+    app.setApiKey("klioba-api-key");
+    jApplicationRepository.save(app);
+    userRepository.save(new User("mata@cu.te"));
+
+    paymentRepository.save(
+        Payment.builder()
+            .id("p1")
+            .pspPayment(
+                PspPayment.builder().pspType(ORANGE_MONEY).id("MP260715.1234.A1B2C3").build())
+            .creationInstant(Instant.parse("2026-01-15T10:30:00Z"))
+            .verificationAttemptNb(0)
+            .payer(new User("mata@cu.te"))
+            .application(new Application("klioba", "klioba-api-key"))
+            .build());
+
+    var response = subject.exportPaymentsCsv("admin-api-key", "klioba", null, null, null);
+    assertNotNull(response.getBody());
+    var csv = new String(response.getBody(), StandardCharsets.UTF_8);
+
+    assertEquals(200, response.getStatusCodeValue());
+    assertEquals(readResource(), csv);
+  }
+
+  @DirtiesContext(methodMode = BEFORE_METHOD)
+  @Test
+  void exportPaymentsCsv_empty_returns_header_only() throws IOException {
+    var app = new JApplication();
+    app.setName("EmptyApp");
+    app.setId("app-empty");
+    app.setApiKey("empty-api-key");
+    jApplicationRepository.save(app);
+
+    var response = subject.exportPaymentsCsv("admin-api-key", "EmptyApp", null, null, null);
+    assertNotNull(response.getBody());
+    var csv = new String(response.getBody(), StandardCharsets.UTF_8);
+
+    assertEquals(200, response.getStatusCodeValue());
+    assertEquals(
+        "Payer email;PSP;Payment ref;Amount (Ar);Status;Creation date;Last"
+            + " verification;Scope;Application\n",
+        csv);
+  }
+
+  @Test
+  void exportPaymentsCsv_invalid_apiKey_throws_401() {
+    assertThrows(
+        UnauthorizedException.class,
+        () -> subject.exportPaymentsCsv("non-existent-key", "klioba", null, null, null));
+  }
+
+  @Test
+  void exportPaymentsCsv_app_apiKey_rejected() {
+    assertThrows(
+        UnauthorizedException.class,
+        () -> subject.exportPaymentsCsv("klioba-api-key", "klioba", null, null, null));
+  }
+
+  private String readResource() throws IOException {
+    var resource = new ClassPathResource("csv/expected-export.csv");
+    try (var is = resource.getInputStream()) {
+      return new String(is.readAllBytes(), StandardCharsets.UTF_8);
+    }
   }
 
   private static String randomEmail() {
