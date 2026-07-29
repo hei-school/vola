@@ -133,19 +133,20 @@ public class PaymentService {
 
     for (var p : payments) {
       var amount = p.pspPayment().amount();
-      builder.append(String.format(
-          "%s;%s;%s;%s;%s;%s;%s;%s;%s\n",
-          escapeCsv(p.payer().email()),
-          p.pspPayment().pspType(),
-          escapeCsv(p.pspPayment().id()),
-          amount != null ? amount : "",
-          statusLabel(p.getVerificationStatus()),
-          p.creationInstant() != null ? p.creationInstant().toString() : "",
-          p.lastPspVerificationInstant() != null
-              ? p.lastPspVerificationInstant().toString()
-              : "",
-          escapeCsv(p.scope()),
-          p.application().name()));
+      builder.append(
+          String.format(
+              "%s;%s;%s;%s;%s;%s;%s;%s;%s\n",
+              escapeCsv(p.payer().email()),
+              p.pspPayment().pspType(),
+              escapeCsv(p.pspPayment().id()),
+              amount != null ? amount : "",
+              statusLabel(p.getVerificationStatus()),
+              p.creationInstant() != null ? p.creationInstant().toString() : "",
+              p.lastPspVerificationInstant() != null
+                  ? p.lastPspVerificationInstant().toString()
+                  : "",
+              escapeCsv(p.scope()),
+              p.application().name()));
     }
     return builder.toString();
   }
