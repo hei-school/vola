@@ -20,6 +20,7 @@ import school.hei.vola.file.bucket.BucketComponent;
 import school.hei.vola.model.ImportedTransactionDetails;
 import school.hei.vola.model.Payment;
 import school.hei.vola.model.PaymentInfo;
+import school.hei.vola.model.VerificationStatus;
 import school.hei.vola.model.psp.PspType;
 import school.hei.vola.repository.OrangePaymentRepository;
 import school.hei.vola.repository.PaymentRepository;
@@ -119,6 +120,51 @@ public class PaymentService {
 
   public List<String> findDistinctScopes(String applicationName) {
     return paymentRepository.findDistinctScopes(applicationName);
+  }
+
+  public String buildPaymentsCsv(String applicationName, String scope, Instant start, Instant end) {
+    List<Payment> payments =
+        findPaymentsByApplicationNameAndDateRange(applicationName, scope, start, end);
+
+    var header =
+        "Payer email;PSP;Payment ref;Amount (Ar);Status;Creation date;Last"
+            + " verification;Scope;Application\n";
+    var builder = new StringBuilder(header);
+
+    for (var p : payments) {
+      var amount = p.pspPayment().amount();
+      builder.append(
+          String.format(
+              "%s;%s;%s;%s;%s;%s;%s;%s;%s\n",
+              escapeCsv(p.payer().email()),
+              p.pspPayment().pspType(),
+              escapeCsv(p.pspPayment().id()),
+              amount != null ? amount : "",
+              statusLabel(p.getVerificationStatus()),
+              p.creationInstant() != null ? p.creationInstant().toString() : "",
+              p.lastPspVerificationInstant() != null
+                  ? p.lastPspVerificationInstant().toString()
+                  : "",
+              escapeCsv(p.scope()),
+              p.application().name()));
+    }
+    return builder.toString();
+  }
+
+  private String escapeCsv(String value) {
+    if (value == null) return "";
+    if (value.contains(";") || value.contains("\"") || value.contains("\n")) {
+      return "\"" + value.replace("\"", "\"\"") + "\"";
+    }
+    return value;
+  }
+
+  private String statusLabel(VerificationStatus status) {
+    return switch (status) {
+      case VERIFYING -> "Verifying";
+      case SUCCEEDED -> "Succeeded";
+      case FAILED -> "Failed";
+    };
   }
 
   public ImportedTransactionDetails saveTransactionFromExcel(File excel) {
