@@ -1,17 +1,17 @@
 (function () {
-  var scopeInput = document.getElementById('scope');
-  var scopeDropdown = document.getElementById('scope-dropdown');
-  var scopeOptions = [...scopeDropdown.querySelectorAll('.scope-option')];
-  var scopeClear = document.getElementById('scope-clear');
+  const scopeInput = document.getElementById('scope');
+  const scopeDropdown = document.getElementById('scope-dropdown');
+  const scopeOptions = [...scopeDropdown.querySelectorAll('.scope-option')];
+  const scopeClear = document.getElementById('scope-clear');
 
   function setScopeClearVisible() {
     scopeClear.classList.toggle('hidden', !scopeInput.value);
   }
 
   function filterAndShowScope() {
-    var query = scopeInput.value.toLowerCase();
-    var hasVisible = scopeOptions.some(function (opt) {
-      var matches = opt.textContent.toLowerCase().includes(query);
+    const query = scopeInput.value.toLowerCase();
+    const hasVisible = scopeOptions.some(function (opt) {
+      const matches = opt.textContent.toLowerCase().includes(query);
       opt.classList.toggle('hidden', !matches);
       return matches;
     });
@@ -41,11 +41,11 @@
   });
   setScopeClearVisible();
 
-  var appHidden = document.getElementById('applicationName');
-  var appDisplay = document.getElementById('app-display');
-  var appTrigger = document.getElementById('app-trigger');
-  var appDropdown = document.getElementById('app-dropdown');
-  var appOptions = [...appDropdown.querySelectorAll('.app-option')];
+  const appHidden = document.getElementById('applicationName');
+  const appDisplay = document.getElementById('app-display');
+  const appTrigger = document.getElementById('app-trigger');
+  const appDropdown = document.getElementById('app-dropdown');
+  const appOptions = [...appDropdown.querySelectorAll('.app-option')];
 
   appTrigger.addEventListener('click', function (e) {
     e.stopPropagation();
@@ -53,8 +53,8 @@
   });
   appOptions.forEach(function (opt) {
     opt.addEventListener('click', function () {
-      var val = opt.dataset.value;
-      appHidden.value = val === 'all' ? '' : val;
+      const val = opt.dataset.value;
+      appHidden.value = val;
       appDisplay.textContent = val === 'all' ? 'Toutes les applications' : val;
       appDropdown.classList.add('hidden');
       appHidden.form.submit();
