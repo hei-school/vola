@@ -4,7 +4,6 @@ import static java.time.ZoneOffset.UTC;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -16,16 +15,20 @@ import school.hei.vola.repository.jpa.JApplicationRepository;
 import school.hei.vola.service.PaymentService;
 
 @Controller
-@RequiredArgsConstructor
 public class PaymentViewController {
-
-  private static final int PAGE_SIZE = 15;
 
   private final PaymentService paymentService;
   private final JApplicationRepository jApplicationRepository;
+  private final String adminKey;
 
-  @Value("${ADMIN_API_KEY}")
-  private String adminKey;
+  public PaymentViewController(
+      PaymentService paymentService,
+      JApplicationRepository jApplicationRepository,
+      @Value("${ADMIN_API_KEY}") String adminKey) {
+    this.paymentService = paymentService;
+    this.jApplicationRepository = jApplicationRepository;
+    this.adminKey = adminKey;
+  }
 
   @GetMapping("/")
   public String index() {
@@ -39,6 +42,7 @@ public class PaymentViewController {
       @RequestParam(required = false) String startDate,
       @RequestParam(required = false) String endDate,
       @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "15") int size,
       Model model) {
     model.addAttribute("applications", jApplicationRepository.findAll());
 
@@ -65,7 +69,7 @@ public class PaymentViewController {
             effectiveScope,
             start,
             end,
-            PageRequest.of(page, PAGE_SIZE, Sort.by(Sort.Direction.DESC, "creationInstant")));
+            PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "creationInstant")));
 
     model.addAttribute("payments", paymentsPage.getContent());
     model.addAttribute("totalCollected", String.format("%,d Ar", totalAmount));
@@ -73,7 +77,7 @@ public class PaymentViewController {
     model.addAttribute("totalCount", totalCount);
     model.addAttribute("currentPage", page);
     model.addAttribute("totalPages", paymentsPage.getTotalPages());
-    model.addAttribute("pageSize", PAGE_SIZE);
+    model.addAttribute("pageSize", size);
     model.addAttribute("scopes", paymentService.findDistinctScopes(effectiveApp));
     model.addAttribute("selectedApplication", effectiveApp);
     model.addAttribute("selectedScope", effectiveScope);
