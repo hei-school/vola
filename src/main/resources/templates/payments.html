@@ -7,16 +7,31 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="stylesheet" href="/style/history.css" />
 </head>
 <body class="min-h-screen bg-[var(--color-page-bg)] font-[Poppins] text-gray-700">
   <div th:replace="~{fragments/header :: header}"></div>
 
   <div class="container mx-auto px-4 sm:px-6 pt-6 sm:pt-10 pb-10 sm:pb-14">
-    <h1 class="text-2xl sm:text-3xl font-bold text-[var(--color-primary-dark)] mb-6">
-      Historique des paiements
-    </h1>
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-3">
+      <h1 class="text-2xl sm:text-3xl font-bold text-[var(--color-primary-dark)]">
+        Historique des paiements
+      </h1>
+      <div class="flex items-center gap-2">
+        <a th:href="@{/payments/export/csv(
+          adminKey=${adminKey},
+          applicationName=${selectedApplication},
+          scope=${selectedScope},
+          startDate=${selectedStartDate},
+          endDate=${selectedEndDate}
+        )}"
+           class="bg-[var(--color-accent)] hover:bg-red-700 text-white text-xs font-medium py-2 px-4 rounded-lg transition-all inline-flex items-center gap-1"
+           th:classappend="${selectedApplication == null} ? 'opacity-50 pointer-events-none' : ''">
+          <span class="material-icons text-sm">download</span>
+          Exporter
+        </a>
+      </div>
+    </div>
 
     <div th:replace="~{fragments/stats-cards :: stats-cards(totalCollected=${totalCollected}, totalCount=${totalCount}, pendingCount=${pendingCount})}"></div>
 
@@ -107,5 +122,6 @@
     <div th:replace="fragments/pagination :: pagination(applicationName=${selectedApplication}, scope=${selectedScope}, startDate=${selectedStartDate}, endDate=${selectedEndDate}, currentPage=${currentPage}, totalPages=${totalPages})"></div>
   </div>
   <script src="/script/filters.js"></script>
+  <script src="/script/logout.js"></script>
 </body>
 </html>
