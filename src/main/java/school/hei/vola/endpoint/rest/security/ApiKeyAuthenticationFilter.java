@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -34,13 +35,13 @@ public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
         SecurityContextHolder.getContext()
             .setAuthentication(
                 UsernamePasswordAuthenticationToken.authenticated(
-                    apiKey, null, List.of(() -> "ROLE_APP")));
+                    apiKey, null, List.of(new SimpleGrantedAuthority("ROLE_APP"))));
       } else if (adminKey != null && !adminKey.isBlank()) {
         adminAuthorizer.accept(adminKey);
         SecurityContextHolder.getContext()
             .setAuthentication(
                 UsernamePasswordAuthenticationToken.authenticated(
-                    adminKey, null, List.of(() -> "ROLE_ADMIN")));
+                    adminKey, null, List.of(new SimpleGrantedAuthority("ROLE_ADMIN"))));
       }
     } catch (UnauthorizedException e) {
       SecurityContextHolder.clearContext();
