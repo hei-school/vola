@@ -11,29 +11,35 @@ import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConf {
 
   @Bean
-  public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-    http.authorizeHttpRequests(
+  public SecurityFilterChain filterChain(
+      HttpSecurity http, ApiKeyAuthenticationFilter apiKeyAuthenticationFilter) throws Exception {
+    http.addFilterBefore(apiKeyAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+        .authorizeHttpRequests(
             auth ->
                 auth.requestMatchers(
                         "/ping",
                         "/health/**",
                         "/error",
-                        "/payment",
-                        "/payments/search",
-                        "/payments/export/csv",
-                        "/orange/**",
+                        "/orange/sync",
                         "/css/**",
                         "/js/**",
                         "/script/**",
                         "/style/**",
                         "/images/**")
                     .permitAll()
+                    .requestMatchers(
+                        "/payment",
+                        "/payments/search",
+                        "/payments/export/csv",
+                        "/orange/transactions/import")
+                    .authenticated()
                     .requestMatchers("/payments/**")
                     .authenticated()
                     .anyRequest()
@@ -42,6 +48,12 @@ public class SecurityConf {
         .logout(logout -> logout.logoutSuccessUrl("/"))
         .csrf(csrf -> csrf.ignoringRequestMatchers("/payment", "/payments/search", "/orange/**"));
     return http.build();
+  }
+
+  @Bean
+  public ApiKeyAuthenticationFilter apiKeyAuthenticationFilter(
+      ApplicationAuthorizer applicationAuthorizer, AdminAuthorizer adminAuthorizer) {
+    return new ApiKeyAuthenticationFilter(applicationAuthorizer, adminAuthorizer);
   }
 
   @Bean
