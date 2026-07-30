@@ -12,5 +12,7 @@ public class EnvConf {
     registry.add("spring.jpa.database-platform", () -> "org.hibernate.dialect.H2Dialect");
     registry.add("orange.api.url", () -> apiUrl);
     registry.add("ADMIN_API_KEY", () -> "admin-api-key");
+    registry.add("ADMIN_PASSWORD", () -> "test-password");
+    registry.add("ADMIN_EMAIL", () -> "admin@cute.dev");
   }
 }
