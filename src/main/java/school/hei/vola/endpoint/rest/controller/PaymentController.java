@@ -73,15 +73,19 @@ public class PaymentController {
       @RequestParam(required = false) @DateTimeFormat(iso = ISO.DATE) LocalDate startDate,
       @RequestParam(required = false) @DateTimeFormat(iso = ISO.DATE) LocalDate endDate) {
     adminAuthorizer.accept(adminKey);
+    String normalizedScope = (scope == null || scope.isBlank()) ? null : scope;
     var start = startDate != null ? startDate.atStartOfDay(UTC).toInstant() : Instant.EPOCH;
     var end = endDate != null ? endDate.plusDays(1).atStartOfDay(UTC).toInstant() : Instant.now();
 
-    var csv = paymentService.buildPaymentsCsv(applicationName, scope, start, end);
+    var csv = paymentService.buildPaymentsCsv(applicationName, normalizedScope, start, end);
+
     var filename = "payments_" + applicationName + "_" + currentTimeMillis() + ".csv";
 
     return ResponseEntity.ok()
         .header(CONTENT_DISPOSITION, "attachment; filename=" + filename)
         .header("Content-Type", "text/csv")
+        .header("Cache-Control", "no-cache, no-store, must-revalidate")
+        .header("Pragma", "no-cache")
         .body(csv.getBytes());
   }
 
