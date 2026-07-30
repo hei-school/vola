@@ -69,6 +69,14 @@ class PaymentViewControllerIT extends FacadeIT {
     assertEquals(200, cssResponse.getStatusCodeValue());
   }
 
+  @Test
+  void api_endpoint_with_invalid_adminKey_returns_401() {
+    var response =
+        restTemplate.getForEntity(
+            "/payments/export/csv?adminKey=wrong&applicationName=test", String.class);
+    assertEquals(401, response.getStatusCodeValue());
+  }
+
   private String fetchSessionCookie() {
     var loginPage = restTemplate.getForEntity("/login", String.class);
     var setCookie = loginPage.getHeaders().getFirst(HttpHeaders.SET_COOKIE);
