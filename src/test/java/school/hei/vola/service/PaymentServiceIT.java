@@ -12,6 +12,7 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static school.hei.vola.model.psp.PspType.ORANGE_MONEY;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +22,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageRequest;
 import school.hei.vola.conf.FacadeIT;
 import school.hei.vola.endpoint.event.EventProducer;
 import school.hei.vola.endpoint.event.model.PaymentVerificationRequested;
@@ -47,7 +49,7 @@ class PaymentServiceIT extends FacadeIT {
     var apiKey = randomJApplication().getApiKey();
     var pspPaymentId = randomUUID().toString();
 
-    var created = subject.createPayment(apiKey, email, ORANGE_MONEY, pspPaymentId);
+    var created = subject.createPayment(apiKey, email, ORANGE_MONEY, pspPaymentId, null);
     var retrieved =
         subject
             .findPaymentByPayerEmailAndPspTypeAndPspPaymentId(email, ORANGE_MONEY, pspPaymentId)
@@ -62,7 +64,7 @@ class PaymentServiceIT extends FacadeIT {
     var email = "lou@hei.school";
     var apiKey = randomJApplication().getApiKey();
     var pspPaymentId = "MP250729.1216.D77954";
-    subject.createPayment(apiKey, email, ORANGE_MONEY, pspPaymentId);
+    subject.createPayment(apiKey, email, ORANGE_MONEY, pspPaymentId, null);
 
     var existingPaymentInfo =
         PaymentInfo.builder()
@@ -215,14 +217,18 @@ class PaymentServiceIT extends FacadeIT {
     var apiKey = randomJApplication().getApiKey();
     var paymentInfo = randomPaymentInfo();
     subject.createPayment(
-        apiKey, paymentInfo.payerEmail(), paymentInfo.pspType(), paymentInfo.pspPaymentId());
+        apiKey, paymentInfo.payerEmail(), paymentInfo.pspType(), paymentInfo.pspPaymentId(), null);
 
     var exception =
         assertThrows(
             RuntimeException.class,
             () ->
                 subject.createPayment(
-                    apiKey, randomEmail(), paymentInfo.pspType(), paymentInfo.pspPaymentId()));
+                    apiKey,
+                    randomEmail(),
+                    paymentInfo.pspType(),
+                    paymentInfo.pspPaymentId(),
+                    null));
     assertInstanceOf(IllegalArgumentException.class, exception.getCause());
   }
 
@@ -231,7 +237,11 @@ class PaymentServiceIT extends FacadeIT {
     var apiKey = randomJApplication().getApiKey();
     var existingInfo = randomPaymentInfo();
     subject.createPayment(
-        apiKey, existingInfo.payerEmail(), existingInfo.pspType(), existingInfo.pspPaymentId());
+        apiKey,
+        existingInfo.payerEmail(),
+        existingInfo.pspType(),
+        existingInfo.pspPaymentId(),
+        null);
     reset(eventProducerMocked);
 
     var newInfo = randomPaymentInfo();
@@ -250,10 +260,158 @@ class PaymentServiceIT extends FacadeIT {
     assertEquals(1, eventCaptor.getValue().size());
   }
 
+  @Test
+  void findPaymentsByApplicationNameAndDateRange_filters_by_scope() {
+    var app = randomJApplication();
+    var apiKey = app.getApiKey();
+    var appName = app.getName();
+
+    subject.createPayment(apiKey, randomEmail(), ORANGE_MONEY, randomUUID().toString(), "scope1");
+    subject.createPayment(apiKey, randomEmail(), ORANGE_MONEY, randomUUID().toString(), "scope1");
+    subject.createPayment(apiKey, randomEmail(), ORANGE_MONEY, randomUUID().toString(), "scope2");
+
+    var result =
+        subject.findPaymentsByApplicationNameAndDateRange(
+            appName, "scope1", Instant.EPOCH, Instant.parse("9999-12-31T23:59:59Z"));
+
+    assertEquals(2, result.size());
+    assertTrue(result.stream().allMatch(p -> "scope1".equals(p.scope())));
+  }
+
+  @Test
+  void findDistinctScopes_returns_scopes_for_application() {
+    var app = randomJApplication();
+    var apiKey = app.getApiKey();
+    var appName = app.getName();
+
+    subject.createPayment(apiKey, randomEmail(), ORANGE_MONEY, randomUUID().toString(), "scope1");
+    subject.createPayment(apiKey, randomEmail(), ORANGE_MONEY, randomUUID().toString(), "scope1");
+    subject.createPayment(apiKey, randomEmail(), ORANGE_MONEY, randomUUID().toString(), "scope2");
+    subject.createPayment(apiKey, randomEmail(), ORANGE_MONEY, randomUUID().toString(), "scope3");
+
+    var scopes = subject.findDistinctScopes(appName);
+
+    assertEquals(3, scopes.size());
+    assertTrue(scopes.containsAll(List.of("scope1", "scope2", "scope3")));
+  }
+
+  @Test
+  void findDistinctScopes_excludes_other_applications() {
+    var app1 = randomJApplication();
+    var app2 = randomJApplication();
+
+    subject.createPayment(
+        app1.getApiKey(), randomEmail(), ORANGE_MONEY, randomUUID().toString(), "scope1");
+    subject.createPayment(
+        app2.getApiKey(), randomEmail(), ORANGE_MONEY, randomUUID().toString(), "scope2");
+
+    var scopes = subject.findDistinctScopes(app1.getName());
+
+    assertEquals(1, scopes.size());
+    assertTrue(scopes.contains("scope1"));
+  }
+
+  @Test
+  void findPaymentsByApplicationName_returns_matching_payments() {
+    var app = randomJApplication();
+    var apiKey = app.getApiKey();
+    var appName = app.getName();
+
+    subject.createPayment(apiKey, randomEmail(), ORANGE_MONEY, randomUUID().toString(), null);
+    subject.createPayment(apiKey, randomEmail(), ORANGE_MONEY, randomUUID().toString(), null);
+
+    var result = subject.findPaymentsByApplicationName(appName);
+
+    assertEquals(2, result.size());
+    assertTrue(result.stream().allMatch(p -> p.application().name().equals(appName)));
+  }
+
+  @Test
+  void findPaymentsByApplicationName_returns_empty_for_unknown_name() {
+    var result = subject.findPaymentsByApplicationName("non-existent-" + randomUUID());
+
+    assertTrue(result.isEmpty());
+  }
+
+  @Test
+  void findPaymentsByApplicationNameAndDateRange_returns_payments_in_range() {
+    var app = randomJApplication();
+    var apiKey = app.getApiKey();
+    var appName = app.getName();
+
+    subject.createPayment(apiKey, randomEmail(), ORANGE_MONEY, randomUUID().toString(), null);
+    subject.createPayment(apiKey, randomEmail(), ORANGE_MONEY, randomUUID().toString(), null);
+
+    var result =
+        subject.findPaymentsByApplicationNameAndDateRange(
+            appName, null, Instant.EPOCH, Instant.now());
+
+    assertEquals(2, result.size());
+  }
+
+  @Test
+  void findPaymentsByApplicationNameAndDateRange_returns_empty_outside_range() {
+    var app = randomJApplication();
+    var apiKey = app.getApiKey();
+    var appName = app.getName();
+
+    subject.createPayment(apiKey, randomEmail(), ORANGE_MONEY, randomUUID().toString(), null);
+    var result =
+        subject.findPaymentsByApplicationNameAndDateRange(
+            appName,
+            null,
+            Instant.parse("2020-01-01T00:00:00Z"),
+            Instant.parse("2020-01-02T00:00:00Z"));
+
+    assertTrue(result.isEmpty());
+  }
+
+  @Test
+  void findAllPayments_returns_all_payments() {
+    var app = randomJApplication();
+    var apiKey = app.getApiKey();
+    var email = randomEmail();
+
+    var pspPaymentId = randomUUID().toString();
+    subject.createPayment(apiKey, email, ORANGE_MONEY, pspPaymentId, null);
+    var all = subject.findAllPayments(PageRequest.of(0, 100));
+
+    assertTrue(all.stream().anyMatch(p -> p.payer().email().equals(email)));
+  }
+
+  @Test
+  void sumAmountForSucceeded_returns_zero_when_no_succeeded() {
+    var app = randomJApplication();
+    var apiKey = app.getApiKey();
+    var appName = app.getName();
+
+    subject.createPayment(apiKey, randomEmail(), ORANGE_MONEY, randomUUID().toString(), null);
+    subject.createPayment(apiKey, randomEmail(), ORANGE_MONEY, randomUUID().toString(), null);
+
+    var total = subject.sumAmountForSucceeded(appName, null, Instant.EPOCH, Instant.now());
+
+    assertEquals(0, total);
+  }
+
+  @Test
+  void countPending_returns_all_for_new_payments() {
+    var app = randomJApplication();
+    var apiKey = app.getApiKey();
+    var appName = app.getName();
+
+    subject.createPayment(apiKey, randomEmail(), ORANGE_MONEY, randomUUID().toString(), null);
+    subject.createPayment(apiKey, randomEmail(), ORANGE_MONEY, randomUUID().toString(), null);
+
+    var pending = subject.countPending(appName, null, Instant.EPOCH, Instant.now());
+
+    assertEquals(2, pending);
+  }
+
   private void createPayments(String apiKey, List<PaymentInfo> paymentInfos) {
     paymentInfos.forEach(
         info ->
-            subject.createPayment(apiKey, info.payerEmail(), info.pspType(), info.pspPaymentId()));
+            subject.createPayment(
+                apiKey, info.payerEmail(), info.pspType(), info.pspPaymentId(), null));
   }
 
   private List<PaymentInfo> mergePaymentInfos(
