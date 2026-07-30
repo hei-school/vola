@@ -3,7 +3,9 @@ package school.hei.vola.endpoint.rest.controller;
 import static java.time.ZoneOffset.UTC;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
@@ -12,7 +14,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import school.hei.vola.repository.jpa.JApplicationRepository;
 import school.hei.vola.service.PaymentService;
-import school.hei.vola.service.utils.DateParser;
 
 @Controller
 @RequiredArgsConstructor
@@ -22,6 +23,9 @@ public class PaymentViewController {
 
   private final PaymentService paymentService;
   private final JApplicationRepository jApplicationRepository;
+
+  @Value("${ADMIN_API_KEY}")
+  private String adminKey;
 
   @GetMapping("/")
   public String index() {
@@ -40,8 +44,8 @@ public class PaymentViewController {
 
     var effectiveApp = normalizeFilter(applicationName);
     var effectiveScope = normalizeFilter(scope);
-    var parsedStartDate = DateParser.parseDate(startDate);
-    var parsedEndDate = DateParser.parseDate(endDate);
+    var parsedStartDate = parseDate(startDate);
+    var parsedEndDate = parseDate(endDate);
 
     var start =
         parsedStartDate != null ? parsedStartDate.atStartOfDay(UTC).toInstant() : Instant.EPOCH;
@@ -75,10 +79,15 @@ public class PaymentViewController {
     model.addAttribute("selectedScope", effectiveScope);
     model.addAttribute("selectedStartDate", parsedStartDate);
     model.addAttribute("selectedEndDate", parsedEndDate);
+    model.addAttribute("adminKey", adminKey);
     return "payments";
   }
 
   private static String normalizeFilter(String value) {
     return (value == null || value.isBlank() || "all".equals(value)) ? null : value;
+  }
+
+  private static LocalDate parseDate(String dateStr) {
+    return (dateStr == null || dateStr.isBlank()) ? null : LocalDate.parse(dateStr);
   }
 }
