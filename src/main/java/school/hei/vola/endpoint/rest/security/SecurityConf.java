@@ -34,14 +34,10 @@ public class SecurityConf {
                         "/style/**",
                         "/images/**")
                     .permitAll()
-                    .requestMatchers(
-                        "/payment",
-                        "/payments/search",
-                        "/payments/export/csv",
-                        "/orange/transactions/import")
-                    .authenticated()
+                    .requestMatchers("/payment", "/payments/search", "/orange/transactions/import")
+                    .hasRole("APP")
                     .requestMatchers("/payments/**")
-                    .authenticated()
+                    .hasRole("ADMIN")
                     .anyRequest()
                     .denyAll())
         .formLogin(login -> login.usernameParameter("email").defaultSuccessUrl("/payments", true))
@@ -62,6 +58,7 @@ public class SecurityConf {
         User.builder()
             .username(env.getRequiredProperty("ADMIN_EMAIL"))
             .password(passwordEncoder.encode(env.getRequiredProperty("ADMIN_PASSWORD")))
+            .roles("ADMIN")
             .build());
   }
 
