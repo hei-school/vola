@@ -4,7 +4,6 @@ import static java.time.ZoneOffset.UTC;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
@@ -19,15 +18,11 @@ public class PaymentViewController {
 
   private final PaymentService paymentService;
   private final JApplicationRepository jApplicationRepository;
-  private final String adminKey;
 
   public PaymentViewController(
-      PaymentService paymentService,
-      JApplicationRepository jApplicationRepository,
-      @Value("${ADMIN_API_KEY}") String adminKey) {
+      PaymentService paymentService, JApplicationRepository jApplicationRepository) {
     this.paymentService = paymentService;
     this.jApplicationRepository = jApplicationRepository;
-    this.adminKey = adminKey;
   }
 
   @GetMapping("/")
@@ -83,7 +78,6 @@ public class PaymentViewController {
     model.addAttribute("selectedScope", effectiveScope);
     model.addAttribute("selectedStartDate", parsedStartDate);
     model.addAttribute("selectedEndDate", parsedEndDate);
-    model.addAttribute("adminKey", adminKey);
     return "payments";
   }
 

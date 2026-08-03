@@ -16,10 +16,13 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import school.hei.vola.conf.FacadeIT;
+import school.hei.vola.repository.jpa.JApplicationRepository;
+import school.hei.vola.repository.jpa.model.JApplication;
 
 class PaymentViewControllerIT extends FacadeIT {
 
   @Autowired private TestRestTemplate restTemplate;
+  @Autowired private JApplicationRepository jApplicationRepository;
 
   @Test
   void unauthenticated_request_to_payments_shows_login_page() {
@@ -75,6 +78,48 @@ class PaymentViewControllerIT extends FacadeIT {
         restTemplate.getForEntity(
             "/payments/export/csv?adminKey=wrong&applicationName=test", String.class);
     assertEquals(401, response.getStatusCodeValue());
+  }
+
+  @Test
+  void app_api_key_cannot_access_admin_dashboard() {
+    var app = new JApplication();
+    app.setId("app-klioba");
+    app.setName("klioba");
+    app.setApiKey("klioba-api-key");
+    jApplicationRepository.save(app);
+
+    var response = restTemplate.getForEntity("/payments?apiKey=klioba-api-key", String.class);
+
+    assertEquals(403, response.getStatusCodeValue());
+  }
+
+  @Test
+  void export_with_adminKey_returns_csv() {
+    var response =
+        restTemplate.getForEntity(
+            "/payments/export/csv?adminKey=admin-api-key&applicationName=test", String.class);
+
+    assertEquals(200, response.getStatusCodeValue());
+    assertNotNull(response.getBody());
+  }
+
+  @Test
+  void admin_session_can_export_without_adminKey() {
+    var sessionCookie = fetchSessionCookie();
+    var csrfToken = fetchCsrfToken(sessionCookie);
+    var loginResponse = login(sessionCookie, csrfToken, "admin@cute.dev");
+
+    var authCookie = extractSessionId(loginResponse);
+    var headers = new HttpHeaders();
+    headers.add(HttpHeaders.COOKIE, authCookie);
+    var response =
+        restTemplate.exchange(
+            "/payments/export/csv?applicationName=test",
+            HttpMethod.GET,
+            new HttpEntity<>(headers),
+            String.class);
+
+    assertEquals(200, response.getStatusCodeValue());
   }
 
   private String fetchSessionCookie() {
