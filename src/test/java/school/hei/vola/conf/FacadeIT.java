@@ -22,14 +22,6 @@ public class FacadeIT {
     new BucketConf().configureProperties(registry);
     new EmailConf().configureProperties(registry);
 
-    try {
-      var envConfClazz = Class.forName("school.hei.vola.conf.EnvConf");
-      var envConfConfigureProperties =
-          envConfClazz.getDeclaredMethod("configureProperties", DynamicPropertyRegistry.class);
-      var envConf = envConfClazz.getConstructor().newInstance();
-      envConfConfigureProperties.invoke(envConf, registry);
-    } catch (ClassNotFoundException e) {
-      log.warn("EnvConf missing: no project-specific test env vars will be set");
-    }
+    // No EnvConf → real env vars from CI are used
   }
 }
