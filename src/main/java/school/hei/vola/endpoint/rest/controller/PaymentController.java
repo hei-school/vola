@@ -67,16 +67,20 @@ public class PaymentController {
 
   @GetMapping("/payments/export/csv")
   public ResponseEntity<byte[]> exportPaymentsCsv(
-      @RequestParam String adminKey,
+      @RequestParam(required = false) String adminKey,
       @RequestParam String applicationName,
       @RequestParam(required = false) String scope,
       @RequestParam(required = false) @DateTimeFormat(iso = ISO.DATE) LocalDate startDate,
       @RequestParam(required = false) @DateTimeFormat(iso = ISO.DATE) LocalDate endDate) {
-    adminAuthorizer.accept(adminKey);
+    if (adminKey != null && !adminKey.isBlank()) {
+      adminAuthorizer.accept(adminKey);
+    }
+    var normalizedScope = (scope == null || scope.isBlank()) ? null : scope;
     var start = startDate != null ? startDate.atStartOfDay(UTC).toInstant() : Instant.EPOCH;
     var end = endDate != null ? endDate.plusDays(1).atStartOfDay(UTC).toInstant() : Instant.now();
 
-    var csv = paymentService.buildPaymentsCsv(applicationName, scope, start, end);
+    var csv = paymentService.buildPaymentsCsv(applicationName, normalizedScope, start, end);
+
     var filename = "payments_" + applicationName + "_" + currentTimeMillis() + ".csv";
 
     return ResponseEntity.ok()

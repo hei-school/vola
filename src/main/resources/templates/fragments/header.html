@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<header th:fragment="header" class="app-header text-white shadow-[0_2px_12px_rgba(83,12,8,0.35)] border-b-[3px] border-[var(--color-accent)]">
+  <div class="container mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between relative">
+    <div class="flex items-center gap-2.5">
+      <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-white">
+        <span class="material-icons text-lg">account_balance_wallet</span>
+      </span>
+      <h1 class="text-xl sm:text-2xl font-bold tracking-tight">Vola</h1>
+    </div>
+    <div class="flex items-center gap-2 sm:gap-3">
+      <span class="inline-flex items-center gap-1.5 text-white">
+        <span class="material-icons text-sm">person</span>
+        <span class="text-xs sm:text-sm">Admin</span>
+      </span>
+      <button type="button" id="logout-btn"
+              class="bg-[var(--color-accent)] hover:bg-[var(--color-accent-dark)] border border-[var(--color-accent)] hover:border-[var(--color-accent-dark)] text-white text-xs sm:text-sm font-medium px-3 sm:px-4 py-2 rounded-lg transition-all flex items-center gap-1.5">
+        <span class="material-icons text-sm">logout</span>
+        <span class="hidden sm:inline">Déconnexion</span>
+      </button>
+    </div>
+  </div>
+
+  <dialog id="logout-dialog"
+          class="fixed inset-0 z-50 m-auto p-0 bg-transparent border-none">
+    <div class="bg-white p-6 sm:p-8 rounded-xl shadow-2xl max-w-md w-full mx-4">
+      <div class="text-center mb-6">
+        <div class="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-[#800000] bg-opacity-10 rounded-full mb-4">
+          <span class="material-icons text-[var(--color-primary)] text-4xl sm:text-5xl">logout</span>
+        </div>
+        <h2 class="text-2xl font-bold text-[var(--color-text-dark)] mb-2">Confirmer la déconnexion</h2>
+        <p class="text-sm text-gray-600">Voulez-vous vraiment vous déconnecter ?</p>
+      </div>
+
+      <form th:action="@{/logout}" method="POST" class="space-y-3">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+        <button type="submit"
+                class="w-full bg-[var(--color-accent)] hover:bg-[var(--color-accent-dark)] text-white font-bold py-3 px-6 rounded-full transition-all transform hover:scale-[1.02] text-sm flex items-center justify-center gap-2">
+          <span class="material-icons text-lg">logout</span>
+          <span>Oui, me déconnecter</span>
+        </button>
+      </form>
+
+      <button type="button" id="logout-cancel-btn"
+              class="mt-3 w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-6 rounded-full transition-all transform hover:scale-[1.02] text-sm flex items-center justify-center gap-2">
+        <span class="material-icons text-lg">arrow_back</span>
+        <span>Non, rester connecté</span>
+      </button>
+
+      <div class="mt-6 p-3 rounded-lg bg-[#800000] bg-opacity-10 border border-[#800000] border-opacity-20">
+        <div class="flex items-start gap-2">
+          <span class="material-icons text-[var(--color-primary)] text-sm mt-0.5">info</span>
+          <p class="text-xs text-gray-700">Vous serez redirigé vers la page d'accueil après la déconnexion.</p>
+        </div>
+      </div>
+    </div>
+  </dialog>
+</header>
+</body>
+</html>
