@@ -159,6 +159,8 @@ implementation 'org.apache.poi:poi:5.2.5'
 implementation 'org.apache.poi:poi-ooxml:5.2.5'
 testImplementation 'com.h2database:h2'
 testImplementation 'org.mockito:mockito-core:5.3.1'
+implementation 'org.springframework.boot:spring-boot-starter-security'
+implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 
 
 }
