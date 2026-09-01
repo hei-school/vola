@@ -34,6 +34,24 @@ jobs:
               (github.ref == 'refs/heads/prod') && secrets.PROD_ORANGE_API_URL ||
               (github.ref == 'refs/heads/preprod') && secrets.PREPROD_ORANGE_API_URL
               }}
+      SPRING_SESSION_JDBC_INITIALIZE_SCHEMA: ${{
+              (github.event_name == 'pull_request' && github.base_ref == 'prod') && secrets.PROD_SPRING_SESSION_JDBC_INITIALIZE_SCHEMA ||
+              (github.event_name == 'pull_request' && github.base_ref == 'preprod') && secrets.PREPROD_SPRING_SESSION_JDBC_INITIALIZE_SCHEMA ||
+              (github.ref == 'refs/heads/prod') && secrets.PROD_SPRING_SESSION_JDBC_INITIALIZE_SCHEMA ||
+              (github.ref == 'refs/heads/preprod') && secrets.PREPROD_SPRING_SESSION_JDBC_INITIALIZE_SCHEMA
+              }}
+      SPRING_SESSION_STORETYPE: ${{
+              (github.event_name == 'pull_request' && github.base_ref == 'prod') && secrets.PROD_SPRING_SESSION_STORETYPE ||
+              (github.event_name == 'pull_request' && github.base_ref == 'preprod') && secrets.PREPROD_SPRING_SESSION_STORETYPE ||
+              (github.ref == 'refs/heads/prod') && secrets.PROD_SPRING_SESSION_STORETYPE ||
+              (github.ref == 'refs/heads/preprod') && secrets.PREPROD_SPRING_SESSION_STORETYPE
+              }}
+      SPRING_FLYWAY_OUTOFORDER: ${{
+              (github.event_name == 'pull_request' && github.base_ref == 'prod') && secrets.PROD_SPRING_FLYWAY_OUTOFORDER ||
+              (github.event_name == 'pull_request' && github.base_ref == 'preprod') && secrets.PREPROD_SPRING_FLYWAY_OUTOFORDER ||
+              (github.ref == 'refs/heads/prod') && secrets.PROD_SPRING_FLYWAY_OUTOFORDER ||
+              (github.ref == 'refs/heads/preprod') && secrets.PREPROD_SPRING_FLYWAY_OUTOFORDER
+              }}
 
     steps:
       - uses: actions/checkout@v4.1.6
