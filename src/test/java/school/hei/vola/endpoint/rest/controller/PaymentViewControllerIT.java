@@ -25,6 +25,15 @@ class PaymentViewControllerIT extends FacadeIT {
   @Autowired private JApplicationRepository jApplicationRepository;
 
   @Test
+  void login_page_is_directly_accessible_without_redirect_loop() {
+    var response = restTemplate.getForEntity("/login", String.class);
+
+    assertEquals(200, response.getStatusCodeValue());
+    assertNotNull(response.getBody());
+    assertTrue(response.getBody().contains("Please sign in"));
+  }
+
+  @Test
   void unauthenticated_request_to_payments_shows_login_page() {
     var response = restTemplate.getForEntity("/payments", String.class);
 

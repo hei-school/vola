@@ -27,6 +27,7 @@ public class SecurityConf {
                         "/ping",
                         "/health/**",
                         "/error",
+                        "/login",
                         "/orange/sync",
                         "/css/**",
                         "/js/**",
