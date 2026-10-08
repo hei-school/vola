@@ -110,12 +110,12 @@ class PaymentControllerIT extends FacadeIT {
     assertEquals(VERIFYING, createdPayment.getVerificationStatus());
 
     orangeDailyTransactionsRetrievalRequestedService.accept(
-        new OrangeDailyTransactionsRetrievalRequested(LocalDate.of(2026, 8, 24)));
+        new OrangeDailyTransactionsRetrievalRequested(LocalDate.of(2026, 10, 6)));
     var retrievedPayment = subject.getPayment(apiKey, email, pspType, pspPaymentId);
     assertEquals(
         createdPayment.pspPayment().toBuilder()
-            .amount(348480)
-            .creationInstant(Instant.parse("2026-08-24T01:51:09Z"))
+            .amount(60000)
+            .creationInstant(Instant.parse("2026-10-06T06:36:23Z"))
             .build(),
         retrievedPayment.pspPayment());
     assertNotNull(retrievedPayment.lastPspVerificationInstant());
@@ -131,7 +131,7 @@ class PaymentControllerIT extends FacadeIT {
     var pspPaymentId = ORANGE_REF_SUCCEEDED;
     try {
       orangeDailyTransactionsRetrievalRequestedService.accept(
-          new OrangeDailyTransactionsRetrievalRequested(LocalDate.of(2026, 8, 24)));
+          new OrangeDailyTransactionsRetrievalRequested(LocalDate.of(2026, 10, 6)));
     } catch (Exception e) {
       log.error("Failed to retrieve transactions, an error occured: ", e.getMessage());
       throw new RuntimeException("The error is " + e.getMessage());
@@ -154,8 +154,8 @@ class PaymentControllerIT extends FacadeIT {
     retrievedPayment = subject.getPayment(apiKey, email, pspType, pspPaymentId);
     assertEquals(
         createdPayment.pspPayment().toBuilder()
-            .amount(348480)
-            .creationInstant(Instant.parse("2026-08-24T01:51:09Z"))
+            .amount(60000)
+            .creationInstant(Instant.parse("2026-10-06T06:36:23Z"))
             .build(),
         retrievedPayment.pspPayment());
     assertNotNull(retrievedPayment.lastPspVerificationInstant());
