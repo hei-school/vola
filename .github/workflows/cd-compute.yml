@@ -34,6 +34,12 @@ jobs:
               (github.ref == 'refs/heads/prod') && secrets.PROD_ORANGE_API_URL ||
               (github.ref == 'refs/heads/preprod') && secrets.PREPROD_ORANGE_API_URL
               }}
+      SPRING_FLYWAY_OUTOFORDER: ${{
+              (github.event_name == 'pull_request' && github.base_ref == 'prod') && secrets.PROD_SPRING_FLYWAY_OUTOFORDER ||
+              (github.event_name == 'pull_request' && github.base_ref == 'preprod') && secrets.PREPROD_SPRING_FLYWAY_OUTOFORDER ||
+              (github.ref == 'refs/heads/prod') && secrets.PROD_SPRING_FLYWAY_OUTOFORDER ||
+              (github.ref == 'refs/heads/preprod') && secrets.PREPROD_SPRING_FLYWAY_OUTOFORDER
+              }}
 
     steps:
       - uses: actions/checkout@v4.1.6
