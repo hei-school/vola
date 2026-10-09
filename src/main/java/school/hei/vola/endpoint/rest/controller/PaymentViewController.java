@@ -30,6 +30,11 @@ public class PaymentViewController {
     return "redirect:/payments";
   }
 
+  @GetMapping("/login")
+  public String login() {
+    return "login";
+  }
+
   @GetMapping("/payments")
   public String paymentsPage(
       @RequestParam(required = false) String applicationName,
