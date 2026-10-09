@@ -41,7 +41,12 @@ public class SecurityConf {
                     .hasRole("ADMIN")
                     .anyRequest()
                     .denyAll())
-        .formLogin(login -> login.usernameParameter("email").defaultSuccessUrl("/payments", true))
+        .formLogin(
+            login ->
+                login
+                    .loginPage("/login")
+                    .usernameParameter("email")
+                    .defaultSuccessUrl("/payments", true))
         .logout(logout -> logout.logoutSuccessUrl("/"))
         .csrf(csrf -> csrf.ignoringRequestMatchers("/payment", "/payments/search", "/orange/**"));
     return http.build();
