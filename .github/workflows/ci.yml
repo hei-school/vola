@@ -26,6 +26,24 @@ jobs:
               (github.ref == 'refs/heads/prod') && secrets.PROD_ORANGE_API_URL ||
               (github.ref == 'refs/heads/preprod') && secrets.PREPROD_ORANGE_API_URL
               }}
+      SPRING_SESSION_JDBC_INITIALIZE_SCHEMA: ${{
+              (github.event_name == 'pull_request' && github.base_ref == 'prod') && secrets.PROD_SPRING_SESSION_JDBC_INITIALIZE_SCHEMA ||
+              (github.event_name == 'pull_request' && github.base_ref == 'preprod') && secrets.PREPROD_SPRING_SESSION_JDBC_INITIALIZE_SCHEMA ||
+              (github.ref == 'refs/heads/prod') && secrets.PROD_SPRING_SESSION_JDBC_INITIALIZE_SCHEMA ||
+              (github.ref == 'refs/heads/preprod') && secrets.PREPROD_SPRING_SESSION_JDBC_INITIALIZE_SCHEMA
+              }}
+      SPRING_SESSION_STORETYPE: ${{
+              (github.event_name == 'pull_request' && github.base_ref == 'prod') && secrets.PROD_SPRING_SESSION_STORETYPE ||
+              (github.event_name == 'pull_request' && github.base_ref == 'preprod') && secrets.PREPROD_SPRING_SESSION_STORETYPE ||
+              (github.ref == 'refs/heads/prod') && secrets.PROD_SPRING_SESSION_STORETYPE ||
+              (github.ref == 'refs/heads/preprod') && secrets.PREPROD_SPRING_SESSION_STORETYPE
+              }}
+      SPRING_FLYWAY_OUTOFORDER: ${{
+              (github.event_name == 'pull_request' && github.base_ref == 'prod') && secrets.PROD_SPRING_FLYWAY_OUTOFORDER ||
+              (github.event_name == 'pull_request' && github.base_ref == 'preprod') && secrets.PREPROD_SPRING_FLYWAY_OUTOFORDER ||
+              (github.ref == 'refs/heads/prod') && secrets.PROD_SPRING_FLYWAY_OUTOFORDER ||
+              (github.ref == 'refs/heads/preprod') && secrets.PREPROD_SPRING_FLYWAY_OUTOFORDER
+              }}
 
 
     steps:
@@ -39,7 +57,10 @@ jobs:
       - run: chmod +x .shell/publish_gen_to_maven_local.sh
       - run: |
           ./gradlew test \
-            -Dorange.api.url="$ORANGE_API_URL"
+            -Dorange.api.url="$ORANGE_API_URL" \
+            -Dspring.session.jdbc.initialize.schema="$SPRING_SESSION_JDBC_INITIALIZE_SCHEMA" \
+            -Dspring.session.storetype="$SPRING_SESSION_STORETYPE" \
+            -Dspring.flyway.outoforder="$SPRING_FLYWAY_OUTOFORDER"
 
       
 

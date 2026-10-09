@@ -1,0 +1,51 @@
+:root {
+  --color-primary: #800000;
+  --color-primary-dark: #530c08;
+  --color-primary-light: #8a0a0a;
+  --color-accent: #D32F2F;
+  --color-accent-dark: #b71c1c;
+  --color-success: #22c55e;
+  --color-error: #ef4444;
+  --color-warning: #eab308;
+  --color-psp-bg: #DBEAFE;
+  --color-psp-text: #1E40AF;
+  --color-page-bg: #F4EFE3;
+  --color-input-bg: #F0EDE8;
+  --color-border: #D4C5B5;
+  --color-border-light: #E0D5CA;
+  --color-text-dark: #3C3C3C;
+  --dot-white: rgba(255, 255, 255, 0.12);
+  --dot-white-dim: rgba(255, 255, 255, 0.08);
+  --dot-size: 14px;
+}
+
+.psp-badge {
+  background-color: var(--color-psp-bg);
+  color: var(--color-psp-text);
+}
+
+.border-left-succeeded {
+  border-left: 3px solid var(--color-success);
+}
+
+.border-left-failed {
+  border-left: 3px solid var(--color-error);
+}
+
+.border-left-verifying {
+  border-left: 3px solid var(--color-warning);
+}
+
+.stat-card {
+  background-image:
+    radial-gradient(var(--dot-white) 1px, transparent 1px),
+    linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  background-size: var(--dot-size) var(--dot-size), cover;
+}
+
+.app-header {
+  background-image:
+    radial-gradient(var(--dot-white-dim) 1px, transparent 1px),
+    linear-gradient(120deg, var(--color-primary-light) 0%, var(--color-primary) 45%, var(--color-primary-dark) 100%);
+  background-size: var(--dot-size) var(--dot-size), cover;
+}

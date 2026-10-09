@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="stats-cards(totalCollected, totalCount, pendingCount)">
+  <div class="mx-auto grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6 max-w-4xl">
+    <div class="stat-card relative overflow-hidden rounded-xl p-5 pb-6 border-t-4 border-[var(--color-accent)] shadow-[0_4px_10px_rgba(83,12,8,0.25)]">
+      <div class="flex items-center justify-between gap-2 mb-7">
+        <span class="material-icons text-white text-[1.75rem] opacity-90">payments</span>
+        <h3 class="text-white font-semibold text-sm text-right">Total collecté</h3>
+      </div>
+      <p class="text-white font-extrabold text-3xl leading-none mb-1" th:text="${totalCollected}">0 Ar</p>
+      <p class="text-white/75 text-xs">Au total</p>
+    </div>
+    <div class="stat-card relative overflow-hidden rounded-xl p-5 pb-6 border-t-4 border-[var(--color-accent)] shadow-[0_4px_10px_rgba(83,12,8,0.25)]">
+      <div class="flex items-center justify-between gap-2 mb-7">
+        <span class="material-icons text-white text-[1.75rem] opacity-90">confirmation_number</span>
+        <h3 class="text-white font-semibold text-sm text-right">Nombre de paiements</h3>
+      </div>
+      <p class="text-white font-extrabold text-3xl leading-none mb-1" th:text="${totalCount}">0</p>
+      <p class="text-white/75 text-xs">Au total</p>
+    </div>
+    <div class="stat-card relative overflow-hidden rounded-xl p-5 pb-6 border-t-4 border-[var(--color-accent)] shadow-[0_4px_10px_rgba(83,12,8,0.25)]">
+      <div class="flex items-center justify-between gap-2 mb-7">
+        <span class="material-icons text-white text-[1.75rem] opacity-90">av_timer</span>
+        <h3 class="text-white font-semibold text-sm text-right">En attente</h3>
+      </div>
+      <p class="text-white font-extrabold text-3xl leading-none mb-1" th:text="${pendingCount}">0</p>
+      <p class="text-white/75 text-xs">Au total</p>
+    </div>
+  </div>
+</div>
+</body>
+</html>

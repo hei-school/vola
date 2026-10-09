@@ -1,0 +1,18 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Vola - Connexion</title>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen flex items-center justify-center bg-gray-50 text-gray-700">
+  <form th:action="@{/login}" method="post" class="bg-white p-8 rounded shadow w-full max-w-sm space-y-4">
+    <h1 class="text-2xl font-bold">Please sign in</h1>
+    <p th:if="${param.error}" class="text-red-600">Email ou mot de passe invalide.</p>
+    <input name="email" type="email" placeholder="Email" required class="w-full border rounded p-2" />
+    <input name="password" type="password" placeholder="Mot de passe" required class="w-full border rounded p-2" />
+    <button type="submit" class="w-full bg-blue-600 text-white rounded p-2">Se connecter</button>
+  </form>
+</body>
+</html>
