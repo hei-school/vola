@@ -4,5 +4,5 @@ public class TestData {
   public static final String ORANGE_REF_SUCCEEDED =
       // note(unique_pspPayment)
       // Changed on waiting of scraper fix
-      "MP261006.0636.C93998";
+      "MP261023.0730.C47738";
 }
