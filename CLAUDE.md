@@ -21,3 +21,25 @@ the tests at a recent transaction:
    `ORANGE_API_URL=https://cbf314fda3.execute-api.eu-west-3.amazonaws.com/Prod ./gradlew test --tests '*PaymentControllerIT'`
    A `jacocoTestCoverageVerification` failure on a partial run is expected; only test failures matter.
 5. Commit as `chore: fix monthly failing test` and open the PR with base `prod`.
+
+## Recovering after Vola downtime
+
+If Vola was down for a day, the Orange payments (`OrangePayment`) of that day were missed. Payments
+themselves are created by the client apps (HEI admin, Tsinjo, Klioba), so only the Orange side needs
+recovery. Two ways, both in `PaymentController`:
+
+- **Sync from the Orange API**: `PUT /orange/sync?date=YYYY-MM-DD`, with `date` = the day
+  Vola was down. Public (no auth), CSRF-exempt. Returns a `RecoveryResult`.
+- **Upload an XLS file**: `POST /orange/transactions/import?apiKey=<app apiKey>`, multipart with the
+  file in part `excel`. Requires an application API key. Returns `ImportedTransactionDetails`.
+
+Call the endpoint once per missed day.
+
+## Flaky live-API test (504)
+
+The Orange API is a scraper behind API Gateway: one call takes ~12s and concurrent calls can return
+`504` after 30s. On a push to `prod`/`preprod`, `CI` and `CD Compute` run at the same time, so
+`PaymentControllerIT` can fail with `OrangeApiException` while the values are still valid. The test
+retries the retrieval up to 3 times (`retrieveOrangeDailyTransactions`); if it still fails, re-run
+the failed jobs (`gh run rerun <run-id> --failed`) before changing any test data. Never edit
+`ci.yml`, `cd-compute.yml` or `build.gradle` to work around it.
