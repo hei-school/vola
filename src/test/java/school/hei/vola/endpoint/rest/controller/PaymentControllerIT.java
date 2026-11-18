@@ -42,6 +42,7 @@ import school.hei.vola.model.Application;
 import school.hei.vola.model.Payment;
 import school.hei.vola.model.User;
 import school.hei.vola.model.psp.PspPayment;
+import school.hei.vola.model.psp.orange.OrangeApiException;
 import school.hei.vola.repository.PaymentRepository;
 import school.hei.vola.repository.UserRepository;
 import school.hei.vola.repository.jpa.JApplicationRepository;
@@ -77,6 +78,31 @@ class PaymentControllerIT extends FacadeIT {
     return jApplication;
   }
 
+  // The live Orange API (scraper behind API Gateway) takes ~12s and returns 504 when called
+  // concurrently (e.g. CI and CD running together). Fetching fails before any write, so retrying
+  // is safe.
+  private void retrieveOrangeDailyTransactions(LocalDate date) {
+    var maxAttempts = 3;
+    for (var attempt = 1; ; attempt++) {
+      try {
+        orangeDailyTransactionsRetrievalRequestedService.accept(
+            new OrangeDailyTransactionsRetrievalRequested(date));
+        return;
+      } catch (OrangeApiException e) {
+        if (attempt == maxAttempts) {
+          throw e;
+        }
+        log.warn("Orange API failed (attempt {}/{}): {}", attempt, maxAttempts, e.getMessage());
+        try {
+          Thread.sleep(5_000L * attempt);
+        } catch (InterruptedException ie) {
+          Thread.currentThread().interrupt();
+          throw new RuntimeException(ie);
+        }
+      }
+    }
+  }
+
   @DirtiesContext(methodMode = BEFORE_METHOD) // note(unique_pspPayment)
   @Test
   void can_create_payment_then_retrieve_it() {
@@ -109,13 +135,12 @@ class PaymentControllerIT extends FacadeIT {
     assertNull(createdPayment.lastPspVerificationInstant());
     assertEquals(VERIFYING, createdPayment.getVerificationStatus());
 
-    orangeDailyTransactionsRetrievalRequestedService.accept(
-        new OrangeDailyTransactionsRetrievalRequested(LocalDate.of(2026, 10, 23)));
+    retrieveOrangeDailyTransactions(LocalDate.of(2026, 11, 17));
     var retrievedPayment = subject.getPayment(apiKey, email, pspType, pspPaymentId);
     assertEquals(
         createdPayment.pspPayment().toBuilder()
-            .amount(10000)
-            .creationInstant(Instant.parse("2026-10-23T07:30:34Z"))
+            .amount(348480)
+            .creationInstant(Instant.parse("2026-11-17T07:13:16Z"))
             .build(),
         retrievedPayment.pspPayment());
     assertNotNull(retrievedPayment.lastPspVerificationInstant());
@@ -130,8 +155,7 @@ class PaymentControllerIT extends FacadeIT {
     var pspType = ORANGE_MONEY;
     var pspPaymentId = ORANGE_REF_SUCCEEDED;
     try {
-      orangeDailyTransactionsRetrievalRequestedService.accept(
-          new OrangeDailyTransactionsRetrievalRequested(LocalDate.of(2026, 10, 23)));
+      retrieveOrangeDailyTransactions(LocalDate.of(2026, 11, 17));
     } catch (Exception e) {
       log.error("Failed to retrieve transactions, an error occured: ", e.getMessage());
       throw new RuntimeException("The error is " + e.getMessage());
@@ -154,8 +178,8 @@ class PaymentControllerIT extends FacadeIT {
     retrievedPayment = subject.getPayment(apiKey, email, pspType, pspPaymentId);
     assertEquals(
         createdPayment.pspPayment().toBuilder()
-            .amount(10000)
-            .creationInstant(Instant.parse("2026-10-23T07:30:34Z"))
+            .amount(348480)
+            .creationInstant(Instant.parse("2026-11-17T07:13:16Z"))
             .build(),
         retrievedPayment.pspPayment());
     assertNotNull(retrievedPayment.lastPspVerificationInstant());
