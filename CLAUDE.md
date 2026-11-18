@@ -1,5 +1,18 @@
 # CLAUDE.md
 
+## Recovering after Vola downtime
+
+If Vola was down, the `OrangeTransaction`s of that period were not saved. Only these need recovery:
+the payments themselves are created by the client apps (HEI admin, Tsinjo, Klioba).
+
+- **Sync from the Orange API**: call `PUT /orange/sync?date=YYYY-MM-DD` with the day Vola was down
+  (one call per missed day). Public, no auth. Returns a `RecoveryResult`.
+- **Import an XLS**: call `POST /orange/transactions/import?apiKey=<app apiKey>` as multipart, with
+  the XLS containing the Orange payments in part `excel`. Requires an application API key.
+  Returns `ImportedTransactionDetails`.
+
+Both are in `PaymentController`.
+
 ## Fixing the expired Orange live-API test
 
 `PaymentControllerIT` (`can_create_payment_beforeOrangeDailyRetrieval_then_verify_it`,
