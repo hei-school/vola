@@ -39,6 +39,7 @@ Call the endpoint once per missed day.
 
 The Orange API is a scraper behind API Gateway: one call takes ~12s and concurrent calls can return
 `504` after 30s. On a push to `prod`/`preprod`, `CI` and `CD Compute` run at the same time, so
-`PaymentControllerIT` can fail with `OrangeApiException` while the values are still valid. Re-run
+`PaymentControllerIT` can fail with `OrangeApiException` while the values are still valid. The test
+retries the retrieval up to 3 times (`retrieveOrangeDailyTransactions`); if it still fails, re-run
 the failed jobs (`gh run rerun <run-id> --failed`) before changing any test data. Never edit
 `ci.yml`, `cd-compute.yml` or `build.gradle` to work around it.
